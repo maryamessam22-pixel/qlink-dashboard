@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Settings, LogOut } from 'lucide-react';
 import './Sidebar.css';
+import myPic from '../assets/imges/my-pic.png';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ const Sidebar = () => {
       
       <div className="sidebar-profile">
         <div className="profile-image-container">
-          <img src="https://ui-avatars.com/api/?name=Mariam+Farid&background=E03232&color=fff" alt="M.Farid" className="profile-image" />
+          <img src={myPic} alt="M.Farid" className="profile-image" />
         </div>
         <h3 className="profile-name">M.Farid</h3>
         <p className="profile-role">Founder & CEO</p>
