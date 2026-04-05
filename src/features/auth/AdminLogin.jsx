@@ -16,18 +16,10 @@ const AdminLogin = () => {
 
   return (
     <div className="login-container">
-      {/* Dynamic Background Circles */}
-      <div className="bg-circles">
-        <div className="circle circle-1"></div>
-        <div className="circle circle-2"></div>
-        <div className="circle circle-3"></div>
-      </div>
-
-      <div className="login-card" style={{ zIndex: 1 }}>
+      <div className="login-card">
         
         <div className="login-header">
-          {/* بعدين ممكن نبدل الكلمة دي بصورة اللوجو لو حابة */}
-          <h1 className="logo-text">Qlink</h1>
+          <img src={require('../../assets/logos/logo.png')} alt="Qlink Logo" className="logo-image" />
           <h2 className="title-text">Qlink Command Center</h2>
           <p className="subtitle-text">Enter your credentials to manage the safety network.</p>
         </div>
