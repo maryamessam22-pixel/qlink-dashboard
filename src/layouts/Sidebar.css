@@ -1,0 +1,128 @@
+/* src/layouts/Sidebar.css */
+
+.sidebar-container {
+  width: 260px;
+  background-color: #131722;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  border-right: 1px solid #1f2937;
+  font-family: var(--font-en), Arial, sans-serif;
+}
+
+/* User Profile Section */
+.sidebar-profile {
+  padding: 32px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-image-container {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 12px;
+  /* تأثير الدائرة المضيئة لو حابة */
+  box-shadow: 0 0 10px rgba(0,0,0,0.5); 
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.profile-role {
+  font-size: 12px;
+  color: #E03232; /* نفس درجة الأحمر بتاعتك */
+  margin: 0;
+}
+
+.profile-divider {
+  width: 80%;
+  height: 1px;
+  background-color: #314158;
+  margin: 20px auto 10px auto;
+}
+
+/* Navigation Links Section */
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #8b949e;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+/* Active State (لما تكوني واقفة في الصفحة دي) */
+.nav-item.active {
+  background-color: #E03232;
+  color: #ffffff;
+  /* Shadow خفيف زي الديزاين */
+  box-shadow: 0px 4px 12px rgba(224, 50, 50, 0.25);
+}
+
+.nav-icon {
+  font-size: 18px;
+}
+
+/* Logout Section */
+.sidebar-footer {
+  padding: 20px;
+}
+
+.logout-divider {
+  width: 80%;
+  height: 1px;
+  background-color: #314158;
+  margin: 0 auto 16px auto;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 0;
+  background: transparent;
+  border: none;
+  color: #8b949e;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.logout-button:hover {
+  color: #ffffff;
+}
