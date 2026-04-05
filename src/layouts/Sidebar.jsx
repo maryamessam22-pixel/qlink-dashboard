@@ -1,10 +1,61 @@
 import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Settings, LogOut } from 'lucide-react';
+import './Sidebar.css';
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    navigate('/login');
+  };
+
+  //Web Dashboard
+  const navLinks = [
+    { path: '/web/overview', name: 'Overview', icon: <LayoutDashboard size={20} /> },
+    { path: '/web/orders', name: 'Orders', icon: <ClipboardList size={20} /> },
+    { path: '/web/products', name: 'Products', icon: <ShoppingBag size={20} /> },
+    { path: '/web/inventory', name: 'Inventory', icon: <Package size={20} /> },
+    { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
+    { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> }, 
+  ];
+
   return (
-    <aside style={{ width: '250px', background: '#f4f4f4', padding: '20px' }}>
-      <h2>Qlink Sidebar</h2>
-    </aside>
+    <div className="sidebar-container">
+      
+      <div className="sidebar-profile">
+        <div className="profile-image-container">
+          <img src="https://ui-avatars.com/api/?name=Mariam+Farid&background=E03232&color=fff" alt="M.Farid" className="profile-image" />
+        </div>
+        <h3 className="profile-name">M.Farid</h3>
+        <p className="profile-role">Founder & CEO</p>
+        <div className="profile-divider"></div>
+      </div>
+
+      <div className="sidebar-nav">
+        {navLinks.map((link) => (
+          <NavLink 
+            key={link.name} 
+            to={link.path} 
+            className={({ isActive }) => isActive ? "nav-item active" : "nav-item"}
+          >
+            <span className="nav-icon">{link.icon}</span>
+            <span>{link.name}</span>
+          </NavLink>
+        ))}
+      </div>
+
+      {/* 3. Logout Section */}
+      <div className="sidebar-footer">
+        <div className="logout-divider"></div>
+        <button className="logout-button" onClick={handleLogout}>
+          <LogOut size={20} />
+          <span>Logout</span>
+        </button>
+      </div>
+
+    </div>
   );
 };
 
