@@ -9,8 +9,6 @@ const AdminLogin = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // مؤقتاً: مجرد ما ندوس لوجين هيدخلنا على صفحة الويب
-    // بعدين هنربطها بـ Supabase 
     navigate('/web/overview');
   };
 
@@ -19,7 +17,7 @@ const AdminLogin = () => {
       <div className="login-card">
         
         <div className="login-header">
-          <img src={require('../../assets/logos/logo.png')} alt="Qlink Logo" className="logo-image" />
+          <img src={require('../../assets/logos/QLINK.png')} alt="Qlink Logo" className="logo-image" />
           <h2 className="title-text">Qlink Command Center</h2>
           <p className="subtitle-text">Enter your credentials to manage the safety network.</p>
         </div>

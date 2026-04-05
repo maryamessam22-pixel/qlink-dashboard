@@ -1,18 +1,16 @@
-/* src/features/auth/AdminLogin.css */
 
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  /* Matching the exact screenshot background aesthetic with the requested colors */
   background: radial-gradient(circle at center, #1D293D 0%, #080a0f 100%);
   font-family: var(--font-en), Arial, sans-serif;
 }
 
 .login-card {
-  background-color: #131722; /* Pure dark as in screenshot */
-  width: 440px;
+  background-color: #131722; 
+  width: 650px;
   padding: 48px;
   border-radius: 16px;
   box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.5);
@@ -63,7 +61,7 @@
   display: flex;
   align-items: center;
   background-color: #080a0f;
-  border: 1px solid #314158; /* Using the requested lighter border color */
+  border: 1px solid #314158; 
   border-radius: 8px;
   padding: 0px 16px;
   height: 48px;
@@ -94,7 +92,7 @@
 }
 
 .login-button {
-  background-color: #E03232; /* Using the requested Red */
+  background-color: #E03232; 
   color: #FFFFFF;
   border: none;
   border-radius: 8px;
@@ -103,7 +101,6 @@
   font-weight: bold;
   cursor: pointer;
   margin-top: 8px;
-  /* Subtle red glow exactly like the screenshot */
   box-shadow: 0px 4px 16px rgba(224, 50, 50, 0.3);
   transition: background-color 0.3s, transform 0.1s;
 }
