@@ -46,7 +46,7 @@ const Sidebar = () => {
         ))}
       </div>
 
-      {/* 3. Logout Section */}
+   
       <div className="sidebar-footer">
         <div className="logout-divider"></div>
         <button className="logout-button" onClick={handleLogout}>
