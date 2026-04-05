@@ -1,7 +1,7 @@
 /* src/layouts/Sidebar.css */
 
 .sidebar-container {
-  width: 260px;
+  width: var(--sidebar-width);
   background-color: #131722;
   color: #ffffff;
   display: flex;
@@ -9,6 +9,22 @@
   height: 100vh;
   border-right: 1px solid #1f2937;
   font-family: var(--font-en), Arial, sans-serif;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+  z-index: 1000;
+}
+
+@media screen and (max-width: 1024px) {
+  .sidebar-container {
+    position: fixed;
+    left: calc(-1 * var(--sidebar-width));
+    top: 0;
+  }
+
+  .sidebar-container.open {
+    left: 0;
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+  }
 }
 
 /* User Profile Section */

@@ -1,0 +1,134 @@
+.topbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 32px;
+  height: var(--topbar-height);
+  background-color: transparent; 
+  border-bottom: 1px solid #1f2937;
+  font-family: var(--font-en), Arial, sans-serif;
+  flex-shrink: 0;
+}
+
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.breadcrumb {
+  font-size: 20px;
+  font-weight: 500;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.breadcrumb-muted {
+  color: #8b949e;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.search-wrapper {
+  display: flex;
+  align-items: center;
+  background-color: #131722;
+  border: 1px solid #314158;
+  border-radius: 20px; 
+  padding: 0 16px;
+  height: 40px;
+  width: 280px;
+  transition: border-color 0.3s;
+}
+
+.search-wrapper:focus-within {
+  border-color: #E03232;
+}
+
+.search-icon {
+  color: #8b949e;
+  margin-right: 12px;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: #4b5563;
+}
+
+.notification-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.notification-btn:hover {
+  color: #8b949e;
+}
+
+.notification-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background-color: #E03232;
+  border-radius: 50%;
+  border: 2px solid #080a0f; 
+}
+
+@media screen and (max-width: 1024px) {
+  .menu-btn {
+    display: flex;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .topbar-container {
+    padding: 0 20px;
+  }
+  
+  .search-wrapper {
+    display: none;
+  }
+
+  .breadcrumb {
+    font-size: 16px;
+  }
+
+  .breadcrumb-muted {
+    display: none;
+  }
+}

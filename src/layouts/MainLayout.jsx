@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
 const MainLayout = ({ children }) => {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar />
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Topbar />
-        <main style={{ padding: '20px', flex: 1 }}>
+    <div className="layout-wrapper">
+      <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      
+      {/* Overlay to close sidebar on mobile */}
+      {isSidebarOpen && (
+        <div 
+          className="sidebar-overlay" 
+          onClick={toggleSidebar}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            zIndex: 900,
+            backdropFilter: 'blur(4px)'
+          }}
+        />
+      )}
+
+      <div className="main-content">
+        <Topbar toggleSidebar={toggleSidebar} />
+        <main className="page-container">
           {children}
         </main>
       </div>

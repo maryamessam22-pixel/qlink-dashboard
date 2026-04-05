@@ -13,6 +13,10 @@
   --c-success-light: #01D47B;
   --c-success-dark: #00A63E;
 
+  /* Values */
+  --sidebar-width: 260px;
+  --topbar-height: 80px;
+
   /* Typography */
   --font-en: 'Roboto', sans-serif;
   --font-ar: 'Noto Kufi Arabic', sans-serif;
@@ -28,8 +32,34 @@ body {
   font-family: var(--font-en);
   background-color: var(--c-bg-dark);
   color: var(--c-text-light);
+  min-height: 100vh;
 }
 
 [dir="rtl"] body {
   font-family: var(--font-ar);
+}
+
+.layout-wrapper {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.page-container {
+  padding: 32px;
+  flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+  .page-container {
+    padding: 20px;
+  }
 }

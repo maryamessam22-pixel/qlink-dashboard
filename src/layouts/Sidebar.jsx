@@ -4,11 +4,10 @@ import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Setting
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-
     navigate('/login');
   };
 
@@ -19,11 +18,11 @@ const Sidebar = () => {
     { path: '/web/products', name: 'Products', icon: <ShoppingBag size={20} /> },
     { path: '/web/inventory', name: 'Inventory', icon: <Package size={20} /> },
     { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
-    { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> }, 
+    { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> },
   ];
 
   return (
-    <div className="sidebar-container">
+    <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
       
       <div className="sidebar-profile">
         <div className="profile-image-container">
