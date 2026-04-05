@@ -1,0 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+  /* Design System Colors */
+  --c-bg-dark: #1D293D;
+  --c-bg-light: #314158;
+  --c-primary-red: #E03232;
+  --c-text-light: #FFFFFF;
+  --c-primary-blue: #1447E6;
+  --c-secondary-blue: #1758E7;
+  --c-accent-blue: #273469;
+  --c-danger: #DC3545;
+  --c-success-light: #01D47B;
+  --c-success-dark: #00A63E;
+
+  /* Typography */
+  --font-en: 'Roboto', sans-serif;
+  --font-ar: 'Noto Kufi Arabic', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-en);
+  background-color: var(--c-bg-dark);
+  color: var(--c-text-light);
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-ar);
+}
