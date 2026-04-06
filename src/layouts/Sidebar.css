@@ -11,6 +11,7 @@
   --sb-active-bg: #E03232;
   --sb-active-text: #ffffff;
   --sb-divider: #314158;
+  --sb-toggle-bg: #E03232;
 }
 
 .sidebar-container.app-theme {
@@ -21,6 +22,7 @@
   --sb-active-bg: #e0e7ff;
   --sb-active-text: #1447E6;
   --sb-divider: #e2e8f0;
+  --sb-toggle-bg: #1447E6;
 }
 
 .sidebar-container {
@@ -189,10 +191,10 @@
   left: 3px;
   width: calc(50% - 3px);
   height: calc(100% - 6px);
-  background-color: #E03232;
+  background-color: var(--sb-toggle-bg);
   border-radius: 17px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(224, 50, 50, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .toggle-slider.app-mode .toggle-thumb {

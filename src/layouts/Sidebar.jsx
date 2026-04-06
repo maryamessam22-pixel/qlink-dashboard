@@ -33,6 +33,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/web/inventory', name: 'Inventory', icon: <Package size={20} /> },
     { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
     { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> },
+    { path: '/web/settings', name: 'Settings', icon: <Settings size={20} /> },
   ];
 
   const appLinks = [
