@@ -1,5 +1,3 @@
-/* src/features/web-dashboard/overview/WebOverview.css */
-
 .overview-container {
   display: flex;
   flex-direction: column;
@@ -9,7 +7,7 @@
   padding-bottom: 24px;
 }
 
-/* Header Section */
+/* Header */
 .overview-header {
   margin-bottom: 8px;
 }
@@ -26,7 +24,7 @@
   margin: 0;
 }
 
-/* Stats Cards Grid */
+/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -34,7 +32,7 @@
 }
 
 .stat-card {
-  background-color: #131722;
+  background-color: #131C2F;
   border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 24px;
@@ -46,26 +44,31 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.stat-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+.stat-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.05);
 }
+
+.icon-bg-blue { background-color: rgba(59, 130, 246, 0.1); }
+.icon-bg-red { background-color: rgba(224, 50, 50, 0.1); }
+.icon-bg-green { background-color: rgba(16, 185, 129, 0.1); }
+.icon-bg-yellow { background-color: rgba(245, 158, 11, 0.1); }
 
 .icon-blue { color: #3b82f6; }
 .icon-red { color: #E03232; }
 .icon-green { color: #10b981; }
+.icon-yellow { color: #f59e0b; }
 
 .stat-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
 }
@@ -81,109 +84,107 @@
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 15px;
   color: #8b949e;
-  margin-bottom: 8px;
+  margin: 0 0 8px 0;
 }
 
 .stat-value {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 700;
   margin: 0;
 }
 
-/* Response Time Card */
-.response-card {
-  background-color: #131722;
+/* Wide Response Card */
+.response-card-wide {
+  background-color: #131C2F;
   border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 24px;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Main Content Area (Chart & Adoption) */
-.main-content-grid {
+/* Analysis Section */
+.analysis-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
 }
 
-.chart-container {
-  background-color: #131722;
-  border: 1px solid #1f2937;
-  border-radius: 12px;
-  padding: 24px;
-  min-height: 300px;
-}
-
-.chart-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  color: #ffffff;
-}
-
-/* Device Adoption Card */
-.adoption-card {
-  background-color: #131722;
+.chart-card, .adoption-card {
+  background-color: #131C2F;
   border: 1px solid #1f2937;
   border-radius: 12px;
   padding: 24px;
 }
 
-.adoption-title {
+.card-title {
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 24px 0;
   color: #ffffff;
 }
 
+/* Chart Styles */
+.chart-wrapper {
+  height: 200px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.wave-chart {
+  width: 100%;
+  height: 100%;
+}
+
+/* Adoption Styles */
 .adoption-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
 .adoption-item {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.adoption-item-header {
+.item-info {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   font-size: 14px;
   color: #8b949e;
 }
 
-.adoption-item-value {
+.item-percent {
   color: #ffffff;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Custom Progress Bars */
-.progress-bar-container {
+.progress-track {
   height: 6px;
   background-color: #1f2937;
   border-radius: 3px;
   overflow: hidden;
 }
 
-.progress-bar-fill {
+.progress-fill {
   height: 100%;
   border-radius: 3px;
 }
 
 .fill-blue { background-color: #3b82f6; }
-.fill-silver { background-color: #9ca3af; }
+.fill-white { background-color: #ffffff; }
 .fill-red { background-color: #E03232; }
 
+/* Responsive adjustments */
 @media screen and (max-width: 1024px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .main-content-grid {
+  .analysis-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -192,4 +193,4 @@
   .stats-grid {
     grid-template-columns: 1fr;
   }
-}
+}

@@ -33,7 +33,6 @@ const App = () => {
             <Route path="overview" element={<WebOverview />} />
             {/* We will add other web routes (CMS, Products, etc.) here later */}
           </Route>
-
           {/* App Dashboard Routes */}
           <Route path="app">
             <Route path="overview" element={<AppOverview />} />
