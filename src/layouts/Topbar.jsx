@@ -4,7 +4,7 @@ import { Search, Bell, Menu, X } from 'lucide-react';
 import './Topbar.css';
 
 const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
-  const [isSearchVisible, setSearchVisible] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   
   const getCurrentPageName = () => {
@@ -18,10 +18,15 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
     return 'Dashboard';
   };
 
+  const toggleSearch = () => {
+    setIsSearchOpen(!isSearchOpen);
+  };
+
   return (
     <div className="topbar-container">
       
       <div className="left-section">
+        {/* Burger Menu Button - Independent State */}
         <button className="menu-btn" onClick={toggleSidebar}>
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -33,13 +38,22 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
 
       <div className="topbar-actions">
         
-        {/* Toggleable search for mobile */}
-        <div className={`search-wrapper ${isSearchVisible ? 'visible' : ''}`}>
-          <Search 
-            size={18} 
-            className="search-icon" 
-            onClick={() => setSearchVisible(!isSearchVisible)} 
-          />
+        {/* Search Bar - Independent State */}
+        <div className={`search-wrapper ${isSearchOpen ? 'visible' : ''}`}>
+          {isSearchOpen ? (
+            <X 
+              size={18} 
+              className="search-icon close-search" 
+              onClick={toggleSearch} 
+            />
+          ) : (
+            <Search 
+              size={18} 
+              className="search-icon" 
+              onClick={toggleSearch} 
+            />
+          )}
+          
           <input 
             type="text" 
             className="search-input" 

@@ -127,29 +127,30 @@
     justify-content: center;
     border: none;
     background: transparent;
+    transition: all 0.3s ease;
   }
 
   .search-wrapper .search-input {
     display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
+  /* Make search expand inline instead of absolute overlay */
   .search-wrapper.visible {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    width: 160px;
     background-color: #131722;
-    z-index: 1100;
-    padding: 0 20px;
-    border-radius: 0;
-    display: flex;
+    border: 1px solid #314158;
+    padding: 0 12px;
+    border-radius: 20px;
     justify-content: flex-start;
   }
 
   .search-wrapper.visible .search-input {
     display: block;
-    margin-left: 12px;
+    opacity: 1;
+    margin-left: 8px;
+    width: 100%;
   }
 
   .breadcrumb {
