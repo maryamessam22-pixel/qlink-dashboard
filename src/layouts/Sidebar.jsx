@@ -1,17 +1,32 @@
 import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Settings, LogOut, X } from 'lucide-react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { 
+  LayoutDashboard, ShoppingBag, Package, ClipboardList, 
+  LifeBuoy, Settings, LogOut, X, Users, Smartphone, Watch 
+} from 'lucide-react';
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Determine which dashboard mode we are in based on URL
+  const isAppDashboard = location.pathname.startsWith('/app');
 
   const handleLogout = () => {
     navigate('/login');
   };
 
-  const navLinks = [
+  const toggleDashboardMode = () => {
+    if (isAppDashboard) {
+      navigate('/web/overview');
+    } else {
+      navigate('/app/overview');
+    }
+  };
+
+  const webLinks = [
     { path: '/web/overview', name: 'Overview', icon: <LayoutDashboard size={20} /> },
     { path: '/web/orders', name: 'Orders', icon: <ClipboardList size={20} /> },
     { path: '/web/products', name: 'Products', icon: <ShoppingBag size={20} /> },
@@ -19,6 +34,16 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
     { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> },
   ];
+
+  const appLinks = [
+    { path: '/app/overview', name: 'Overview', icon: <LayoutDashboard size={20} /> },
+    { path: '/app/users', name: 'Users', icon: <Users size={20} /> },
+    { path: '/app/linked-devices', name: 'Devices', icon: <Smartphone size={20} /> },
+    { path: '/app/bracelets', name: 'Bracelets', icon: <Watch size={20} /> },
+    { path: '/app/settings', name: 'Settings', icon: <Settings size={20} /> },
+  ];
+
+  const navLinks = isAppDashboard ? appLinks : webLinks;
 
   return (
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
@@ -32,6 +57,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </div>
         <h3 className="profile-name">M.Farid</h3>
         <p className="profile-role">Founder & CEO</p>
+
+        {/* Dashboard Switcher Toggle */}
+        <div className="dashboard-toggle-wrapper">
+          <div 
+            className={`toggle-slider ${isAppDashboard ? 'app-mode' : 'web-mode'}`}
+            onClick={toggleDashboardMode}
+          >
+            <span className="toggle-label web">Web</span>
+            <span className="toggle-label app">App</span>
+            <div className="toggle-thumb"></div>
+          </div>
+        </div>
+
         <div className="profile-divider"></div>
       </div>
 
