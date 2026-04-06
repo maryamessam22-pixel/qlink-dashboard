@@ -1,4 +1,7 @@
-/* src/layouts/Sidebar.css */
+:root {
+  --sidebar-width: 260px;
+  --sidebar-margin: 16px; 
+}
 
 .sidebar-container {
   width: var(--sidebar-width);
@@ -6,44 +9,63 @@
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  border-right: 1px solid #1f2937;
+  height: calc(100vh - (var(--sidebar-margin) * 2)); 
+  margin: var(--sidebar-margin); 
+  border-radius: 16px; 
+  border-right: 1px solid #1f2937; 
   font-family: var(--font-en), Arial, sans-serif;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   z-index: 1000;
+  overflow: hidden; 
+  /* ضفنا position relative عشان زرار الـ X يتظبط جواه في الموبايل */
+  position: relative; 
+}
+
+/* الوضع الافتراضي لزرار القفل (مخفي في الشاشات الكبيرة) */
+.sidebar-close-btn {
+  display: none;
 }
 
 @media screen and (max-width: 1024px) {
   .sidebar-container {
     position: fixed;
-    left: calc(-1 * var(--sidebar-width));
+    left: calc(-1 * (var(--sidebar-width) + var(--sidebar-margin) + 40px)); /* زودت المسافة السالبة عشان يختفي تماماً */
     top: 0;
+    margin-left: 0; /* في الموبايل ممكن نلغي المارجن الشمال عشان يلزق في الحرف وهو مخفي */
   }
 
   .sidebar-container.open {
-    left: 0;
-    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+    left: var(--sidebar-margin); /* يرجع يبان بالمارجن بتاعه */
+    box-shadow: 20px 0 50px rgba(0,0,0,0.7); /* تغميق الشادو عشان يفصل عن الشاشة */
   }
 
+  /* هنا نظهر زرار القفل في الشاشات الصغيرة */
   .sidebar-close-btn {
     display: flex;
+    align-items: center;
+    justify-content: center;
     position: absolute;
-    top: 20px;
-    right: 20px;
-    background: none;
+    top: 16px;
+    right: 16px;
+    background-color: rgba(255, 255, 255, 0.05);
     border: none;
-    color: #ffffff;
+    color: #8b949e;
     cursor: pointer;
     z-index: 1001;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .sidebar-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
   }
 }
 
-.sidebar-close-btn {
-  display: none;
-}
-
-/* User Profile Section */
+/* بقية الكود زي ما هو بالظبط */
 .sidebar-profile {
   padding: 32px 20px 20px 20px;
   display: flex;
@@ -58,7 +80,6 @@
   border-radius: 50%;
   overflow: hidden;
   margin-bottom: 12px;
-  /* تأثير الدائرة المضيئة لو حابة */
   box-shadow: 0 0 10px rgba(0,0,0,0.5); 
 }
 
@@ -76,7 +97,7 @@
 
 .profile-role {
   font-size: 12px;
-  color: #E03232; /* نفس درجة الأحمر بتاعتك */
+  color: #E03232; 
   margin: 0;
 }
 
@@ -87,7 +108,6 @@
   margin: 20px auto 10px auto;
 }
 
-/* Navigation Links Section */
 .sidebar-nav {
   flex: 1;
   padding: 16px 12px;
@@ -115,11 +135,9 @@
   color: #ffffff;
 }
 
-/* Active State (لما تكوني واقفة في الصفحة دي) */
 .nav-item.active {
   background-color: #E03232;
   color: #ffffff;
-  /* Shadow خفيف زي الديزاين */
   box-shadow: 0px 4px 12px rgba(224, 50, 50, 0.25);
 }
 
@@ -127,7 +145,6 @@
   font-size: 18px;
 }
 
-/* Logout Section */
 .sidebar-footer {
   padding: 20px;
 }

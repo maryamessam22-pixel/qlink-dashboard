@@ -11,7 +11,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     navigate('/login');
   };
 
-  //Web Dashboard
   const navLinks = [
     { path: '/web/overview', name: 'Overview', icon: <LayoutDashboard size={20} /> },
     { path: '/web/orders', name: 'Orders', icon: <ClipboardList size={20} /> },
@@ -49,7 +48,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         ))}
       </div>
 
-   
       <div className="sidebar-footer">
         <div className="logout-divider"></div>
         <button className="logout-button" onClick={handleLogout}>
@@ -57,7 +55,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <span>Logout</span>
         </button>
       </div>
-
     </div>
   );
 };
