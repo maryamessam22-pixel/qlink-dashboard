@@ -4,7 +4,7 @@
 }
 
 .sidebar-container.web-theme {
-  --sb-bg: #131722;
+  --sb-bg: #0D1422;
   --sb-text: #ffffff;
   --sb-text-muted: #8b949e;
   --sb-border: #1f2937;
@@ -145,7 +145,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #080a0f;
+  background-color: #03060c;
   border-radius: 20px;
   height: 36px;
   padding: 4px;
@@ -212,6 +212,7 @@
 
 /* Scrollbar Styling for Sidebar */
 .sidebar-nav::-webkit-scrollbar {
+    background-color: #E03232;
   width: 4px;
 }
 

@@ -139,7 +139,7 @@
   /* Make search expand inline instead of absolute overlay */
   .search-wrapper.visible {
     width: 160px;
-    background-color: #131722;
+    background-color: #0D1422;
     border: 1px solid #314158;
     padding: 0 12px;
     border-radius: 20px;
