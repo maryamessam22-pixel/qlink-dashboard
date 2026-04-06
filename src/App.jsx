@@ -13,6 +13,7 @@ import WebOverview from './features/web-dashboard/overview/WebOverview';
 
 // App Dashboard
 import AppOverview from './features/app-dashboard/overview/AppOverview';
+import UserProfiles from './features/app-dashboard/user-profiles/UserProfiles';
 
 const App = () => {
   return (
@@ -36,7 +37,9 @@ const App = () => {
           {/* App Dashboard Routes */}
           <Route path="app">
             <Route path="overview" element={<AppOverview />} />
-            {/* We will add other app routes (Users, Bracelets, etc.) here later */}
+            <Route path="users" element={<Navigate to="overview" replace />} />
+            <Route path="user-profiles" element={<UserProfiles />} />
+            {/* We will add other app routes (Linked Devices, Bracelets, etc.) here later */}
           </Route>
 
         </Route>
