@@ -47,7 +47,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navLinks = isAppDashboard ? appLinks : webLinks;
 
   return (
-    <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+    <div className={`sidebar-container ${isOpen ? 'open' : ''} ${isAppDashboard ? 'app-theme' : 'web-theme'}`}>
       <button className="sidebar-close-btn" onClick={toggleSidebar}>
         <X size={24} />
       </button>

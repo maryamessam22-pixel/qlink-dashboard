@@ -3,22 +3,41 @@
   --sidebar-margin: 16px; 
 }
 
+.sidebar-container.web-theme {
+  --sb-bg: #131722;
+  --sb-text: #ffffff;
+  --sb-text-muted: #8b949e;
+  --sb-border: #1f2937;
+  --sb-active-bg: #E03232;
+  --sb-active-text: #ffffff;
+  --sb-divider: #314158;
+}
+
+.sidebar-container.app-theme {
+  --sb-bg: #ffffff;
+  --sb-text: #131722;
+  --sb-text-muted: #64748b;
+  --sb-border: #e2e8f0;
+  --sb-active-bg: #e0e7ff;
+  --sb-active-text: #1447E6;
+  --sb-divider: #e2e8f0;
+}
+
 .sidebar-container {
   width: var(--sidebar-width);
-  background-color: #131722;
-  color: #ffffff;
+  background-color: var(--sb-bg);
+  color: var(--sb-text);
   display: flex;
   flex-direction: column;
   height: calc(100vh - (var(--sidebar-margin) * 2)); 
   margin: var(--sidebar-margin); 
   border-radius: 16px; 
-  border-right: 1px solid #1f2937; 
+  border: 1px solid var(--sb-border); 
   font-family: var(--font-en), Arial, sans-serif;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   z-index: 1000;
   overflow: hidden; 
-  /* ضفنا position relative عشان زرار الـ X يتظبط جواه في الموبايل */
   position: relative; 
 }
 
@@ -101,10 +120,15 @@
   margin: 0;
 }
 
+.sidebar-container.app-theme .profile-role {
+  color: #1447E6;
+  font-weight: 600;
+}
+
 .profile-divider {
   width: 80%;
   height: 1px;
-  background-color: #314158;
+  background-color: var(--sb-divider);
   margin: 10px auto 10px auto;
 }
 
@@ -125,7 +149,11 @@
   padding: 4px;
   position: relative;
   cursor: pointer;
-  border: 1px solid #1f2937;
+  border: 1px solid var(--sb-border);
+}
+
+.sidebar-container.app-theme .toggle-slider {
+  background-color: #f1f5f9;
 }
 
 .toggle-label {
@@ -197,7 +225,7 @@
   padding: 14px 20px;
   border-radius: 8px;
   cursor: pointer;
-  color: #8b949e;
+  color: var(--sb-text-muted);
   font-size: 15px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -210,13 +238,17 @@
 }
 
 .nav-item.active {
-  background-color: #e0e7ff; /* Light blue background as in image */
-  color: #1447E6; /* Sharp blue text as in image */
-  box-shadow: none; /* Removed the red shadow */
+  background-color: var(--sb-active-bg);
+  color: var(--sb-active-text);
+  box-shadow: none;
+}
+
+.sidebar-container.web-theme .nav-item.active {
+  box-shadow: 0px 4px 12px rgba(224, 50, 50, 0.25);
 }
 
 .nav-item.active .nav-icon {
-  color: #1447E6;
+  color: var(--sb-active-text);
 }
 
 .nav-icon {
@@ -230,7 +262,7 @@
 .logout-divider {
   width: 80%;
   height: 1px;
-  background-color: #314158;
+  background-color: var(--sb-divider);
   margin: 0 auto 16px auto;
 }
 
