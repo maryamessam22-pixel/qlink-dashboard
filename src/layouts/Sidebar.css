@@ -25,6 +25,22 @@
     left: 0;
     box-shadow: 20px 0 50px rgba(0,0,0,0.5);
   }
+
+  .sidebar-close-btn {
+    display: flex;
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    z-index: 1001;
+  }
+}
+
+.sidebar-close-btn {
+  display: none;
 }
 
 /* User Profile Section */

@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Package, ClipboardList, LifeBuoy, Settings, LogOut, X } from 'lucide-react';
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
 
-const Sidebar = ({ isOpen }) => {
+const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -23,6 +23,9 @@ const Sidebar = ({ isOpen }) => {
 
   return (
     <div className={`sidebar-container ${isOpen ? 'open' : ''}`}>
+      <button className="sidebar-close-btn" onClick={toggleSidebar}>
+        <X size={24} />
+      </button>
       
       <div className="sidebar-profile">
         <div className="profile-image-container">
