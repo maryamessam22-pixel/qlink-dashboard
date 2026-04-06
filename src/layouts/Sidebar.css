@@ -4,7 +4,7 @@
 }
 
 .sidebar-container.web-theme {
-  --sb-bg: #0D1422;
+  --sb-bg: #131C2F;
   --sb-text: #ffffff;
   --sb-text-muted: #8b949e;
   --sb-border: #1f2937;
@@ -12,6 +12,8 @@
   --sb-active-text: #ffffff;
   --sb-divider: #314158;
   --sb-toggle-bg: #E03232;
+  --sb-scrollbar-bg: #E03232;
+  --sb-scrollbar-thumb: #080425;
 }
 
 .sidebar-container.app-theme {
@@ -23,6 +25,8 @@
   --sb-active-text: #1447E6;
   --sb-divider: #e2e8f0;
   --sb-toggle-bg: #1447E6;
+  --sb-scrollbar-bg: #0726b0;
+  --sb-scrollbar-thumb: #e2e8f0;
 }
 
 .sidebar-container {
@@ -43,7 +47,6 @@
   position: relative; 
 }
 
-/* الوضع الافتراضي لزرار القفل (مخفي في الشاشات الكبيرة) */
 .sidebar-close-btn {
   display: none;
 }
@@ -51,17 +54,16 @@
 @media screen and (max-width: 1024px) {
   .sidebar-container {
     position: fixed;
-    left: calc(-1 * (var(--sidebar-width) + var(--sidebar-margin) + 40px)); /* زودت المسافة السالبة عشان يختفي تماماً */
+    left: calc(-1 * (var(--sidebar-width) + var(--sidebar-margin) + 40px)); 
     top: 0;
-    margin-left: 0; /* في الموبايل ممكن نلغي المارجن الشمال عشان يلزق في الحرف وهو مخفي */
+    margin-left: 0; 
   }
 
   .sidebar-container.open {
-    left: var(--sidebar-margin); /* يرجع يبان بالمارجن بتاعه */
-    box-shadow: 20px 0 50px rgba(0,0,0,0.7); /* تغميق الشادو عشان يفصل عن الشاشة */
+    left: var(--sidebar-margin); 
+    box-shadow: 20px 0 50px rgba(0,0,0,0.7); 
   }
 
-  /* هنا نظهر زرار القفل في الشاشات الصغيرة */
   .sidebar-close-btn {
     display: flex;
     align-items: center;
@@ -86,7 +88,7 @@
   }
 }
 
-/* بقية الكود زي ما هو بالظبط */
+
 .sidebar-profile {
   padding: 32px 20px 20px 20px;
   display: flex;
@@ -207,17 +209,17 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto; /* Makes the navigation scrollable */
+  overflow-y: auto; 
 }
 
-/* Scrollbar Styling for Sidebar */
+
 .sidebar-nav::-webkit-scrollbar {
-    background-color: #E03232;
   width: 4px;
+  background-color: var(--sb-scrollbar-bg);
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--sb-scrollbar-thumb);
   border-radius: 10px;
 }
 
