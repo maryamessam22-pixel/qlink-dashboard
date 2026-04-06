@@ -1,0 +1,195 @@
+/* src/features/web-dashboard/overview/WebOverview.css */
+
+.overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  color: #ffffff;
+  font-family: var(--font-en), Arial, sans-serif;
+  padding-bottom: 24px;
+}
+
+/* Header Section */
+.overview-header {
+  margin-bottom: 8px;
+}
+
+.overview-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.overview-subtitle {
+  font-size: 14px;
+  color: #8b949e;
+  margin: 0;
+}
+
+/* Stats Cards Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stat-card {
+  background-color: #131722;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.stat-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.icon-blue { color: #3b82f6; }
+.icon-red { color: #E03232; }
+.icon-green { color: #10b981; }
+
+.stat-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-positive {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.badge-negative {
+  background-color: rgba(224, 50, 50, 0.1);
+  color: #E03232;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #8b949e;
+  margin-bottom: 8px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* Response Time Card */
+.response-card {
+  background-color: #131722;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+/* Main Content Area (Chart & Adoption) */
+.main-content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+
+.chart-container {
+  background-color: #131722;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 300px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  color: #ffffff;
+}
+
+/* Device Adoption Card */
+.adoption-card {
+  background-color: #131722;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.adoption-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 24px 0;
+  color: #ffffff;
+}
+
+.adoption-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.adoption-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adoption-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #8b949e;
+}
+
+.adoption-item-value {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* Custom Progress Bars */
+.progress-bar-container {
+  height: 6px;
+  background-color: #1f2937;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.fill-blue { background-color: #3b82f6; }
+.fill-silver { background-color: #9ca3af; }
+.fill-red { background-color: #E03232; }
+
+@media screen and (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .main-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -11,7 +11,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Determine which dashboard mode we are in based on URL
   const isAppDashboard = location.pathname.startsWith('/app');
 
   const handleLogout = () => {
@@ -60,7 +59,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         <h3 className="profile-name">M.Farid</h3>
         <p className="profile-role">Founder & CEO</p>
 
-        {/* Dashboard Switcher Toggle */}
+        
+        
         <div className="dashboard-toggle-wrapper">
           <div 
             className={`toggle-slider ${isAppDashboard ? 'app-mode' : 'web-mode'}`}
