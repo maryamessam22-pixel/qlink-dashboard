@@ -27,7 +27,7 @@ const MainLayout = ({ children }) => {
       )}
 
       <div className="main-content">
-        <Topbar toggleSidebar={toggleSidebar} />
+        <Topbar toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         <main className="page-container">
           {children}
         </main>

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Bell, Menu, X } from 'lucide-react';
 import './Topbar.css';
 
-const Topbar = ({ toggleSidebar }) => {
+const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
+  const [isSearchVisible, setSearchVisible] = useState(false);
   const location = useLocation();
   
   const getCurrentPageName = () => {
@@ -22,7 +23,7 @@ const Topbar = ({ toggleSidebar }) => {
       
       <div className="left-section">
         <button className="menu-btn" onClick={toggleSidebar}>
-          <Menu size={24} />
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
         <div className="breadcrumb">
           <span className="breadcrumb-muted">Dashboard /</span>
@@ -32,8 +33,13 @@ const Topbar = ({ toggleSidebar }) => {
 
       <div className="topbar-actions">
         
-        <div className="search-wrapper">
-          <Search size={18} className="search-icon" />
+        {/* Toggleable search for mobile */}
+        <div className={`search-wrapper ${isSearchVisible ? 'visible' : ''}`}>
+          <Search 
+            size={18} 
+            className="search-icon" 
+            onClick={() => setSearchVisible(!isSearchVisible)} 
+          />
           <input 
             type="text" 
             className="search-input" 
