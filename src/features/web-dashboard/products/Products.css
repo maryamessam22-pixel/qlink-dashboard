@@ -122,3 +122,67 @@
   font-weight: 600;
   color: #8b949e;
 }
+
+/* Hover Overlay Buttons */
+.product-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(13, 20, 34, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10;
+}
+
+.product-card:hover .product-card-overlay {
+  opacity: 1;
+  visibility: visible;
+}
+
+.overlay-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.overlay-btn:hover {
+  transform: translateY(-4px) scale(1.05);
+}
+
+.overlay-btn svg {
+  stroke-width: 2.2px;
+}
+
+.btn-edit-overlay {
+  background: #3b82f6;
+  text-decoration: none;
+}
+
+.btn-edit-overlay:hover {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-delete-overlay {
+  background: #ef4444;
+}
+
+.btn-delete-overlay:hover {
+  background: #dc2626;
+}

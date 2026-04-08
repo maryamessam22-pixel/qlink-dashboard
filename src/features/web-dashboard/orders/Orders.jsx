@@ -1,20 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Clock, Download, Filter, Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
+import { supabase } from '../../../lib/supabase'; // مسار السوبابيز
 import '../../../styles/web-dashboard-pages.css';
 import './Orders.css';
 
-const ROWS = [
-  { id: 'ORD-8821', when: '2 mins ago', customer: 'Mohamed Saber', product: 'Qlink Black', dot: '#6b7280', status: 'Shipped', revenue: '$49.99' },
-  { id: 'ORD-8820', when: '1 hour ago', customer: 'Sara Ali', product: 'Qlink Silver', dot: '#e5e7eb', status: 'Processing', revenue: '$49.99' },
-  { id: 'ORD-8819', when: 'Yesterday', customer: 'Omar H.', product: 'Qlink Red', dot: '#e03232', status: 'Delivered', revenue: '$54.99' },
-  { id: 'ORD-8818', when: '2 days ago', customer: 'Layla M.', product: 'Qlink Black', dot: '#6b7280', status: 'Pending', revenue: '$49.99' },
-];
-
 const statusClass = (s) => {
-  const k = s.toLowerCase();
+  const k = (s || '').toLowerCase();
   if (k === 'shipped') return 'st-shipped';
   if (k === 'delivered') return 'st-delivered';
   if (k === 'processing' || k === 'pending') return 'st-muted';
@@ -22,6 +16,9 @@ const statusClass = (s) => {
 };
 
 const Orders = () => {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
   const [notesEn, setNotesEn] = useState('<p>Internal notes for fulfillment (EN).</p>');
   const [notesAr, setNotesAr] = useState('<p>ملاحظات داخلية للتنفيذ (AR).</p>');
   const [seo, setSeo] = useState({
@@ -35,11 +32,64 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
 
-  const filteredRows = ROWS.filter(r => {
+  // Fetch Orders from Supabase
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        
+        // سحب الداتا من جدول order
+        const { data, error } = await supabase
+          .from('order') 
+          .select('*')
+          .order('created_at', { ascending: false }); // ترتيب من الأحدث للأقدم
+
+        if (error) throw error;
+
+        if (data) {
+          const formattedOrders = data.map(o => {
+            // تظبيط التاريخ (بناخد من الـ created_at أو من الـ time اللي في الداتابيز)
+            let formattedDate = o.time || 'Just now'; 
+            if (o.created_at) {
+              const dateObj = new Date(o.created_at);
+              formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+            }
+            
+            // تحديد لون النقطة بناءً على اسم المنتج (Variant)
+            let dotColor = '#6b7280'; // Default gray
+            const variantStr = (o.variant_details || '').toLowerCase();
+            if (variantStr.includes('black')) dotColor = '#1f2937';
+            else if (variantStr.includes('silver') || variantStr.includes('gray')) dotColor = '#e5e7eb';
+            else if (variantStr.includes('red')) dotColor = '#e03232';
+            else if (variantStr.includes('blue')) dotColor = '#3b82f6';
+
+            return {
+              id: o.order_number || o.id.toString().substring(0, 8), // هنا استخدمنا الـ order_number
+              when: formattedDate,
+              customer: o.customer_name || 'Unknown',
+              product: o.variant_details || 'Qlink Bracelet', // استخدمنا variant_details
+              dot: dotColor,
+              status: o.status || 'Pending',
+              revenue: `$${o.revenue || '0.00'}` // استخدمنا revenue
+            };
+          });
+          setOrders(formattedOrders);
+        }
+      } catch (error) {
+        console.error('Error fetching orders:', error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  const filteredRows = orders.filter(r => {
     const matchesSearch = 
-      r.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      r.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      r.product.toLowerCase().includes(searchQuery.toLowerCase());
+      (r.id && r.id.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      (r.customer && r.customer.toLowerCase().includes(searchQuery.toLowerCase())) || 
+      (r.product && r.product.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesFilter = filterStatus === 'All' || r.status === filterStatus;
     
@@ -101,26 +151,41 @@ const Orders = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredRows.map((r) => (
-                <tr key={r.id}>
-                  <td>
-                    <div className="ord-id">{r.id}</div>
-                    <div className="ord-when">
-                      <Clock size={12} />
-                      {r.when}
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
+                    Loading orders...
                   </td>
-                  <td>{r.customer}</td>
-                  <td>
-                    <span className="variant-dot" style={{ background: r.dot }} aria-hidden />
-                    {r.product}
-                  </td>
-                  <td>
-                    <span className={`status-pill ${statusClass(r.status)}`}>{r.status}</span>
-                  </td>
-                  <td className="ord-revenue">{r.revenue}</td>
                 </tr>
-              ))}
+              ) : filteredRows.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
+                    No orders found.
+                  </td>
+                </tr>
+              ) : (
+                filteredRows.map((r, index) => (
+                  // حطينا index مع ال id عشان لو ال order_number اتكرر بالغلط في الداتا الوهمية الـ React ميزعلش
+                  <tr key={`${r.id}-${index}`}> 
+                    <td>
+                      <div className="ord-id">{r.id}</div>
+                      <div className="ord-when">
+                        <Clock size={12} />
+                        {r.when}
+                      </div>
+                    </td>
+                    <td>{r.customer}</td>
+                    <td>
+                      <span className="variant-dot" style={{ background: r.dot }} aria-hidden />
+                      {r.product}
+                    </td>
+                    <td>
+                      <span className={`status-pill ${statusClass(r.status)}`}>{r.status}</span>
+                    </td>
+                    <td className="ord-revenue">{r.revenue}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -137,7 +202,7 @@ const Orders = () => {
         </div>
       </section>
 
-      <SeoSection title="Orders admin SEO" slugPrefix="admin.qlink.com/orders/" value={seo} onChange={setSeo} badge="Internal" />
+      <SeoSection title="Orders admin SEO" slugPrefix="qlink.com/orders/" value={seo} onChange={setSeo} badge="Internal" />
     </div>
   );
 };

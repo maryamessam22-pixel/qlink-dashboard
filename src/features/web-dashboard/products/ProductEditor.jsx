@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { X, Plus, Trash2, Loader2, Save } from 'lucide-react';
+import { supabase } from '../../../lib/supabase';
 import PageMeta from '../../../components/seo/PageMeta';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../components/bilingual/BilingualField';
@@ -35,41 +36,175 @@ export const SAMPLE_PRODUCTS = [
 ];
 
 const ProductEditor = () => {
-  const { productId } = useParams();
+  const [productId] = useState(useParams().productId);
   const navigate = useNavigate();
   const isNew = productId === 'new' || !productId;
 
-  const existing = useMemo(() => SAMPLE_PRODUCTS.find((p) => p.id === productId), [productId]);
+  const [loading, setLoading] = useState(!isNew);
+  const [saving, setSaving] = useState(false);
 
-  const [nameEn, setNameEn] = useState(existing?.nameEn ?? '');
-  const [nameAr, setNameAr] = useState(existing?.nameAr ?? '');
-  const [subEn, setSubEn] = useState(existing?.subtitleEn ?? '');
-  const [subAr, setSubAr] = useState(existing?.subtitleAr ?? '');
-  const [price, setPrice] = useState(existing ? String(existing.price) : '');
-  const [priceArLabel, setPriceArLabel] = useState('');
-  const [mainImage, setMainImage] = useState(existing?.image ?? '');
-  const [gallery, setGallery] = useState(existing?.gallery ?? []);
+  // Core Fields
+  const [nameEn, setNameEn] = useState('');
+  const [nameAr, setNameAr] = useState('');
+  const [subEn, setSubEn] = useState('');
+  const [subAr, setSubAr] = useState('');
+  const [sku, setSku] = useState('');
+  const [price, setPrice] = useState('');
+  const [mainImage, setMainImage] = useState('');
+  const [gallery, setGallery] = useState([]);
+  const [status, setStatus] = useState('In Stock');
   
-  const [descEn, setDescEn] = useState('<p>Product description (EN)</p>');
-  const [descAr, setDescAr] = useState('<p>وصف المنتج (AR)</p>');
-  const [detailTitleEn, setDetailTitleEn] = useState('Details');
-  const [detailTitleAr, setDetailTitleAr] = useState('التفاصيل');
-  const [detailSubEn, setDetailSubEn] = useState('Everything you need to know');
-  const [detailSubAr, setDetailSubAr] = useState('كل ما تحتاج معرفته');
-  const [detailRteEn, setDetailRteEn] = useState('<p>Specs and care instructions.</p>');
-  const [detailRteAr, setDetailRteAr] = useState('<p>المواصفات وتعليمات العناية.</p>');
-  const [features, setFeatures] = useState(['Touchscreen emergency interface', 'Instant 24/7 medical access']);
+  // Description & Details
+  const [descEn, setDescEn] = useState('');
+  const [descAr, setDescAr] = useState('');
+  
+  const [featuresEn, setFeaturesEn] = useState([]);
+  const [featuresAr, setFeaturesAr] = useState([]);
+
+  // Extra Data (In the box & Privacy)
+  const [inTheBox, setInTheBox] = useState([]);
+  const [privacyNotes, setPrivacyNotes] = useState([]);
+  const [detailTitleEn, setDetailTitleEn] = useState('');
+  const [detailTitleAr, setDetailTitleAr] = useState('');
+  const [detailSubEn, setDetailSubEn] = useState('');
+  const [detailSubAr, setDetailSubAr] = useState('');
+  const [detailDescEn, setDetailDescEn] = useState('');
+  const [detailDescAr, setDetailDescAr] = useState('');
+  
   const [seo, setSeo] = useState({
-    slug: existing ? existing.id.toLowerCase() : 'new-product',
-    metaTitle: existing?.nameEn ? `${existing.nameEn} · Qlink` : 'New product · Qlink',
-    metaDescription: existing?.subtitleEn ?? '',
+    slug: '',
+    metaTitle: '',
+    metaDescription: '',
     keywords: 'qlink, bracelet, product',
-    featuredImageAlt: existing?.nameEn ?? 'Product',
+    featuredImageAlt: 'Product',
   });
 
-  const addFeature = () => setFeatures((f) => [...f, '']);
-  const removeFeature = (i) => setFeatures((f) => f.filter((_, j) => j !== i));
-  const setFeature = (i, v) => setFeatures((f) => {
+  useEffect(() => {
+    if (isNew) return;
+
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) throw error;
+        if (data) {
+          setNameEn(data.name_en || '');
+          setNameAr(data.name_ar || '');
+          setSubEn(data.subtitle_en || '');
+          setSubAr(data.subtitle_ar || '');
+          setSku(data.sku || '');
+          setPrice(data.price ? String(data.price) : '');
+          setMainImage(data.image_url || '');
+          setGallery(data['gallery-images'] || []);
+          setDescEn(data.description_en || '');
+          setDescAr(data.description_ar || '');
+          setFeaturesEn(data.features_en || []);
+          setFeaturesAr(data.features_ar || []);
+          setStatus(data.status || 'In Stock');
+
+          const extra = data.extra_data || {};
+          setInTheBox(extra.in_the_box || []);
+          setPrivacyNotes(extra.privacy_notes || []);
+          
+          if (extra.product_details) {
+            setDetailTitleEn(extra.product_details.title_en || '');
+            setDetailTitleAr(extra.product_details.title_ar || '');
+            setDetailSubEn(extra.product_details.subtitle_en || '');
+            setDetailSubAr(extra.product_details.subtitle_ar || '');
+            setDetailDescEn(extra.product_details.description_en || '');
+            setDetailDescAr(extra.product_details.description_ar || '');
+          }
+
+          setSeo({
+            slug: data.slug || '',
+            metaTitle: data.meta_title || '',
+            metaDescription: data.meta_description || '',
+            keywords: data.keywords || 'qlink, bracelet, product',
+            featuredImageAlt: data.featured_image_alt || '',
+          });
+        }
+      } catch (err) {
+        console.error('Fetch error:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, isNew]);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const payload = {
+        sku,
+        name_en: nameEn,
+        name_ar: nameAr,
+        subtitle_en: subEn,
+        subtitle_ar: subAr,
+        description_en: descEn,
+        description_ar: descAr,
+        price: parseFloat(price) || 0,
+        image_url: mainImage,
+        'gallery-images': gallery,
+        features_en: featuresEn,
+        features_ar: featuresAr,
+        status,
+        meta_title: seo.metaTitle,
+        meta_description: seo.metaDescription,
+        slug: seo.slug,
+        featured_image_alt: seo.featuredImageAlt,
+        extra_data: {
+          in_the_box: inTheBox,
+          privacy_notes: privacyNotes,
+          product_details: {
+            title_en: detailTitleEn,
+            title_ar: detailTitleAr,
+            subtitle_en: detailSubEn,
+            subtitle_ar: detailSubAr,
+            description_en: detailDescEn,
+            description_ar: detailDescAr
+          }
+        }
+      };
+
+      if (isNew) {
+        const { error } = await supabase.from('products').insert([payload]);
+        if (error) throw error;
+        alert('Created successfully!');
+      } else {
+        const { error } = await supabase.from('products').update(payload).eq('id', productId);
+        if (error) throw error;
+        alert('Updated successfully!');
+      }
+      navigate('/web/products');
+    } catch (err) {
+      console.error('Save error:', err.message);
+      alert('Failed to save product');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const addFeature = () => {
+    setFeaturesEn((f) => [...f, '']);
+    setFeaturesAr((f) => [...f, '']);
+  };
+  const removeFeature = (i) => {
+    setFeaturesEn((f) => f.filter((_, j) => j !== i));
+    setFeaturesAr((f) => f.filter((_, j) => j !== i));
+  };
+  const setFeatureEn = (i, v) => setFeaturesEn((f) => {
+    const n = [...f];
+    n[i] = v;
+    return n;
+  });
+  const setFeatureAr = (i, v) => setFeaturesAr((f) => {
     const n = [...f];
     n[i] = v;
     return n;
@@ -103,7 +238,10 @@ const ProductEditor = () => {
           <p className="breadcrumb-muted" style={{ margin: 0, fontSize: 13, color: '#8b949e' }}>
             Dashboard / <span style={{ color: '#fff' }}>{title}</span>
           </p>
-          <h1 className="web-page-title" style={{ marginTop: 8 }}>{title}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+            <h1 className="web-page-title" style={{ margin: 0 }}>{title}</h1>
+            {loading && <Loader2 className="animate-spin" size={18} style={{ color: '#8b949e' }} />}
+          </div>
         </div>
         <Link to="/web/products" className="product-editor-close" aria-label="Close">
           <X size={22} />
@@ -201,12 +339,22 @@ const ProductEditor = () => {
         </div>
         <div style={{ marginTop: 16 }} className="bilingual-row">
           <div className="bilingual-field">
-            <label className="field-label">Price (EN display)</label>
-            <input className="field-input" type="number" dir="ltr" value={price} onChange={(e) => setPrice(e.target.value)} />
+            <label className="field-label">SKU / ID</label>
+            <input className="field-input" type="text" value={sku} onChange={(e) => setSku(e.target.value)} placeholder="e.g. QL-BLK-001" />
           </div>
           <div className="bilingual-field">
-            <label className="field-label">السعر / تسمية العرض (AR)</label>
-            <input className="field-input" type="text" dir="rtl" lang="ar" value={priceArLabel} onChange={(e) => setPriceArLabel(e.target.value)} placeholder="مثال: ١٤٩٩ ج.م" />
+            <label className="field-label">Stock Status</label>
+            <select className="field-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+               <option value="In Stock">In Stock</option>
+               <option value="Out of Stock">Out of Stock</option>
+               <option value="Low Stock">Low Stock</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ marginTop: 16 }} className="bilingual-row">
+          <div className="bilingual-field">
+            <label className="field-label">Price (EGP)</label>
+            <input className="field-input" type="number" dir="ltr" value={price} onChange={(e) => setPrice(e.target.value)} />
           </div>
         </div>
       </section>
@@ -220,13 +368,16 @@ const ProductEditor = () => {
           </button>
         </div>
         <ul className="feature-list">
-          {features.map((f, i) => (
-            <li key={i} className="feature-row">
-              <span className="feature-bullet" aria-hidden />
-              <input className="field-input feature-input" value={f} onChange={(e) => setFeature(i, e.target.value)} />
-              <button type="button" className="feature-trash" onClick={() => removeFeature(i)} aria-label="Remove">
-                <Trash2 size={16} />
-              </button>
+          {featuresEn.map((f, i) => (
+            <li key={i} className="feature-row" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px', background: '#0d1422', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span className="feature-bullet" aria-hidden />
+                <input className="field-input feature-input" placeholder="Feature (EN)" value={f} onChange={(e) => setFeatureEn(i, e.target.value)} />
+                <button type="button" className="feature-trash" onClick={() => removeFeature(i)} aria-label="Remove">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <input className="field-input feature-input" dir="rtl" placeholder="الميزة (AR)" value={featuresAr[i] || ''} onChange={(e) => setFeatureAr(i, e.target.value)} />
             </li>
           ))}
         </ul>
@@ -263,11 +414,11 @@ const ProductEditor = () => {
         </div>
         <div style={{ marginTop: 20 }}>
           <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Product details description (EN)</label>
-          <RichTextEditor value={detailRteEn} onChange={setDetailRteEn} />
+          <RichTextEditor value={detailDescEn} onChange={setDetailDescEn} />
         </div>
         <div style={{ marginTop: 20 }}>
           <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>تفاصيل وصف المنتج (AR)</label>
-          <RichTextEditor value={detailRteAr} onChange={setDetailRteAr} rtl />
+          <RichTextEditor value={detailDescAr} onChange={setDetailDescAr} rtl />
         </div>
       </section>
 
@@ -277,17 +428,20 @@ const ProductEditor = () => {
       </div>
 
       <div className="product-editor-footer">
-        {isNew ? (
-          <>
-            <button type="button" className="btn-primary" onClick={() => navigate('/web/products')}>Save draft</button>
-            <button type="button" className="btn-publish" onClick={() => navigate('/web/products')}>Publish product</button>
-          </>
-        ) : (
-          <>
-            <button type="button" className="btn-primary" onClick={() => navigate('/web/products')}>Discard</button>
-            <button type="button" className="btn-publish" onClick={() => navigate('/web/products')}>Save changes</button>
-          </>
-        )}
+        <button type="button" className="btn-ghost" onClick={() => navigate('/web/products')}>Discard</button>
+        <button 
+            type="button" 
+            className="btn-publish" 
+            disabled={saving || loading}
+            onClick={handleSave}
+            style={{ minWidth: '180px' }}
+        >
+          {saving ? (
+            <><Loader2 className="animate-spin" size={18} /> Saving...</>
+          ) : (
+            <><Save size={18} /> {isNew ? 'Publish product' : 'Save changes'}</>
+          )}
+        </button>
       </div>
     </div>
   );
