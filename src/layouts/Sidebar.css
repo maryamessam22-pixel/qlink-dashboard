@@ -147,7 +147,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #03060c;
+  /* background-color: #03060c; */
+  background-color: #040a18;
   border-radius: 20px;
   height: 36px;
   padding: 4px;
