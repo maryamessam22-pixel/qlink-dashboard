@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { Globe, Save, Plus, FilePlus } from 'lucide-react';
+import { Save, Plus, FilePlus } from 'lucide-react';
 import './CmsLayout.css';
 
 const tabs = [
@@ -46,10 +46,6 @@ const CmsLayout = () => {
           <p className="web-page-sub">Manage your website content, FAQs, legal documents, and email templates.</p>
         </div>
         <div className="cms-hero-actions">
-          <button type="button" className="btn-ghost" onClick={() => window.open('https://qlink.com', '_blank', 'noopener,noreferrer')}>
-            <Globe size={18} />
-            View Live Site
-          </button>
           <button type="button" className="btn-primary" onClick={onSave}>
             <Save size={18} />
             Save Changes
