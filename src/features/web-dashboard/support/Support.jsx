@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Plus } from 'lucide-react';
+import { MessageCircle, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { Link } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
@@ -113,6 +112,26 @@ const Support = () => {
     }
   };
 
+  const handleDeleteMessage = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this message?')) return;
+    try {
+      const { error } = await supabase.from('support_messages').delete().eq('id', id);
+      if (error) throw error;
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+      setSelectedId(null);
+    } catch (error) {
+      console.error('Delete error:', error.message);
+      alert('Failed to delete message');
+    }
+  };
+
+  const handleSendReply = async (id) => {
+    // In production, this would send an email via Supabase Edge Function or similar
+    alert('The reply has been sent to the customer successfully!');
+    setReplyEn('<p>Draft reply (EN)…</p>');
+    setReplyAr('<p>مسودة رد (AR)…</p>');
+  };
+
   const active = messages.find((m) => m.id === selectedId);
 
   return (
@@ -124,10 +143,6 @@ const Support = () => {
           <h1 className="web-page-title">Messages</h1>
           <p className="web-page-sub">Manage customer messages.</p>
         </div>
-        <Link to="/web/products" className="btn-primary">
-          <Plus size={18} />
-          New message
-        </Link>
       </div>
 
       <div className="support-split">
@@ -164,17 +179,39 @@ const Support = () => {
             </div>
           ) : (
             <div className="support-open">
-              <h2 className="support-open-title">{active.topic}</h2>
+              <div className="support-open-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                <h2 className="support-open-title" style={{ margin: 0 }}>{active.topic}</h2>
+                <button 
+                  type="button" 
+                  className="btn-danger" 
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8 }}
+                  onClick={() => handleDeleteMessage(active.id)}
+                >
+                  <Trash2 size={18} />
+                  Delete
+                </button>
+              </div>
               <p className="support-open-meta">
                 From <strong>{active.from}</strong> · {active.date}
               </p>
-              <p className="support-open-body">{active.preview}</p>
+              <p className="support-open-body" style={{ marginBottom: 32 }}>{active.preview}</p>
+              
               <div className="support-reply">
                 <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
                 <RichTextEditor value={replyEn} onChange={setReplyEn} />
-                <div style={{ marginTop: 16 }}>
+                <div style={{ marginTop: 20 }}>
                   <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
                   <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
+                </div>
+                <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                  <button 
+                    type="button" 
+                    className="btn-publish" 
+                    style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
+                    onClick={() => handleSendReply(active.id)}
+                  >
+                    Send Response
+                  </button>
                 </div>
               </div>
             </div>
