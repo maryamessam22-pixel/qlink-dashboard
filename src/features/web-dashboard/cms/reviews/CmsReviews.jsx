@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Star, Trash2 } from 'lucide-react';
+import { Plus, Star, Trash2, Search } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
@@ -24,6 +24,21 @@ const CmsReviews = () => {
     metaDescription: 'Read verified Qlink bracelet reviews.',
     keywords: 'reviews, qlink, testimonials',
     featuredImageAlt: 'Reviews',
+  });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRating, setFilterRating] = useState('All');
+
+  const filteredReviews = reviews.filter(rev => {
+    const matchesSearch = 
+        rev.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        rev.textEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        rev.nameAr.includes(searchQuery) ||
+        rev.textAr.includes(searchQuery);
+    
+    const matchesFilter = filterRating === 'All' || rev.rating === Number(filterRating);
+    
+    return matchesSearch && matchesFilter;
   });
 
   useEffect(() => {
@@ -97,53 +112,84 @@ const CmsReviews = () => {
             Add review
           </button>
         </div>
-        {reviews.map((rev, i) => (
-          <div key={i} className="review-editor-block">
-            <div className="review-editor-block-head">
-              <span className="review-editor-index">Review {i + 1}</span>
-              <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Remove" onClick={() => setReviews((p) => p.filter((_, j) => j !== i))}>
-                <Trash2 size={16} />
-              </button>
+        
+        <div className="filter-row" style={{ marginBottom: '24px' }}>
+            <div className="search-wide-wrap">
+                <Search className="search-wide-icon" size={18} />
+                <input 
+                    type="search" 
+                    className="field-input" 
+                    placeholder="Search reviews..." 
+                    style={{ width: '100%', paddingLeft: '44px' }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
             </div>
-            <BilingualTextInput
-              labelEn="Name (EN)"
-              labelAr="الاسم (AR)"
-              valueEn={rev.nameEn}
-              valueAr={rev.nameAr}
-              onChangeEn={(v) => patch(i, 'nameEn', v)}
-              onChangeAr={(v) => patch(i, 'nameAr', v)}
-            />
-            <div style={{ marginTop: 12 }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+                {['All', '5', '4', '3', '2', '1'].map(r => (
+                    <button 
+                        key={r}
+                        className={`filter-pill ${filterRating === r ? 'active' : ''}`}
+                        onClick={() => setFilterRating(r)}
+                    >
+                        {r === 'All' ? 'All ratings' : `${r} Stars`}
+                    </button>
+                ))}
+            </div>
+        </div>
+
+        {filteredReviews.map((rev, i) => {
+          // Since we are mapping over filtered list but need to patch original index,
+          // we should find original index.
+          const originalIndex = reviews.indexOf(rev);
+          return (
+            <div key={originalIndex} className="review-editor-block">
+              <div className="review-editor-block-head">
+                <span className="review-editor-index">Review {originalIndex + 1}</span>
+                <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Remove" onClick={() => setReviews((p) => p.filter((_, j) => j !== originalIndex))}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
               <BilingualTextInput
-                labelEn="Subtitle (EN)"
-                labelAr="العنوان الفرعي (AR)"
-                valueEn={rev.subEn}
-                valueAr={rev.subAr}
-                onChangeEn={(v) => patch(i, 'subEn', v)}
-                onChangeAr={(v) => patch(i, 'subAr', v)}
+                labelEn="Name (EN)"
+                labelAr="الاسم (AR)"
+                valueEn={rev.nameEn}
+                valueAr={rev.nameAr}
+                onChangeEn={(v) => patch(originalIndex, 'nameEn', v)}
+                onChangeAr={(v) => patch(originalIndex, 'nameAr', v)}
               />
+              <div style={{ marginTop: 12 }}>
+                <BilingualTextInput
+                  labelEn="Subtitle (EN)"
+                  labelAr="العنوان الفرعي (AR)"
+                  valueEn={rev.subEn}
+                  valueAr={rev.subAr}
+                  onChangeEn={(v) => patch(originalIndex, 'subEn', v)}
+                  onChangeAr={(v) => patch(originalIndex, 'subAr', v)}
+                />
+              </div>
+              <div style={{ marginTop: 12 }} className="rating-row">
+                <label className="field-label">Rating (1–5)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  className="field-input rating-input"
+                  value={rev.rating}
+                  onChange={(e) => patch(originalIndex, 'rating', Number(e.target.value))}
+                />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Review text (EN)</label>
+                <RichTextEditor value={rev.textEn} onChange={(v) => patch(originalIndex, 'textEn', v)} />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>نص المراجعة (AR)</label>
+                <RichTextEditor value={rev.textAr} onChange={(v) => patch(originalIndex, 'textAr', v)} rtl />
+              </div>
             </div>
-            <div style={{ marginTop: 12 }} className="rating-row">
-              <label className="field-label">Rating (1–5)</label>
-              <input
-                type="number"
-                min={1}
-                max={5}
-                className="field-input rating-input"
-                value={rev.rating}
-                onChange={(e) => patch(i, 'rating', Number(e.target.value))}
-              />
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Review text (EN)</label>
-              <RichTextEditor value={rev.textEn} onChange={(v) => patch(i, 'textEn', v)} />
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>نص المراجعة (AR)</label>
-              <RichTextEditor value={rev.textAr} onChange={(v) => patch(i, 'textAr', v)} rtl />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       <SeoSection title="Reviews SEO" slugPrefix="qlink.com/reviews/" value={seo} onChange={setSeo} />

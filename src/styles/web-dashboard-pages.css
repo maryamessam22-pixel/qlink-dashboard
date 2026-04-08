@@ -130,6 +130,7 @@
 
 .search-wide-wrap {
   position: relative;
+  flex: 1;
 }
 
 .search-wide-wrap .search-wide-icon {
@@ -139,6 +140,37 @@
   transform: translateY(-50%);
   color: #6b7280;
   pointer-events: none;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: #1a2336;
+  border: 1px solid #1f2937;
+  color: #8b949e;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.filter-pill:hover {
+  background: #243047;
+  border-color: #374151;
+}
+
+.filter-pill.active {
+  background: rgba(224, 50, 50, 0.1);
+  border-color: #e03232;
+  color: #e03232;
 }
 
 .field-label {

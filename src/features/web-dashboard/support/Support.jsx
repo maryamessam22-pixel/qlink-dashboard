@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { MessageCircle, Plus, Trash2, Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase'; // اتأكدي من المسار ده
+import { supabase } from '../../../lib/supabase'; 
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
 
@@ -12,9 +12,11 @@ const Support = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
   
-  const [replyEn, setReplyEn] = useState('<p></p>');
-  const [replyAr, setReplyAr] = useState('<p></p>');
+  const [replyEn, setReplyEn] = useState('');
+  const [replyAr, setReplyAr] = useState('');
   
   const [seo, setSeo] = useState({
     slug: 'support/contact',
@@ -24,7 +26,6 @@ const Support = () => {
     featuredImageAlt: 'Support',
   });
 
-  // Fetch Data from Supabase
   useEffect(() => {
     const fetchSupportData = async () => {
       try {
@@ -42,7 +43,6 @@ const Support = () => {
             const dateObj = new Date(m.date || m.received_at);
             const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             
-            // تظبيط شكل تاريخ الرد لو موجود
             let repliedDate = null;
             if(m.replied_at) {
                 const rDateObj = new Date(m.replied_at);
@@ -56,7 +56,7 @@ const Support = () => {
               preview: m.message_body,
               date: formattedDate,
               unread: m.status === 'Unread',
-              // ===== التعديل الجديد: جبنا أعمدة الرد =====
+   
               adminReplyEn: m.admin_reply_en,
               adminReplyAr: m.admin_reply_ar,
               repliedAt: repliedDate,
@@ -129,10 +129,12 @@ const Support = () => {
     }
   };
 
-  // ===== التعديل الجديد: دالة الإرسال الحقيقية =====
+
   const handleSendReply = async (id) => {
-    // هنتأكد إن الرد مش فاضي
-    if (replyEn === '<p></p>' && replyAr === '<p></p>') {
+    const isEditorEmpty = (html) => !html || html.trim() === '' || html === '<p></p>' || html === '<p><br></p>';
+
+
+    if (isEditorEmpty(replyEn) && isEditorEmpty(replyAr)) {
         alert("Please write a reply first!");
         return;
     }
@@ -140,7 +142,6 @@ const Support = () => {
     try {
         const now = new Date().toISOString();
         
-        // حفظ الرد في الداتابيز وتغيير الحالة لـ Replied
         const { error } = await supabase
             .from('support_messages')
             .update({
@@ -153,7 +154,7 @@ const Support = () => {
 
         if (error) throw error;
 
-        // تحديث الـ State عشان تظهر فوراً في الشاشة من غير ريفريش
+  
         setMessages(prev => prev.map(m => {
             if (m.id === id) {
                 const rDateObj = new Date(now);
@@ -172,9 +173,9 @@ const Support = () => {
         }));
 
         alert('The reply has been saved and sent successfully!');
-        // تفريغ المربعات بعد الإرسال
-        setReplyEn('<p></p>');
-        setReplyAr('<p></p>');
+   
+        setReplyEn('');
+        setReplyAr('');
 
     } catch (error) {
          console.error('Reply error:', error.message);
@@ -183,6 +184,17 @@ const Support = () => {
   };
 
   const active = messages.find((m) => m.id === selectedId);
+
+  const filteredMessages = messages.filter(m => {
+    const matchesSearch = 
+      m.from.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      m.topic.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      m.preview.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesFilter = filterStatus === 'All' || m.status === filterStatus;
+    
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="web-page support-page">
@@ -197,12 +209,37 @@ const Support = () => {
 
       <div className="support-split">
         <div className="support-list">
+          <div className="support-list-controls" style={{ padding: '0 0 16px 0', borderBottom: '1px solid #1f2937', marginBottom: '16px' }}>
+            <div className="search-wide-wrap" style={{ marginBottom: '12px' }}>
+                <Search className="search-wide-icon" size={16} />
+                <input 
+                    type="search" 
+                    className="field-input" 
+                    placeholder="Search messages..." 
+                    style={{ width: '100%', paddingLeft: '40px' }}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
+            <div className="filter-row" style={{ marginBottom: 0 }}>
+                {['All', 'Unread', 'Replied'].map(status => (
+                    <button 
+                        key={status}
+                        className={`filter-pill ${filterStatus === status ? 'active' : ''}`}
+                        onClick={() => setFilterStatus(status)}
+                    >
+                        {status}
+                    </button>
+                ))}
+            </div>
+          </div>
+
           {loading ? (
             <div style={{ padding: '20px', color: '#8b949e' }}>Loading messages...</div>
-          ) : messages.length === 0 ? (
+          ) : filteredMessages.length === 0 ? (
             <div style={{ padding: '20px', color: '#8b949e' }}>No messages found.</div>
           ) : (
-            messages.map((m) => (
+            filteredMessages.map((m) => (
               <button
                 key={m.id}
                 type="button"
@@ -215,7 +252,7 @@ const Support = () => {
                 </div>
                 <div className="support-topic">{m.topic}</div>
                 <p className="support-preview">{m.preview}</p>
-                {/* لو الرسالة حالة Unread هتظهر النقطة */}
+       
                 {m.status === 'Unread' ? <span className="support-unread-dot" aria-label="Unread" /> : null}
               </button>
             ))
@@ -247,7 +284,7 @@ const Support = () => {
               </p>
               <p className="support-open-body" style={{ marginBottom: 32 }}>{active.preview}</p>
               
-              {/* ===== التعديل الجديد: عرض الرد لو موجود ===== */}
+        
               {active.adminReplyEn && (
                   <div className="admin-reply-box" style={{ backgroundColor: '#131722', padding: '20px', borderRadius: '8px', marginBottom: '32px', borderLeft: '4px solid #E03232' }}>
                       <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#E03232', fontWeight: 'bold' }}>
@@ -256,11 +293,10 @@ const Support = () => {
                       
                       <div style={{ marginBottom: '16px'}}>
                           <span style={{fontSize: '12px', color: '#8b949e'}}>English Reply:</span>
-                          {/* dangerouslySetInnerHTML عشان نعرض الـ HTML اللي جاي من الـ RichTextEditor */}
                           <div dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} style={{ color: '#fff', fontSize: '14px'}} />
                       </div>
 
-                      {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && (
+                      {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
                           <div dir="rtl">
                              <span style={{fontSize: '12px', color: '#8b949e'}}>Arabic Reply:</span>
                              <div dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} style={{ color: '#fff', fontSize: '14px'}} />
@@ -269,7 +305,7 @@ const Support = () => {
                   </div>
               )}
 
-              {/* ===== مربع الرد مش هيظهر غير لو مفيش رد مسبق ===== */}
+          
               {!active.adminReplyEn && (
                   <div className="support-reply">
                     <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>

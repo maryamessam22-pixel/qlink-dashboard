@@ -16,14 +16,20 @@ const Products = () => {
     keywords: 'products, catalog, qlink',
     featuredImageAlt: 'Catalog',
   });
+  const [filterStock, setFilterStock] = useState('All');
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    if (!s) return SAMPLE_PRODUCTS;
-    return SAMPLE_PRODUCTS.filter(
-      (p) => p.id.toLowerCase().includes(s) || p.nameEn.toLowerCase().includes(s) || p.nameAr.includes(q)
-    );
-  }, [q]);
+    
+    return SAMPLE_PRODUCTS.filter((p) => {
+      const matchesSearch = !s || p.id.toLowerCase().includes(s) || p.nameEn.toLowerCase().includes(s) || p.nameAr.includes(q);
+      const matchesFilter = filterStock === 'All' || 
+          (filterStock === 'In Stock' && p.inStock) || 
+          (filterStock === 'Out of Stock' && !p.inStock);
+      
+      return matchesSearch && matchesFilter;
+    });
+  }, [q, filterStock]);
 
   return (
     <div className="web-page products-page">
@@ -37,16 +43,29 @@ const Products = () => {
         <Link to="/web/products/new" className="btn-primary">+ Add new product</Link>
       </div>
 
-      <div className="search-wide-wrap">
-        <Search className="search-wide-icon" size={18} />
-        <input
-          type="search"
-          className="field-input products-search-input"
-          placeholder="Search by product name or ID…"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          aria-label="Search products"
-        />
+      <div className="filter-row" style={{ marginBottom: '24px' }}>
+          <div className="search-wide-wrap">
+              <Search className="search-wide-icon" size={18} />
+              <input 
+                  type="search" 
+                  className="field-input" 
+                  placeholder="Search by product name or ID…" 
+                  style={{ width: '100%', paddingLeft: '44px' }}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+              />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+              {['All', 'In Stock', 'Out of Stock'].map(st => (
+                  <button 
+                    key={st}
+                    className={`filter-pill ${filterStock === st ? 'active' : ''}`}
+                    onClick={() => setFilterStock(st)}
+                  >
+                      {st}
+                  </button>
+              ))}
+          </div>
       </div>
 
       <div className="product-grid">

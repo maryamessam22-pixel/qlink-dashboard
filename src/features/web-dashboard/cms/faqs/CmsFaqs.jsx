@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HelpCircle, Plus, Trash2 } from 'lucide-react';
+import { HelpCircle, Plus, Trash2, Search } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
@@ -49,6 +49,15 @@ const CmsFaqs = () => {
     featuredImageAlt: 'FAQ',
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredItems = items.filter(it => 
+    it.qEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    it.qAr.includes(searchQuery) ||
+    it.aEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    it.aAr.includes(searchQuery)
+  );
+
   useEffect(() => {
     const onAdd = () => {
       setItems((list) => [...list, { qEn: '', qAr: '', aEn: '<p></p>', aAr: '<p></p>' }]);
@@ -81,32 +90,47 @@ const CmsFaqs = () => {
           </button>
         </div>
 
-        {items.map((item, i) => (
-          <div key={i} className="faq-editor-card">
-            <div className="faq-editor-head">
-              <span style={{ fontWeight: 600, color: '#fff' }}>Q{i + 1}</span>
-              <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Delete question" onClick={() => setItems((p) => p.filter((_, j) => j !== i))}>
-                <Trash2 size={16} />
-              </button>
-            </div>
-            <BilingualTextInput
-              labelEn="Question (EN)"
-              labelAr="السؤال (AR)"
-              valueEn={item.qEn}
-              valueAr={item.qAr}
-              onChangeEn={(v) => patch(i, 'qEn', v)}
-              onChangeAr={(v) => patch(i, 'qAr', v)}
+        <div className="search-wide-wrap" style={{ marginBottom: '24px' }}>
+            <Search className="search-wide-icon" size={18} />
+            <input 
+                type="search" 
+                className="field-input" 
+                placeholder="Search FAQs..." 
+                style={{ width: '100%', paddingLeft: '44px' }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <div style={{ marginTop: 16 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Answer (EN)</label>
-              <RichTextEditor value={item.aEn} onChange={(v) => patch(i, 'aEn', v)} />
+        </div>
+
+        {filteredItems.map((item, i) => {
+          const originalIndex = items.indexOf(item);
+          return (
+            <div key={originalIndex} className="faq-editor-card">
+              <div className="faq-editor-head">
+                <span style={{ fontWeight: 600, color: '#fff' }}>Q{originalIndex + 1}</span>
+                <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Delete question" onClick={() => setItems((p) => p.filter((_, j) => j !== originalIndex))}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <BilingualTextInput
+                labelEn="Question (EN)"
+                labelAr="السؤال (AR)"
+                valueEn={item.qEn}
+                valueAr={item.qAr}
+                onChangeEn={(v) => patch(originalIndex, 'qEn', v)}
+                onChangeAr={(v) => patch(originalIndex, 'qAr', v)}
+              />
+              <div style={{ marginTop: 16 }}>
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Answer (EN)</label>
+                <RichTextEditor value={item.aEn} onChange={(v) => patch(originalIndex, 'aEn', v)} />
+              </div>
+              <div style={{ marginTop: 16 }}>
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>الإجابة (AR)</label>
+                <RichTextEditor value={item.aAr} onChange={(v) => patch(originalIndex, 'aAr', v)} rtl />
+              </div>
             </div>
-            <div style={{ marginTop: 16 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>الإجابة (AR)</label>
-              <RichTextEditor value={item.aAr} onChange={(v) => patch(i, 'aAr', v)} rtl />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       <SeoSection title="FAQ SEO" slugPrefix="qlink.com/faq/" value={seo} onChange={setSeo} />

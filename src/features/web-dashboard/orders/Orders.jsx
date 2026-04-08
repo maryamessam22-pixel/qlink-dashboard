@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Download, Filter } from 'lucide-react';
+import { Clock, Download, Filter, Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -32,6 +32,20 @@ const Orders = () => {
     featuredImageAlt: 'Orders',
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
+
+  const filteredRows = ROWS.filter(r => {
+    const matchesSearch = 
+      r.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      r.customer.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      r.product.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesFilter = filterStatus === 'All' || r.status === filterStatus;
+    
+    return matchesSearch && matchesFilter;
+  });
+
   return (
     <div className="web-page orders-page">
       <PageMeta title="Orders" description={seo.metaDescription} keywords={seo.keywords} />
@@ -42,15 +56,36 @@ const Orders = () => {
           <p className="web-page-sub">Manage bracelets inventory and sales.</p>
         </div>
         <div className="orders-actions">
-          <button type="button" className="btn-secondary">
-            <Filter size={16} />
-            Filter
-          </button>
           <button type="button" className="btn-primary">
             <Download size={16} />
             Download CSV
           </button>
         </div>
+      </div>
+
+      <div className="filter-row" style={{ marginBottom: '24px' }}>
+          <div className="search-wide-wrap">
+              <Search className="search-wide-icon" size={18} />
+              <input 
+                  type="search" 
+                  className="field-input" 
+                  placeholder="Search orders, customers..." 
+                  style={{ width: '100%', paddingLeft: '44px' }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+              />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+              {['All', 'Shipped', 'Processing', 'Delivered', 'Pending'].map(s => (
+                  <button 
+                    key={s}
+                    className={`filter-pill ${filterStatus === s ? 'active' : ''}`}
+                    onClick={() => setFilterStatus(s)}
+                  >
+                      {s}
+                  </button>
+              ))}
+          </div>
       </div>
 
       <div className="web-card orders-table-card">
@@ -66,7 +101,7 @@ const Orders = () => {
               </tr>
             </thead>
             <tbody>
-              {ROWS.map((r) => (
+              {filteredRows.map((r) => (
                 <tr key={r.id}>
                   <td>
                     <div className="ord-id">{r.id}</div>

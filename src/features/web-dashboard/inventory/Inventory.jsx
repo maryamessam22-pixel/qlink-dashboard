@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -18,6 +19,9 @@ const Inventory = () => {
     featuredImageAlt: 'Inventory',
   });
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStock, setFilterStock] = useState('All');
+
   const items = SAMPLE_PRODUCTS.map((p, i) => {
     const reserved = 40 + i * 5;
     const avail = Math.max(0, p.stock - reserved);
@@ -25,6 +29,19 @@ const Inventory = () => {
     const availPct = Math.min(100, Math.round((avail / cap) * 100));
     const resPct = Math.min(100, Math.round((reserved / cap) * 100));
     return { ...p, avail, reserved, availPct, resPct, sku: `QL-SLV-${String(i + 2).padStart(3, '0')}` };
+  });
+
+  const filteredItems = items.filter(it => {
+    const matchesSearch = 
+        it.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        it.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesFilter = filterStock === 'All' || 
+        (filterStock === 'In Stock' && it.stock > 0) || 
+        (filterStock === 'Low Stock' && it.stock > 0 && it.stock < 50) || 
+        (filterStock === 'Out of Stock' && it.stock === 0);
+    
+    return matchesSearch && matchesFilter;
   });
 
   return (
@@ -39,8 +56,33 @@ const Inventory = () => {
         <Link to="/web/products/new" className="btn-primary">+ Add new product</Link>
       </div>
 
+      <div className="filter-row" style={{ marginBottom: '24px' }}>
+          <div className="search-wide-wrap">
+              <Search className="search-wide-icon" size={18} />
+              <input 
+                  type="search" 
+                  className="field-input" 
+                  placeholder="Search inventory by name or SKU..." 
+                  style={{ width: '100%', paddingLeft: '44px' }}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+              />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+              {['All', 'In Stock', 'Low Stock', 'Out of Stock'].map(st => (
+                  <button 
+                    key={st}
+                    className={`filter-pill ${filterStock === st ? 'active' : ''}`}
+                    onClick={() => setFilterStock(st)}
+                  >
+                      {st}
+                  </button>
+              ))}
+          </div>
+      </div>
+
       <div className="inventory-grid">
-        {items.map((it) => (
+        {filteredItems.map((it) => (
           <article key={it.id} className="inv-card">
             <div className="inv-card-top">
               <img src={it.image} alt="" className="inv-thumb" />
