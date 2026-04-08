@@ -43,11 +43,12 @@
 .inv-stock-badge {
   font-size: 11px;
   font-weight: 700;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 8px;
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
+  background: #10b981;
+  color: #fff;
   white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
 }
 
 .inv-metric {

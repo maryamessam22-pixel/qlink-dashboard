@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Download, Filter, Search } from 'lucide-react';
+import { Clock, Download, Filter, Search, Loader2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -84,6 +84,15 @@ const Orders = () => {
 
     fetchOrders();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="web-page-loading" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading orders...</p>
+      </div>
+    );
+  }
 
   const filteredRows = orders.filter(r => {
     const matchesSearch = 

@@ -138,6 +138,15 @@ const ProductEditor = () => {
     fetchProduct();
   }, [productId, isNew]);
 
+  if (loading) {
+    return (
+      <div className="web-page-loading" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading product details...</p>
+      </div>
+    );
+  }
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -257,7 +266,11 @@ const ProductEditor = () => {
             <div className="media-drop-zone">
               {mainImage ? (
                 <div className="media-preview-container">
-                  <img src={mainImage} alt="Main Preview" className="media-full-preview" />
+                  {mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                    <video src={mainImage} className="media-full-preview" controls muted />
+                  ) : (
+                    <img src={mainImage} alt="Main Preview" className="media-full-preview" />
+                  )}
                   <button type="button" className="media-remove-overlay" onClick={() => setMainImage('')}>
                     <Trash2 size={24} />
                   </button>
@@ -290,7 +303,11 @@ const ProductEditor = () => {
                 <div key={i} className="media-drop-zone gallery-item">
                   {img ? (
                     <div className="media-preview-container small">
-                      <img src={img} alt={`Gallery ${i}`} className="media-full-preview" />
+                      {img.match(/\.(mp4|webm|ogg|mov)$/i) ? (
+                        <video src={img} className="media-full-preview" muted />
+                      ) : (
+                        <img src={img} alt={`Gallery ${i}`} className="media-full-preview" />
+                      )}
                       <button type="button" className="media-remove-overlay small" onClick={() => removeGalleryImage(i)}>
                         <X size={18} />
                       </button>
@@ -369,15 +386,28 @@ const ProductEditor = () => {
         </div>
         <ul className="feature-list">
           {featuresEn.map((f, i) => (
-            <li key={i} className="feature-row" style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '16px', background: '#0d1422', borderRadius: '12px' }}>
+            <li key={i} className="feature-row" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span className="feature-bullet" aria-hidden />
-                <input className="field-input feature-input" placeholder="Feature (EN)" value={f} onChange={(e) => setFeatureEn(i, e.target.value)} />
+                <span className="feature-bullet" style={{ background: '#e03232', boxShadow: '0 0 8px rgba(224, 50, 50, 0.4)' }} aria-hidden />
+                <input 
+                  className="field-input feature-input" 
+                  placeholder="Feature (EN)" 
+                  value={f} 
+                  onChange={(e) => setFeatureEn(i, e.target.value)} 
+                  style={{ textAlign: 'left' }}
+                />
                 <button type="button" className="feature-trash" onClick={() => removeFeature(i)} aria-label="Remove">
                   <Trash2 size={16} />
                 </button>
               </div>
-              <input className="field-input feature-input" dir="rtl" placeholder="الميزة (AR)" value={featuresAr[i] || ''} onChange={(e) => setFeatureAr(i, e.target.value)} />
+              <input 
+                className="field-input feature-input" 
+                dir="rtl" 
+                placeholder="الميزة (AR)" 
+                value={featuresAr[i] || ''} 
+                onChange={(e) => setFeatureAr(i, e.target.value)} 
+                style={{ textAlign: 'right' }}
+              />
             </li>
           ))}
         </ul>
