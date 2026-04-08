@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Loader2, Save } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput, BilingualTextarea } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
+import { supabase } from '../../../../lib/supabase';
 import '../../../../styles/web-dashboard-pages.css';
 
 const defaultCards = () => [
@@ -13,36 +14,110 @@ const defaultCards = () => [
 ];
 
 const CmsHome = () => {
-  const [headlineEn, setHeadlineEn] = useState('Safety in a Scan. Peace of Mind Forever.');
-  const [headlineAr, setHeadlineAr] = useState('الأمان في مسح واحد. راحة بال دائمة.');
-  const [subRteEn, setSubRteEn] = useState('<p>Qlink is a QR-based medical safety bracelet for emergencies.</p>');
-  const [subRteAr, setSubRteAr] = useState('<p>كيو لينك سوار طبي للطوارئ يعتمد على رمز الاستجابة السريعة.</p>');
-  const [btnPrimaryEn, setBtnPrimaryEn] = useState('How It Works');
-  const [btnPrimaryAr, setBtnPrimaryAr] = useState('كيف يعمل');
-  const [btnSecondaryEn, setBtnSecondaryEn] = useState('Explore the Bracelet');
-  const [btnSecondaryAr, setBtnSecondaryAr] = useState('استكشف السوار');
-  const [whatSubtitleEn, setWhatSubtitleEn] = useState('A personal safety wearable that keeps critical info accessible.');
-  const [whatSubtitleAr, setWhatSubtitleAr] = useState('جهاز سلامة شخصي يبقي معلوماتك الحيوية في متناول اليد.');
-  const [cards, setCards] = useState(defaultCards);
-  const [simpleRteEn, setSimpleRteEn] = useState('<p>Simple. Secure. Built for real-world emergencies.</p>');
-  const [simpleRteAr, setSimpleRteAr] = useState('<p>بسيط. آمن. مصمم لحالات الطوارئ الحقيقية.</p>');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [headlineEn, setHeadlineEn] = useState('');
+  const [headlineAr, setHeadlineAr] = useState('');
+  const [subRteEn, setSubRteEn] = useState('');
+  const [subRteAr, setSubRteAr] = useState('');
+  const [btnPrimaryEn, setBtnPrimaryEn] = useState('');
+  const [btnPrimaryAr, setBtnPrimaryAr] = useState('');
+  const [btnSecondaryEn, setBtnSecondaryEn] = useState('');
+  const [btnSecondaryAr, setBtnSecondaryAr] = useState('');
+
+  const [whatSubtitleEn, setWhatSubtitleEn] = useState('');
+  const [whatSubtitleAr, setWhatSubtitleAr] = useState('');
+  const [cards, setCards] = useState(defaultCards());
+
+  const [simpleRteEn, setSimpleRteEn] = useState('');
+  const [simpleRteAr, setSimpleRteAr] = useState('');
+
   const [seo, setSeo] = useState({
-    slug: 'home',
-    metaTitle: 'Qlink — Medical safety bracelet',
-    metaDescription: 'QR medical ID bracelet for emergencies.',
+    slug: '',
+    metaTitle: 'Qlink | Smart Emergency QR Bracelet',
+    metaDescription: 'Qlink is a smart emergency QR bracelet that provides instant access to vital medical information during emergencies.',
     keywords: 'qlink, bracelet, medical id, qr',
     featuredImageAlt: 'Qlink bracelet hero',
   });
 
   useEffect(() => {
-    const onAdd = () => {
-      setCards((c) => [
-        ...c,
-        { titleEn: 'New feature', titleAr: 'ميزة جديدة', descEn: 'Description', descAr: 'الوصف' },
-      ]);
+    const fetchCmsData = async () => {
+      try {
+        setLoading(true);
+
+        const { data: cmsData, error: cmsError } = await supabase
+          .from('cms_content')
+          .select('*')
+          .in('section_key', ['home_hero', 'home_features', 'home_simple_secure']);
+
+        if (cmsError) throw cmsError;
+
+        if (cmsData) {
+          cmsData.forEach((row) => {
+            if (row.section_key === 'home_hero') {
+              setHeadlineEn(row.title_en || '');
+              setHeadlineAr(row.title_ar || '');
+              setSubRteEn(row.subtitle_en || '');
+              setSubRteAr(row.subtitle_ar || '');
+              setBtnPrimaryEn(row['first-btn-en'] || '');
+              setBtnPrimaryAr(row['first-btn-ar'] || '');
+              setBtnSecondaryEn(row['sec-btn-en'] || '');
+              setBtnSecondaryAr(row['sec-btn-ar'] || '');
+            } 
+            else if (row.section_key === 'home_features') {
+              setWhatSubtitleEn(row.subtitle_en || '');
+              setWhatSubtitleAr(row.subtitle_ar || '');
+              setCards([
+                { 
+                  titleEn: row['card-one-title-en'] || '', titleAr: row['card-one-title-ar'] || '', 
+                  descEn: row['card-one-desc-en'] || '', descAr: row['card-one-desc-ar'] || '' 
+                },
+                { 
+                  titleEn: row['card-two-title-en'] || '', titleAr: row['card-two-title-ar'] || '', 
+                  descEn: row['card-two-desc-en'] || '', descAr: row['card-two-desc-ar'] || '' 
+                },
+                { 
+                  titleEn: row['card-three-title-en'] || '', titleAr: row['card-three-title-ar'] || '', 
+                  descEn: row['card-three-desc-en'] || '', descAr: row['card-three-desc-ar'] || '' 
+                }
+              ]);
+            }
+            else if (row.section_key === 'home_simple_secure') {
+              setSimpleRteEn(row.content_en || '');
+              setSimpleRteAr(row.content_ar || '');
+            }
+          });
+        }
+
+        const { data: seoData, error: seoError } = await supabase
+          .from('seo')
+          .select('*')
+          .eq('slug', '')
+          .single();
+
+        if (seoError && seoError.code !== 'PGRST116') {
+          console.error("SEO Fetch Error:", seoError);
+        }
+
+        if (seoData) {
+          setSeo({
+            slug: seoData.slug || '',
+            metaTitle: seoData.title_en || '',
+            metaDescription: seoData.description_en || '',
+            keywords: seoData.keywords || 'qlink, bracelet, medical id, qr',
+            featuredImageAlt: seoData.featured_image_alt || 'Qlink bracelet hero',
+          });
+        }
+
+      } catch (err) {
+        console.error('Fetch error:', err.message);
+      } finally {
+        setLoading(false);
+      }
     };
-    window.addEventListener('cms:add-section', onAdd);
-    return () => window.removeEventListener('cms:add-section', onAdd);
+
+    fetchCmsData();
   }, []);
 
   const updateCard = (i, field, lang, val) => {
@@ -54,9 +129,87 @@ const CmsHome = () => {
     });
   };
 
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const now = new Date().toISOString();
+
+      const { error: err1 } = await supabase.from('cms_content').update({
+        title_en: headlineEn,
+        title_ar: headlineAr,
+        subtitle_en: subRteEn,
+        subtitle_ar: subRteAr,
+        'first-btn-en': btnPrimaryEn,
+        'first-btn-ar': btnPrimaryAr,
+        'sec-btn-en': btnSecondaryEn,
+        'sec-btn-ar': btnSecondaryAr,
+        updated_at: now
+      }).eq('section_key', 'home_hero');
+      if (err1) throw err1;
+
+      const { error: err2 } = await supabase.from('cms_content').update({
+        subtitle_en: whatSubtitleEn,
+        subtitle_ar: whatSubtitleAr,
+        'card-one-title-en': cards[0]?.titleEn,
+        'card-one-title-ar': cards[0]?.titleAr,
+        'card-one-desc-en': cards[0]?.descEn,
+        'card-one-desc-ar': cards[0]?.descAr,
+        'card-two-title-en': cards[1]?.titleEn,
+        'card-two-title-ar': cards[1]?.titleAr,
+        'card-two-desc-en': cards[1]?.descEn,
+        'card-two-desc-ar': cards[1]?.descAr,
+        'card-three-title-en': cards[2]?.titleEn,
+        'card-three-title-ar': cards[2]?.titleAr,
+        'card-three-desc-en': cards[2]?.descEn,
+        'card-three-desc-ar': cards[2]?.descAr,
+        updated_at: now
+      }).eq('section_key', 'home_features');
+      if (err2) throw err2;
+
+      const { error: err3 } = await supabase.from('cms_content').update({
+        content_en: simpleRteEn,
+        content_ar: simpleRteAr,
+        updated_at: now
+      }).eq('section_key', 'home_simple_secure');
+      if (err3) throw err3;
+
+      const { error: errSeo } = await supabase.from('seo').update({
+        title_en: seo.metaTitle,
+        description_en: seo.metaDescription,
+      }).eq('slug', '');
+
+      if (errSeo) throw errSeo;
+
+      alert('Homepage content and SEO updated successfully!');
+    } catch (err) {
+      console.error('Save error:', err.message);
+      alert('Failed to save changes.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: '40px', textAlign: 'center', color: '#8b949e' }}>Loading CMS data...</div>;
+  }
+
   return (
     <div>
       <PageMeta title="CMS · Homepage" description={seo.metaDescription} keywords={seo.keywords} />
+
+      {/* زرار الحفظ الرئيسي */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h1 className="web-page-title" style={{ margin: 0 }}>Homepage CMS</h1>
+        <button 
+          onClick={handleSave} 
+          disabled={saving}
+          className="btn-publish" 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+        >
+          {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+          {saving ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
 
       <section className="web-card">
         <div className="web-card-head">
@@ -150,7 +303,13 @@ const CmsHome = () => {
         </div>
       </section>
 
-      <SeoSection title="Homepage SEO" slugPrefix="qlink.com/" value={seo} onChange={setSeo} badge="Global" />
+      <SeoSection 
+        title="Homepage SEO" 
+        slugPrefix="qlink.com/" 
+        value={seo} 
+        onChange={setSeo} 
+        badge="Global" 
+      />
     </div>
   );
 };
