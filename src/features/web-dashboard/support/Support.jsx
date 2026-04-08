@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Trash2 } from 'lucide-react';
+import { MessageCircle, Plus, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { supabase } from '../../../lib/supabase';
+import { Link } from 'react-router-dom';
+import { supabase } from '../../../lib/supabase'; // اتأكدي من المسار ده
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
 
@@ -12,8 +13,8 @@ const Support = () => {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   
-  const [replyEn, setReplyEn] = useState('<p>Draft reply (EN)…</p>');
-  const [replyAr, setReplyAr] = useState('<p>مسودة رد (AR)…</p>');
+  const [replyEn, setReplyEn] = useState('<p></p>');
+  const [replyAr, setReplyAr] = useState('<p></p>');
   
   const [seo, setSeo] = useState({
     slug: 'support/contact',
@@ -29,7 +30,6 @@ const Support = () => {
       try {
         setLoading(true);
 
-        // 1. Fetch Support Messages
         const { data: msgsData, error: msgsError } = await supabase
           .from('support_messages')
           .select('*')
@@ -38,11 +38,16 @@ const Support = () => {
         if (msgsError) throw msgsError;
 
         if (msgsData) {
-          // تحويل شكل الداتا عشان تناسب الـ UI بتاعك
           const formattedMessages = msgsData.map((m) => {
-            // تظبيط شكل التاريخ
             const dateObj = new Date(m.date || m.received_at);
             const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            // تظبيط شكل تاريخ الرد لو موجود
+            let repliedDate = null;
+            if(m.replied_at) {
+                const rDateObj = new Date(m.replied_at);
+                repliedDate = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+            }
 
             return {
               id: m.id,
@@ -51,21 +56,24 @@ const Support = () => {
               preview: m.message_body,
               date: formattedDate,
               unread: m.status === 'Unread',
-              fullData: m // بنحتفظ بالداتا كاملة لو احتاجها بعدين
+              // ===== التعديل الجديد: جبنا أعمدة الرد =====
+              adminReplyEn: m.admin_reply_en,
+              adminReplyAr: m.admin_reply_ar,
+              repliedAt: repliedDate,
+              status: m.status,
+              fullData: m
             };
           });
           setMessages(formattedMessages);
         }
 
-        // 2. Fetch SEO Data for 'support/contact'
         const { data: seoData, error: seoError } = await supabase
           .from('seo')
           .select('*')
           .eq('slug', 'support/contact')
-          .single(); // بنجيب صف واحد بس
+          .single();
 
         if (seoError && seoError.code !== 'PGRST116') {
-          // PGRST116 يعني ملقاش داتا، بنتجاهله
           console.error('SEO Fetch Error:', seoError);
         }
 
@@ -74,7 +82,7 @@ const Support = () => {
             slug: seoData.slug,
             metaTitle: seoData.title_en || 'Support — Qlink Admin',
             metaDescription: seoData.description_en || 'Customer messages.',
-            keywords: 'support, contact, messages', // مفيش keywords في الداتابيز فبنحط ديفولت
+            keywords: 'support, contact, messages',
             featuredImageAlt: 'Contact Support',
           });
         }
@@ -89,7 +97,6 @@ const Support = () => {
     fetchSupportData();
   }, []);
 
-  // دالة لحفظ تعديلات الـ SEO في الداتابيز لما تخلصي تعديل
   const handleSaveSeo = async (updatedSeo) => {
     setSeo(updatedSeo);
     try {
@@ -98,9 +105,6 @@ const Support = () => {
         .update({
           title_en: updatedSeo.metaTitle,
           description_en: updatedSeo.metaDescription,
-          // لو ضفتي حقول عربي في الـ SeoSection ضيفيها هنا:
-          // title_ar: updatedSeo.metaTitleAr,
-          // description_ar: updatedSeo.metaDescriptionAr,
         })
         .eq('slug', 'support/contact');
 
@@ -125,11 +129,57 @@ const Support = () => {
     }
   };
 
+  // ===== التعديل الجديد: دالة الإرسال الحقيقية =====
   const handleSendReply = async (id) => {
-    // In production, this would send an email via Supabase Edge Function or similar
-    alert('The reply has been sent to the customer successfully!');
-    setReplyEn('<p>Draft reply (EN)…</p>');
-    setReplyAr('<p>مسودة رد (AR)…</p>');
+    // هنتأكد إن الرد مش فاضي
+    if (replyEn === '<p></p>' && replyAr === '<p></p>') {
+        alert("Please write a reply first!");
+        return;
+    }
+
+    try {
+        const now = new Date().toISOString();
+        
+        // حفظ الرد في الداتابيز وتغيير الحالة لـ Replied
+        const { error } = await supabase
+            .from('support_messages')
+            .update({
+                admin_reply_en: replyEn,
+                admin_reply_ar: replyAr,
+                status: 'Replied',
+                replied_at: now
+            })
+            .eq('id', id);
+
+        if (error) throw error;
+
+        // تحديث الـ State عشان تظهر فوراً في الشاشة من غير ريفريش
+        setMessages(prev => prev.map(m => {
+            if (m.id === id) {
+                const rDateObj = new Date(now);
+                const formattedNow = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                
+                return {
+                    ...m,
+                    adminReplyEn: replyEn,
+                    adminReplyAr: replyAr,
+                    repliedAt: formattedNow,
+                    unread: false,
+                    status: 'Replied'
+                };
+            }
+            return m;
+        }));
+
+        alert('The reply has been saved and sent successfully!');
+        // تفريغ المربعات بعد الإرسال
+        setReplyEn('<p></p>');
+        setReplyAr('<p></p>');
+
+    } catch (error) {
+         console.error('Reply error:', error.message);
+         alert('Failed to send reply');
+    }
   };
 
   const active = messages.find((m) => m.id === selectedId);
@@ -165,7 +215,8 @@ const Support = () => {
                 </div>
                 <div className="support-topic">{m.topic}</div>
                 <p className="support-preview">{m.preview}</p>
-                {m.unread ? <span className="support-unread-dot" aria-label="Unread" /> : null}
+                {/* لو الرسالة حالة Unread هتظهر النقطة */}
+                {m.status === 'Unread' ? <span className="support-unread-dot" aria-label="Unread" /> : null}
               </button>
             ))
           )}
@@ -196,24 +247,50 @@ const Support = () => {
               </p>
               <p className="support-open-body" style={{ marginBottom: 32 }}>{active.preview}</p>
               
-              <div className="support-reply">
-                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
-                <RichTextEditor value={replyEn} onChange={setReplyEn} />
-                <div style={{ marginTop: 20 }}>
-                  <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
-                  <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
-                </div>
-                <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                  <button 
-                    type="button" 
-                    className="btn-publish" 
-                    style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
-                    onClick={() => handleSendReply(active.id)}
-                  >
-                    Send Response
-                  </button>
-                </div>
-              </div>
+              {/* ===== التعديل الجديد: عرض الرد لو موجود ===== */}
+              {active.adminReplyEn && (
+                  <div className="admin-reply-box" style={{ backgroundColor: '#131722', padding: '20px', borderRadius: '8px', marginBottom: '32px', borderLeft: '4px solid #E03232' }}>
+                      <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#E03232', fontWeight: 'bold' }}>
+                         Qlink Support (You) · {active.repliedAt}
+                      </p>
+                      
+                      <div style={{ marginBottom: '16px'}}>
+                          <span style={{fontSize: '12px', color: '#8b949e'}}>English Reply:</span>
+                          {/* dangerouslySetInnerHTML عشان نعرض الـ HTML اللي جاي من الـ RichTextEditor */}
+                          <div dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} style={{ color: '#fff', fontSize: '14px'}} />
+                      </div>
+
+                      {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && (
+                          <div dir="rtl">
+                             <span style={{fontSize: '12px', color: '#8b949e'}}>Arabic Reply:</span>
+                             <div dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} style={{ color: '#fff', fontSize: '14px'}} />
+                          </div>
+                      )}
+                  </div>
+              )}
+
+              {/* ===== مربع الرد مش هيظهر غير لو مفيش رد مسبق ===== */}
+              {!active.adminReplyEn && (
+                  <div className="support-reply">
+                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
+                    <RichTextEditor value={replyEn} onChange={setReplyEn} />
+                    <div style={{ marginTop: 20 }}>
+                      <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
+                      <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
+                    </div>
+                    <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                      <button 
+                        type="button" 
+                        className="btn-publish" 
+                        style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
+                        onClick={() => handleSendReply(active.id)}
+                      >
+                        Send Response
+                      </button>
+                    </div>
+                  </div>
+              )}
+
             </div>
           )}
         </div>
