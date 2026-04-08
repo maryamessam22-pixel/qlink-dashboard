@@ -1,0 +1,135 @@
+.support-split {
+  display: grid;
+  grid-template-columns: minmax(0, 340px) 1fr;
+  gap: 20px;
+  align-items: stretch;
+  min-height: 420px;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 900px) {
+  .support-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+.support-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.support-row {
+  position: relative;
+  text-align: left;
+  padding: 16px 18px;
+  border-radius: 12px;
+  border: 1px solid #1f2937;
+  background: #131c2f;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.support-row:hover {
+  border-color: #374151;
+}
+
+.support-row.active {
+  border-color: #e03232;
+  background: rgba(224, 50, 50, 0.06);
+}
+
+.support-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.support-from {
+  font-weight: 600;
+  color: #e03232;
+  font-size: 14px;
+}
+
+.support-date {
+  font-size: 12px;
+  color: #8b949e;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #0d1422;
+}
+
+.support-topic {
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.support-preview {
+  margin: 0;
+  font-size: 13px;
+  color: #8b949e;
+  line-height: 1.4;
+}
+
+.support-unread-dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e03232;
+}
+
+.support-detail {
+  border-radius: 14px;
+  border: 1px solid #1f2937;
+  background: #131c2f;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.support-empty {
+  text-align: center;
+  color: #6b7280;
+}
+
+.support-empty svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.support-open {
+  width: 100%;
+  align-self: flex-start;
+}
+
+.support-open-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.support-open-meta {
+  margin: 0 0 16px;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+.support-open-body {
+  margin: 0 0 24px;
+  line-height: 1.6;
+  color: #e6edf3;
+}
+
+.support-reply {
+  padding-top: 20px;
+  border-top: 1px solid #1f2937;
+}

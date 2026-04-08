@@ -113,6 +113,25 @@
   transform: scale(0.98);
 }
 
+.switch-dashboard-btn {
+  background: transparent;
+  border: 1px solid #314158;
+  color: #8b949e;
+  border-radius: 8px;
+  height: 48px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: all 0.3s;
+}
+
+.switch-dashboard-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #6b7280;
+  color: #fff;
+}
+
 .login-footer {
   text-align: center;
   font-size: 10px;

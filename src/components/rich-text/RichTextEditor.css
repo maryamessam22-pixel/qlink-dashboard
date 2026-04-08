@@ -1,0 +1,63 @@
+.rich-text-editor-wrap {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #1f2937;
+  background: #0d1422;
+}
+
+.rich-text-editor-skeleton {
+  min-height: 180px;
+  background: linear-gradient(180deg, #131c2f 44px, #0d1422 44px);
+}
+
+.rich-text-editor-wrap .ql-toolbar.ql-snow {
+  background: #131c2f;
+  border: none;
+  border-bottom: 1px solid #1f2937;
+  border-radius: 10px 10px 0 0;
+}
+
+.rich-text-editor-wrap .ql-container.ql-snow {
+  border: none;
+  font-family: var(--font-en), system-ui, sans-serif;
+  font-size: 14px;
+  min-height: 140px;
+}
+
+.rich-text-editor-wrap .ql-editor {
+  min-height: 120px;
+  color: #e6edf3;
+}
+
+.rich-text-editor-wrap .ql-editor.ql-blank::before {
+  color: #6b7280;
+  font-style: normal;
+}
+
+.rich-text-editor-wrap .ql-snow .ql-stroke {
+  stroke: #9ca3af;
+}
+
+.rich-text-editor-wrap .ql-snow .ql-fill {
+  fill: #9ca3af;
+}
+
+.rich-text-editor-wrap .ql-snow .ql-picker {
+  color: #9ca3af;
+}
+
+.rich-text-editor-wrap .ql-snow .ql-picker-options {
+  background: #131c2f;
+  border-color: #1f2937;
+}
+
+.rich-text-editor-wrap.rtl .ql-editor {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-ar), var(--font-en), sans-serif;
+}
+
+.rich-text-editor-wrap.rtl .ql-toolbar .ql-formats {
+  margin-left: 8px;
+  margin-right: 0;
+}

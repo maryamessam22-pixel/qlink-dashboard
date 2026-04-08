@@ -1,31 +1,60 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import {
+  setAuthenticated,
+  getIntendedDashboard,
+  clearIntendedDashboard,
+  isAuthenticated,
+} from '../../lib/authStorage';
+import logoImg from '../../assets/logos/QLINK.png';
 import './AdminLogin.css';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const intended = getIntendedDashboard();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const target = location.state?.from;
+      if (typeof target === 'string' && (target.startsWith('/web') || target.startsWith('/app'))) {
+        navigate(target, { replace: true });
+      } else {
+        navigate(intended === 'app' ? '/app/overview' : '/web/overview', { replace: true });
+      }
+    }
+  }, [navigate, location.state, intended]);
 
   const handleLogin = (e) => {
     e.preventDefault();
-    navigate('/web/overview');
+    setAuthenticated(true);
+    const from = location.state?.from;
+    const dest =
+      typeof from === 'string' && (from.startsWith('/web') || from.startsWith('/app'))
+        ? from
+        : intended === 'app'
+          ? '/app/overview'
+          : '/web/overview';
+    clearIntendedDashboard();
+    navigate(dest, { replace: true });
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        
         <div className="login-header">
-          <img src={require('../../assets/logos/QLINK.png')} alt="Qlink Logo" className="logo-image" />
+          <img src={logoImg} alt="Qlink Logo" className="logo-image" />
           <h2 className="title-text">Qlink Command Center</h2>
-          <p className="subtitle-text">Enter your credentials to manage the safety network.</p>
+          <p className="subtitle-text">
+            Signing in to the <strong>{intended === 'app' ? 'App' : 'Web'}</strong> dashboard. You can switch later from the sidebar.
+          </p>
         </div>
 
         <form className="login-form" onSubmit={handleLogin}>
-          
           <div className="input-group">
-            <label>Email Address</label>
+            <label>Email address</label>
             <div className="input-wrapper">
               <span className="icon">✉</span>
               <input
@@ -53,14 +82,19 @@ const AdminLogin = () => {
           </div>
 
           <button type="submit" className="login-button">
-            Sign In to Dashboard
+            Continue to dashboard
+          </button>
+
+          <button
+            type="button"
+            className="switch-dashboard-btn"
+            onClick={() => navigate('/')}
+          >
+            ← Switch Dashboard
           </button>
         </form>
 
-        <div className="login-footer">
-          SECURED BY QLINK SHIELD PROTOCOL V4.0
-        </div>
-        
+        <div className="login-footer">SECURED BY QLINK SHIELD PROTOCOL V4.0</div>
       </div>
     </div>
   );

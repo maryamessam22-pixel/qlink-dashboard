@@ -1,138 +1,127 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { CreditCard, QrCode, Shield, TrendingUp } from 'lucide-react';
+import PageMeta from '../../../components/seo/PageMeta';
+import SeoSection from '../../../components/seo/SeoSection';
+import { getWebOverviewAnalytics } from '../../../data/webAnalytics';
 import './WebOverview.css';
 
 const WebOverview = () => {
+  const data = useMemo(() => getWebOverviewAnalytics(), []);
+  const [seo, setSeo] = useState({
+    slug: 'overview',
+    metaTitle: 'Overview — Qlink Admin',
+    metaDescription: 'Real-time summary of sales and safety ecosystem performance.',
+    keywords: 'overview, analytics, qlink',
+    featuredImageAlt: 'Overview',
+  });
+
+  const w = 400;
+  const h = 150;
+  const pts = data.chartPoints;
+  const minY = Math.min(...pts);
+  const maxY = Math.max(...pts);
+  const norm = (v) => h - ((v - minY) / (maxY - minY || 1)) * (h - 24) - 12;
+  const step = w / (pts.length - 1);
+  const lineD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${i * step},${norm(p)}`).join(' ');
+  const areaD = `${lineD} L${w},${h} L0,${h} Z`;
+
   return (
-    <div className="overview-container">
-      
-      {/* Header Info */}
+    <div className="overview-container web-page">
+      <PageMeta title="Overview" description={seo.metaDescription} keywords={seo.keywords} />
+
       <div className="overview-header">
         <h1 className="overview-title">Overview</h1>
         <p className="overview-subtitle">Real-time summary of your sales and safety ecosystem performance.</p>
+        <p className="overview-updated">Figures refresh daily · Last built {data.updatedLabel}</p>
       </div>
 
-      {/* Primary Stats Grid */}
       <div className="stats-grid">
-        {/* Total Revenue */}
         <div className="stat-card">
           <div className="stat-header">
             <div className="stat-icon-box icon-bg-blue">
               <CreditCard size={18} className="icon-blue" />
             </div>
-            <span className="stat-badge badge-positive">+12.5%</span>
+            <span className={`stat-badge ${data.revenueUp ? 'badge-positive' : 'badge-negative'}`}>{data.revenueTrend}</span>
           </div>
           <div className="stat-body">
-            <p className="stat-label">Total Revenue</p>
-            <h2 className="stat-value">$128.4k</h2>
+            <p className="stat-label">Total revenue</p>
+            <h2 className="stat-value">{data.revenue}</h2>
           </div>
         </div>
 
-        {/* Emergency Scans */}
         <div className="stat-card">
           <div className="stat-header">
             <div className="stat-icon-box icon-bg-red">
               <QrCode size={18} className="icon-red" />
             </div>
-            <span className="stat-badge badge-positive">+18.2%</span>
+            <span className={`stat-badge ${data.scansUp ? 'badge-positive' : 'badge-negative'}`}>{data.scansTrend}</span>
           </div>
           <div className="stat-body">
-            <p className="stat-label">Emergency Scans</p>
-            <h2 className="stat-value">1,429</h2>
+            <p className="stat-label">Emergency scans</p>
+            <h2 className="stat-value">{data.scans}</h2>
           </div>
         </div>
 
-        {/* Lives Protected */}
         <div className="stat-card">
           <div className="stat-header">
             <div className="stat-icon-box icon-bg-green">
               <Shield size={18} className="icon-green" />
             </div>
-            <span className="stat-badge badge-positive">+4.3%</span>
+            <span className={`stat-badge ${data.livesUp ? 'badge-positive' : 'badge-negative'}`}>{data.livesTrend}</span>
           </div>
           <div className="stat-body">
-            <p className="stat-label">Lives Protected</p>
-            <h2 className="stat-value">10,240</h2>
+            <p className="stat-label">Lives protected</p>
+            <h2 className="stat-value">{data.lives}</h2>
           </div>
         </div>
       </div>
 
-      {/* Secondary Stats (Response Time) */}
       <div className="response-card-wide">
         <div className="stat-header">
           <div className="stat-icon-box icon-bg-yellow">
             <TrendingUp size={18} className="icon-yellow" />
           </div>
-          <span className="stat-badge badge-negative">-0.2</span>
+          <span className={`stat-badge ${data.responseBetter ? 'badge-positive' : 'badge-negative'}`}>{data.responseDelta}s</span>
         </div>
         <div className="stat-body">
-          <p className="stat-label">Response Time</p>
-          <h2 className="stat-value">1.4s</h2>
+          <p className="stat-label">Median response time</p>
+          <h2 className="stat-value">{data.responseSec}s</h2>
         </div>
       </div>
 
-      {/* Main Analysis Section */}
       <div className="analysis-grid">
-        
-        {/* Scan Frequency Trend (SVG Chart) */}
         <div className="chart-card">
-          <h3 className="card-title">Scan Frequency Trend</h3>
+          <h3 className="card-title">Scan frequency trend</h3>
           <div className="chart-wrapper">
-             <svg className="wave-chart" viewBox="0 0 400 150" preserveAspectRatio="none">
-               <path 
-                 d="M0,130 C50,135 100,140 120,90 C150,20 180,80 200,100 C230,120 280,100 320,110 C360,120 380,115 400,105 L400,150 L0,150 Z" 
-                 fill="rgba(224, 50, 50, 0.05)" 
-               />
-               <path 
-                 d="M0,130 C50,135 100,140 120,90 C150,20 180,80 200,100 C230,120 280,100 320,110 C360,120 380,115 400,105" 
-                 fill="none" 
-                 stroke="#E03232" 
-                 strokeWidth="2" 
-               />
-             </svg>
+            <svg className="wave-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+              <path d={areaD} fill="rgba(224, 50, 50, 0.08)" />
+              <path d={lineD} fill="none" stroke="#E03232" strokeWidth="2" />
+            </svg>
           </div>
         </div>
 
-        {/* Device Adoption */}
         <div className="adoption-card">
-          <h3 className="card-title">Device Adoption</h3>
+          <h3 className="card-title">Device adoption</h3>
           <div className="adoption-list">
-            
-            <div className="adoption-item">
-              <div className="item-info">
-                <span>Qlink Black</span>
-                <span className="item-percent">85%</span>
+            {data.adoption.map((d) => (
+              <div key={d.name} className="adoption-item">
+                <div className="item-info">
+                  <span>{d.name}</span>
+                  <span className="item-percent">{d.pct}%</span>
+                </div>
+                <div className="progress-track">
+                  <div
+                    className={`progress-fill ${d.name.includes('Black') ? 'fill-blue' : d.name.includes('Silver') ? 'fill-white' : 'fill-red'}`}
+                    style={{ width: `${d.pct}%` }}
+                  />
+                </div>
               </div>
-              <div className="progress-track">
-                <div className="progress-fill fill-blue" style={{ width: '85%' }}></div>
-              </div>
-            </div>
-
-            <div className="adoption-item">
-              <div className="item-info">
-                <span>Qlink Silver</span>
-                <span className="item-percent">62%</span>
-              </div>
-              <div className="progress-track">
-                <div className="progress-fill fill-white" style={{ width: '62%' }}></div>
-              </div>
-            </div>
-
-            <div className="adoption-item">
-              <div className="item-info">
-                <span>Qlink Red</span>
-                <span className="item-percent">48%</span>
-              </div>
-              <div className="progress-track">
-                <div className="progress-fill fill-red" style={{ width: '48%' }}></div>
-              </div>
-            </div>
-
+            ))}
           </div>
         </div>
-
       </div>
 
+      <SeoSection title="Overview admin SEO" slugPrefix="admin.qlink.com/overview/" value={seo} onChange={setSeo} badge="Internal" />
     </div>
   );
 };

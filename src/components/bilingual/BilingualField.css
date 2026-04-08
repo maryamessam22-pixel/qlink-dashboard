@@ -1,0 +1,49 @@
+.bilingual-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .bilingual-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bilingual-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.field-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  background: #0d1422;
+  color: #e6edf3;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: #e03232;
+  box-shadow: 0 0 0 1px rgba(224, 50, 50, 0.25);
+}
+
+.field-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.bilingual-field [dir='rtl'] {
+  font-family: var(--font-ar), var(--font-en), sans-serif;
+}

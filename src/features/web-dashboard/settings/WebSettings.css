@@ -1,0 +1,80 @@
+.settings-profile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.settings-profile-who {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #1f2937;
+}
+
+.settings-inline-name {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.settings-inline-role {
+  margin: 0;
+  font-size: 13px;
+  color: #e03232;
+  font-weight: 600;
+}
+
+.settings-field {
+  margin-bottom: 16px;
+}
+
+.settings-pass-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .settings-pass-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.settings-seo-wrap {
+  margin-top: 8px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid rgba(224, 50, 50, 0.45);
+  overflow: hidden;
+  background: linear-gradient(145deg, rgba(19, 28, 47, 0.95), rgba(13, 20, 34, 0.98));
+}
+
+.settings-seo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 0;
+}
+
+.settings-seo-icon {
+  color: #e03232;
+}
+
+.settings-seo-wrap .seo-section {
+  border: none;
+  margin: 0;
+}
+
+.settings-seo-wrap .seo-section-title {
+  display: none;
+}

@@ -1,11 +1,22 @@
 import React from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, ShoppingBag, Package, ClipboardList, 
-  LifeBuoy, Settings, LogOut, X, Users, Smartphone, Watch 
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Package,
+  ClipboardList,
+  LifeBuoy,
+  Settings2,
+  LogOut,
+  X,
+  Users,
+  Smartphone,
+  Watch,
+  LayoutTemplate,
 } from 'lucide-react';
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
+import { clearAuth } from '../lib/authStorage';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -14,6 +25,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const isAppDashboard = location.pathname.startsWith('/app');
 
   const handleLogout = () => {
+    clearAuth();
     navigate('/login');
   };
 
@@ -31,8 +43,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/web/products', name: 'Products', icon: <ShoppingBag size={20} /> },
     { path: '/web/inventory', name: 'Inventory', icon: <Package size={20} /> },
     { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
-    { path: '/web/cms', name: 'CMS', icon: <Settings size={20} /> },
-    { path: '/web/settings', name: 'Settings', icon: <Settings size={20} /> },
+    { path: '/web/cms', name: 'CMS', icon: <LayoutTemplate size={20} /> },
+    { path: '/web/settings', name: 'Settings', icon: <Settings2 size={20} /> },
   ];
 
   const appLinks = [
@@ -41,7 +53,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/app/user-profiles', name: 'User Profiles', icon: <Users size={20} /> },
     { path: '/app/linked-devices', name: 'Linked Devices', icon: <Smartphone size={20} /> },
     { path: '/app/bracelets', name: 'Bracelets', icon: <Watch size={20} /> },
-    { path: '/app/settings', name: 'Settings', icon: <Settings size={20} /> },
+    { path: '/app/settings', name: 'Settings', icon: <Settings2 size={20} /> },
   ];
 
   const navLinks = isAppDashboard ? appLinks : webLinks;

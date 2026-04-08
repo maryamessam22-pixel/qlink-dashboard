@@ -9,12 +9,28 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
   
   const getCurrentPageName = () => {
     const path = location.pathname;
+    if (path.includes('/settings')) return 'Settings';
+    if (path.includes('/products/new')) return 'Add New Product';
+    if (path.includes('/products/') && path.includes('/edit')) return 'Edit Product';
+    if (path.includes('/products')) return 'Products';
+    if (path.includes('/cms/')) {
+      if (path.endsWith('/home')) return 'CMS · Homepage';
+      if (path.endsWith('/about')) return 'CMS · About';
+      if (path.endsWith('/reviews')) return 'CMS · Reviews';
+      if (path.endsWith('/faq')) return 'CMS · FAQ';
+      if (path.endsWith('/contact')) return 'CMS · Contact';
+      if (path.endsWith('/terms')) return 'CMS · Terms';
+      if (path.endsWith('/emails')) return 'CMS · Emails';
+      return 'CMS';
+    }
     if (path.includes('overview')) return 'Overview';
     if (path.includes('orders')) return 'Orders';
-    if (path.includes('products')) return 'Products';
     if (path.includes('inventory')) return 'Inventory';
     if (path.includes('support')) return 'Support';
-    if (path.includes('cms')) return 'CMS';
+    if (path.includes('users')) return 'Users';
+    if (path.includes('user-profiles')) return 'User Profiles';
+    if (path.includes('linked-devices')) return 'Linked Devices';
+    if (path.includes('bracelets')) return 'Bracelets';
     return 'Dashboard';
   };
 
