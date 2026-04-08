@@ -5,8 +5,7 @@
   align-items: center;
   justify-content: center;
   padding: 24px 16px 48px;
-  background: radial-gradient(ellipse 80% 60% at 50% -20%, rgba(224, 50, 50, 0.12), transparent),
-    #0d1422;
+  background: rgb(4 10 24);
 }
 
 .dash-choice-brand {

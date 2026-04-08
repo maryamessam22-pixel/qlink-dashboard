@@ -10,7 +10,7 @@ const DashboardLayout = () => {
   return (
     <div
       className="layout-wrapper"
-      style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#080a0f' }}
+      style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--c-bg-dark)' }}
     >
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 

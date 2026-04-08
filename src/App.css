@@ -2,7 +2,8 @@
 
 :root {
   /* Design System Colors */
-  --c-bg-dark: #0D1422;
+  --c-bg-dark: rgb(4 10 24);
+    /* --c-bg-dark: #0D1422; */
   --c-bg-light: #314158;
   --c-primary-red: #E03232;
   --c-text-light: #FFFFFF;
