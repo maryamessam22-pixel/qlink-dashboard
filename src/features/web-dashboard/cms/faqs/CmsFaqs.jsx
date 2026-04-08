@@ -10,8 +10,32 @@ const defaultFaqs = () => [
   {
     qEn: 'Is the bracelet waterproof?',
     qAr: 'هل السوار مقاوم للماء؟',
-    aEn: '<p>Yes, it is rated for daily wear and splash resistance.</p>',
-    aAr: '<p>نعم، مصمم للارتداء اليومي ومقاومة الماء المتقطع.</p>',
+    aEn: '<p>Yes, the Qlink bracelet is IP68 waterproof and can be worn while swimming or showering.</p>',
+    aAr: '<p>نعم، سوار كيو لينك مقاوم للماء بمعيار IP68 ويمكن ارتداؤه أثناء السباحة أو الاستحمام.</p>',
+  },
+  {
+    qEn: 'Does it require a subscription?',
+    qAr: 'هل يتطلب اشتراكاً؟',
+    aEn: '<p>No, the basic emergency profile is free for life. We offer optional premium features for advanced tracking.</p>',
+    aAr: '<p>لا، ملف الطوارئ الأساسي مجاني مدى الحياة. نقدم ميزات ممتازة اختيارية للتتبع المتقدم.</p>',
+  },
+  {
+    qEn: 'Is my data secure?',
+    qAr: 'هل بياناتي آمنة؟',
+    aEn: '<p>Our mission is to take your privacy seriously. All medical data is encrypted and stored securely. You control what is public.</p>',
+    aAr: '<p>نحن نأخذ خصوصيتك على محمل الجد. جميع البيانات الطبية مشفرة ومخزنة بشكل آمن. أنت تتحكم في ما هو عام.</p>',
+  },
+  {
+    qEn: 'How does the QR code work?',
+    qAr: 'كيف يعمل رمز QR؟',
+    aEn: '<p>Simply scan the QR code with any standard smartphone camera. No special app is required for first responders.</p>',
+    aAr: '<p>ما عليك سوى مسح رمز QR ضوئيًا باستخدام أي كاميرا هاتف ذكي قياسية. لا يلزم وجود تطبيق خاص للمستجيبين الأوائل.</p>',
+  },
+  {
+    qEn: 'Can I update my info later?',
+    qAr: 'هل يمكنني تحديث معلوماتي لاحقاً؟',
+    aEn: '<p>Yes, you can update your medical information and emergency contacts at any time through the Qlink app.</p>',
+    aAr: '<p>نعم، يمكنك تحديث معلوماتك الطبية وجهات اتصال الطوارئ في أي وقت من خلال تطبيق كيو لينك.</p>',
   },
 ];
 
