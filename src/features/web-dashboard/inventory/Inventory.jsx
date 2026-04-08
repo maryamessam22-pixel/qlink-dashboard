@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { SAMPLE_PRODUCTS } from '../../../data/sampleProducts';
+import { SAMPLE_PRODUCTS } from '../products/ProductEditor';
 import '../../../styles/web-dashboard-pages.css';
 import './Inventory.css';
 

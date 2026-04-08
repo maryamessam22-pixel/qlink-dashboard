@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Search, Package } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
-import { SAMPLE_PRODUCTS } from '../../../data/sampleProducts';
+import { SAMPLE_PRODUCTS } from './ProductEditor';
 import '../../../styles/web-dashboard-pages.css';
 import './Products.css';
 

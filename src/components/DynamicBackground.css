@@ -1,0 +1,66 @@
+.dynamic-bg-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  z-index: -1;
+  background-color: var(--c-bg-dark, rgb(4 10 24));
+}
+
+.ball {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ball-1 {
+  width: 500px;
+  height: 500px;
+  background: rgba(224, 50, 50, 0.25);
+  top: -150px;
+  left: -100px;
+  animation: float1 20s infinite alternate ease-in-out;
+}
+
+.ball-2 {
+  width: 600px;
+  height: 600px;
+  background: rgba(20, 71, 230, 0.25);
+  bottom: -200px;
+  right: -150px;
+  animation: float2 25s infinite alternate ease-in-out;
+}
+
+.ball-3 {
+  width: 400px;
+  height: 400px;
+  background: rgba(1, 212, 123, 0.15);
+  top: 40%;
+  left: 30%;
+  animation: float3 18s infinite alternate ease-in-out;
+}
+
+.ball-4 {
+  width: 350px;
+  height: 350px;
+  background: rgba(255, 255, 255, 0.08);
+  top: 10%;
+  right: 20%;
+  animation: float1 22s infinite alternate-reverse ease-in-out;
+}
+
+@keyframes float1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(120px, 80px) scale(1.1); }
+}
+
+@keyframes float2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-100px, -150px) scale(1.15); }
+}
+
+@keyframes float3 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(150px, -60px) scale(1.05); }
+}

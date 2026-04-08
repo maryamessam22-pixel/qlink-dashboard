@@ -5,10 +5,34 @@ import PageMeta from '../../../components/seo/PageMeta';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../components/bilingual/BilingualField';
 import SeoSection from '../../../components/seo/SeoSection';
-import { SAMPLE_PRODUCTS } from '../../../data/sampleProducts';
+import './ProductEditor.css';
 import '../../../styles/web-dashboard-pages.css';
 import '../../../components/bilingual/BilingualField.css';
-import './ProductEditor.css';
+
+export const SAMPLE_PRODUCTS = [
+  {
+    id: 'PRO-001',
+    nameEn: 'Qlink Nova (Touch)',
+    nameAr: 'كيو لينك نوفا (لمس)',
+    subtitleEn: 'Smart touchscreen safety bracelet',
+    subtitleAr: 'سوار أمان بشاشة لمس ذكية',
+    price: 1499,
+    stock: 1240,
+    inStock: true,
+    image: 'https://placehold.co/400x280/1f2937/e6edf3?text=Qlink+Nova',
+  },
+  {
+    id: 'PRO-002',
+    nameEn: 'Qlink Pulse',
+    nameAr: 'كيو لينك بالس',
+    subtitleEn: 'Tactical buttons & QR core',
+    subtitleAr: 'أزرار تكتيكية ونواة QR',
+    price: 1299,
+    stock: 890,
+    inStock: true,
+    image: 'https://placehold.co/400x280/334155/e6edf3?text=Qlink+Pulse',
+  },
+];
 
 const ProductEditor = () => {
   const { productId } = useParams();
@@ -23,6 +47,9 @@ const ProductEditor = () => {
   const [subAr, setSubAr] = useState(existing?.subtitleAr ?? '');
   const [price, setPrice] = useState(existing ? String(existing.price) : '');
   const [priceArLabel, setPriceArLabel] = useState('');
+  const [mainImage, setMainImage] = useState(existing?.image ?? '');
+  const [gallery, setGallery] = useState(existing?.gallery ?? []);
+  
   const [descEn, setDescEn] = useState('<p>Product description (EN)</p>');
   const [descAr, setDescAr] = useState('<p>وصف المنتج (AR)</p>');
   const [detailTitleEn, setDetailTitleEn] = useState('Details');
@@ -44,6 +71,14 @@ const ProductEditor = () => {
   const removeFeature = (i) => setFeatures((f) => f.filter((_, j) => j !== i));
   const setFeature = (i, v) => setFeatures((f) => {
     const n = [...f];
+    n[i] = v;
+    return n;
+  });
+
+  const addGalleryImage = () => setGallery((g) => [...g, '']);
+  const removeGalleryImage = (i) => setGallery((g) => g.filter((_, j) => j !== i));
+  const setGalleryImage = (i, v) => setGallery((g) => {
+    const n = [...g];
     n[i] = v;
     return n;
   });
@@ -76,13 +111,72 @@ const ProductEditor = () => {
       </div>
 
       <section className="web-card">
-        <h2 className="web-card-title" style={{ marginBottom: 16 }}>Media &amp; basic info</h2>
-        <div className="product-upload-row">
-          <div className="product-upload-box">
-            <span>Select main image</span>
+        <h2 className="web-card-title" style={{ marginBottom: 16 }}>Product Media</h2>
+        
+        <div className="product-media-management">
+          <div className="media-section">
+            <label className="field-label">Main Image</label>
+            <div className="media-drop-zone">
+              {mainImage ? (
+                <div className="media-preview-container">
+                  <img src={mainImage} alt="Main Preview" className="media-full-preview" />
+                  <button type="button" className="media-remove-overlay" onClick={() => setMainImage('')}>
+                    <Trash2 size={24} />
+                  </button>
+                </div>
+              ) : (
+                <div className="media-placeholder">
+                  <Plus size={32} />
+                  <span>Drag main image or paste URL below</span>
+                </div>
+              )}
+              <input 
+                className="field-input media-url-input" 
+                placeholder="Main Image URL..." 
+                value={mainImage} 
+                onChange={(e) => setMainImage(e.target.value)} 
+              />
+            </div>
           </div>
-          <div className="product-upload-box">
-            <span>Select other images</span>
+
+          <div className="media-section">
+            <div className="media-gallery-header">
+              <label className="field-label">Gallery Images</label>
+              <button type="button" className="btn-secondary btn-sm" onClick={addGalleryImage}>
+                <Plus size={14} /> Add Slot
+              </button>
+            </div>
+            
+            <div className="gallery-grid">
+              {gallery.map((img, i) => (
+                <div key={i} className="media-drop-zone gallery-item">
+                  {img ? (
+                    <div className="media-preview-container small">
+                      <img src={img} alt={`Gallery ${i}`} className="media-full-preview" />
+                      <button type="button" className="media-remove-overlay small" onClick={() => removeGalleryImage(i)}>
+                        <X size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="media-placeholder small">
+                      <Plus size={20} />
+                      <span>URL below</span>
+                    </div>
+                  )}
+                  <input 
+                    className="field-input media-url-input-small" 
+                    placeholder="URL..." 
+                    value={img} 
+                    onChange={(e) => setGalleryImage(i, e.target.value)} 
+                  />
+                </div>
+              ))}
+              {gallery.length === 0 && (
+                <div className="empty-gallery-hint">
+                  No additional images added.
+                </div>
+              )}
+            </div>
           </div>
         </div>
         <div style={{ marginTop: 20 }}>

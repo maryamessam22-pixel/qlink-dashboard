@@ -4,102 +4,152 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px 16px 48px;
-  background: rgb(4 10 24);
+  padding: 40px 20px;
+  background-color: var(--c-bg-dark, rgb(4 10 24));
+  overflow-x: hidden;
 }
 
 .dash-choice-brand {
   text-align: center;
-  max-width: 520px;
-  margin-bottom: 40px;
+  margin-bottom: 64px;
+  transition: all 1s ease;
 }
 
 .dash-choice-logo {
-  width: 72px;
+  width: 90px;
   height: auto;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
 
 .dash-choice-title {
-  margin: 0 0 12px;
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 700;
+  margin: 0px 0px 12px 0px;
+  font-size: 36px;
+  font-weight: 800;
   color: #fff;
+  letter-spacing: -1px;
 }
 
 .dash-choice-lead {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.5;
+  margin: 0px;
+  font-size: 16px;
   color: #8b949e;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 .dash-choice-cards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 280px));
-  gap: 20px;
+  display: flex;
+  gap: 24px;
   width: 100%;
-  max-width: 620px;
+  max-width: 900px;
+  justify-content: center;
+  transition: all 1s ease 0.2s;
 }
 
 .dash-choice-card {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  padding: 28px 24px;
-  border-radius: 16px;
-  border: 1px solid #1f2937;
-  background: #131c2f;
+  flex: 1;
+  max-width: 420px;
+  padding: 0px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
   color: #fff;
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  font: inherit;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.dash-choice-card::before {
+  content: '';
+  position: absolute;
+  inset: 0px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.4s;
 }
 
 .dash-choice-card:hover {
-  border-color: #e03232;
-  box-shadow: 0 12px 40px rgba(224, 50, 50, 0.15);
-  transform: translateY(-2px);
+  transform: translateY(-8px) scale(1.02);
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-.dash-choice-card:focus-visible {
-  outline: 2px solid #e03232;
-  outline-offset: 2px;
+.dash-choice-card:hover::before {
+  opacity: 1;
+}
+
+.dash-choice-card-inner {
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
 }
 
 .dash-choice-card-icon {
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: 14px;
-  margin-bottom: 16px;
-  background: rgba(224, 50, 50, 0.12);
-  color: #e03232;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  transition: all 0.4s;
 }
 
-.dash-choice-card.app .dash-choice-card-icon {
-  background: rgba(20, 71, 230, 0.15);
-  color: #5b8cff;
+.dash-choice-card:hover .dash-choice-card-icon {
+  transform: rotate(5deg) scale(1.1);
+  background: var(--card-accent);
+  color: #fff;
 }
+
+.dash-choice-card.web { --card-accent: #e03232; }
+.dash-choice-card.app { --card-accent: #1447e6; }
 
 .dash-choice-card-label {
-  font-size: 18px;
-  font-weight: 600;
+  display: block;
+  font-size: 24px;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
 .dash-choice-card-desc {
-  font-size: 13px;
-  line-height: 1.45;
+  display: block;
+  font-size: 14px;
   color: #8b949e;
+  line-height: 1.6;
 }
 
-@media (max-width: 640px) {
+.dash-choice-footer {
+  margin-top: 80px;
+  font-size: 12px;
+  color: #4b5563;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+
+/* Animations */
+.hidden {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.animate-in {
+  opacity: 1;
+  transform: translateY(0px);
+}
+
+@media (max-width: 850px) {
   .dash-choice-cards {
-    grid-template-columns: 1fr;
-    max-width: 360px;
+    flex-direction: column;
+    align-items: center;
+  }
+  .dash-choice-card {
+    width: 100%;
   }
 }
