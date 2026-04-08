@@ -14,6 +14,7 @@ const AdminLogin = () => {
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const intended = getIntendedDashboard();
 
   useEffect(() => {
@@ -29,20 +30,33 @@ const AdminLogin = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    setAuthenticated(true);
-    const from = location.state?.from;
-    const dest =
-      typeof from === 'string' && (from.startsWith('/web') || from.startsWith('/app'))
-        ? from
-        : intended === 'app'
-          ? '/app/overview'
-          : '/web/overview';
-    clearIntendedDashboard();
-    navigate(dest, { replace: true });
+    setIsLoggingIn(true);
+
+    // Simulate system initialization/auth delay
+    setTimeout(() => {
+      setAuthenticated(true);
+      const from = location.state?.from;
+      const dest =
+        typeof from === 'string' && (from.startsWith('/web') || from.startsWith('/app'))
+          ? from
+          : intended === 'app'
+            ? '/app/overview'
+            : '/web/overview';
+      clearIntendedDashboard();
+      navigate(dest, { replace: true });
+    }, 2000);
   };
 
   return (
     <div className="login-container">
+      {isLoggingIn && (
+        <div className="login-loading-overlay">
+          <div className="loading-content">
+            <img src={logoImg} alt="Qlink" className="loading-logo" />
+            <div className="loading-spinner"></div>
+          </div>
+        </div>
+      )}
       <div className="login-card">
         <div className="login-header">
           <img src={logoImg} alt="Qlink Logo" className="logo-image" />
