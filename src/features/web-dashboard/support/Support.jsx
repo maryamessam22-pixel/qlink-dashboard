@@ -4,7 +4,7 @@ import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../../lib/supabase'; 
+import { supabase } from '../../../lib/supabase';
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
 
@@ -14,10 +14,10 @@ const Support = () => {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
-  
+
   const [replyEn, setReplyEn] = useState('');
   const [replyAr, setReplyAr] = useState('');
-  
+
   const [seo, setSeo] = useState({
     slug: 'support/contact',
     metaTitle: 'Support — Qlink Admin',
@@ -42,11 +42,11 @@ const Support = () => {
           const formattedMessages = msgsData.map((m) => {
             const dateObj = new Date(m.date || m.received_at);
             const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            
+
             let repliedDate = null;
-            if(m.replied_at) {
-                const rDateObj = new Date(m.replied_at);
-                repliedDate = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+            if (m.replied_at) {
+              const rDateObj = new Date(m.replied_at);
+              repliedDate = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
 
             return {
@@ -56,7 +56,7 @@ const Support = () => {
               preview: m.message_body,
               date: formattedDate,
               unread: m.status === 'Unread',
-   
+
               adminReplyEn: m.admin_reply_en,
               adminReplyAr: m.admin_reply_ar,
               repliedAt: repliedDate,
@@ -144,64 +144,64 @@ const Support = () => {
 
 
     if (isEditorEmpty(replyEn) && isEditorEmpty(replyAr)) {
-        alert("Please write a reply first!");
-        return;
+      alert("Please write a reply first!");
+      return;
     }
 
     try {
-        const now = new Date().toISOString();
-        
-        const { error } = await supabase
-            .from('support_messages')
-            .update({
-                admin_reply_en: replyEn,
-                admin_reply_ar: replyAr,
-                status: 'Replied',
-                replied_at: now
-            })
-            .eq('id', id);
+      const now = new Date().toISOString();
 
-        if (error) throw error;
+      const { error } = await supabase
+        .from('support_messages')
+        .update({
+          admin_reply_en: replyEn,
+          admin_reply_ar: replyAr,
+          status: 'Replied',
+          replied_at: now
+        })
+        .eq('id', id);
 
-  
-        setMessages(prev => prev.map(m => {
-            if (m.id === id) {
-                const rDateObj = new Date(now);
-                const formattedNow = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
-                
-                return {
-                    ...m,
-                    adminReplyEn: replyEn,
-                    adminReplyAr: replyAr,
-                    repliedAt: formattedNow,
-                    unread: false,
-                    status: 'Replied'
-                };
-            }
-            return m;
-        }));
+      if (error) throw error;
 
-        alert('The reply has been saved and sent successfully!');
-   
-        setReplyEn('');
-        setReplyAr('');
+
+      setMessages(prev => prev.map(m => {
+        if (m.id === id) {
+          const rDateObj = new Date(now);
+          const formattedNow = rDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+          return {
+            ...m,
+            adminReplyEn: replyEn,
+            adminReplyAr: replyAr,
+            repliedAt: formattedNow,
+            unread: false,
+            status: 'Replied'
+          };
+        }
+        return m;
+      }));
+
+      alert('The reply has been saved and sent successfully!');
+
+      setReplyEn('');
+      setReplyAr('');
 
     } catch (error) {
-         console.error('Reply error:', error.message);
-         alert('Failed to send reply');
+      console.error('Reply error:', error.message);
+      alert('Failed to send reply');
     }
   };
 
   const active = messages.find((m) => m.id === selectedId);
 
   const filteredMessages = messages.filter(m => {
-    const matchesSearch = 
-      m.from.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      m.topic.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch =
+      m.from.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      m.topic.toLowerCase().includes(searchQuery.toLowerCase()) ||
       m.preview.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesFilter = filterStatus === 'All' || m.status === filterStatus;
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -220,26 +220,26 @@ const Support = () => {
         <div className="support-list">
           <div className="support-list-controls" style={{ padding: '0 0 16px 0', borderBottom: '1px solid #1f2937', marginBottom: '16px' }}>
             <div className="search-wide-wrap" style={{ marginBottom: '12px' }}>
-                <Search className="search-wide-icon" size={16} />
-                <input 
-                    type="search" 
-                    className="field-input" 
-                    placeholder="Search messages..." 
-                    style={{ width: '100%', paddingLeft: '40px' }}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
+              <Search className="search-wide-icon" size={16} />
+              <input
+                type="search"
+                className="field-input"
+                placeholder="Search messages..."
+                style={{ width: '100%', paddingLeft: '40px' }}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <div className="filter-row" style={{ marginBottom: 0 }}>
-                {['All', 'Unread', 'Replied'].map(status => (
-                    <button 
-                        key={status}
-                        className={`filter-pill ${filterStatus === status ? 'active' : ''}`}
-                        onClick={() => setFilterStatus(status)}
-                    >
-                        {status}
-                    </button>
-                ))}
+              {['All', 'Unread', 'Replied'].map(status => (
+                <button
+                  key={status}
+                  className={`filter-pill ${filterStatus === status ? 'active' : ''}`}
+                  onClick={() => setFilterStatus(status)}
+                >
+                  {status}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -261,7 +261,7 @@ const Support = () => {
                 </div>
                 <div className="support-topic">{m.topic}</div>
                 <p className="support-preview">{m.preview}</p>
-       
+
                 {m.status === 'Unread' ? <span className="support-unread-dot" aria-label="Unread" /> : null}
               </button>
             ))
@@ -278,9 +278,9 @@ const Support = () => {
             <div className="support-open">
               <div className="support-open-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
                 <h2 className="support-open-title" style={{ margin: 0 }}>{active.topic}</h2>
-                <button 
-                  type="button" 
-                  className="btn-danger" 
+                <button
+                  type="button"
+                  className="btn-danger"
                   style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8 }}
                   onClick={() => handleDeleteMessage(active.id)}
                 >
@@ -292,48 +292,48 @@ const Support = () => {
                 From <strong>{active.from}</strong> · {active.date}
               </p>
               <p className="support-open-body" style={{ marginBottom: 32 }}>{active.preview}</p>
-              
-        
-              {active.adminReplyEn && (
-                  <div className="admin-reply-box" style={{ backgroundColor: '#131722', padding: '20px', borderRadius: '8px', marginBottom: '32px', borderLeft: '4px solid #E03232' }}>
-                      <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#E03232', fontWeight: 'bold' }}>
-                         Qlink Support (You) · {active.repliedAt}
-                      </p>
-                      
-                      <div style={{ marginBottom: '16px'}}>
-                          <span style={{fontSize: '12px', color: '#8b949e'}}>English Reply:</span>
-                          <div dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} style={{ color: '#fff', fontSize: '14px'}} />
-                      </div>
 
-                      {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
-                          <div dir="rtl">
-                             <span style={{fontSize: '12px', color: '#8b949e'}}>Arabic Reply:</span>
-                             <div dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} style={{ color: '#fff', fontSize: '14px'}} />
-                          </div>
-                      )}
+
+              {active.adminReplyEn && (
+                <div className="admin-reply-box" style={{ backgroundColor: '#131722', padding: '20px', borderRadius: '8px', marginBottom: '32px', borderLeft: '4px solid #E03232' }}>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#E03232', fontWeight: 'bold' }}>
+                    Qlink Support (You) · {active.repliedAt}
+                  </p>
+
+                  <div style={{ marginBottom: '16px' }}>
+                    <span style={{ fontSize: '12px', color: '#8b949e' }}>English Reply:</span>
+                    <div dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} style={{ color: '#fff', fontSize: '14px' }} />
                   </div>
+
+                  {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
+                    <div dir="rtl">
+                      <span style={{ fontSize: '12px', color: '#8b949e' }}>Arabic Reply:</span>
+                      <div dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} style={{ color: '#fff', fontSize: '14px' }} />
+                    </div>
+                  )}
+                </div>
               )}
 
-          
+
               {!active.adminReplyEn && (
-                  <div className="support-reply">
-                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
-                    <RichTextEditor value={replyEn} onChange={setReplyEn} />
-                    <div style={{ marginTop: 20 }}>
-                      <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
-                      <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
-                    </div>
-                    <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                      <button 
-                        type="button" 
-                        className="btn-publish" 
-                        style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
-                        onClick={() => handleSendReply(active.id)}
-                      >
-                        Send Response
-                      </button>
-                    </div>
+                <div className="support-reply">
+                  <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
+                  <RichTextEditor value={replyEn} onChange={setReplyEn} />
+                  <div style={{ marginTop: 20 }}>
+                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
+                    <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
                   </div>
+                  <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="btn-publish"
+                      style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
+                      onClick={() => handleSendReply(active.id)}
+                    >
+                      Send Response
+                    </button>
+                  </div>
+                </div>
               )}
 
             </div>
@@ -341,12 +341,12 @@ const Support = () => {
         </div>
       </div>
 
-      <SeoSection 
-        title="Support admin SEO" 
-        slugPrefix="qlink.com/support/" 
-        value={seo} 
-        onChange={handleSaveSeo} 
-        badge="Live" 
+      <SeoSection
+        title="Support admin SEO"
+        slugPrefix="qlink.com/support/"
+        value={seo}
+        onChange={handleSaveSeo}
+        badge="Live"
       />
     </div>
   );

@@ -18,7 +18,7 @@ const statusClass = (s) => {
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [notesEn, setNotesEn] = useState('<p>Internal notes for fulfillment (EN).</p>');
   const [notesAr, setNotesAr] = useState('<p>ملاحظات داخلية للتنفيذ (AR).</p>');
   const [seo, setSeo] = useState({
@@ -37,10 +37,10 @@ const Orders = () => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        
+
         // سحب الداتا من جدول order
         const { data, error } = await supabase
-          .from('order') 
+          .from('order')
           .select('*')
           .order('created_at', { ascending: false }); // ترتيب من الأحدث للأقدم
 
@@ -49,12 +49,12 @@ const Orders = () => {
         if (data) {
           const formattedOrders = data.map(o => {
             // تظبيط التاريخ (بناخد من الـ created_at أو من الـ time اللي في الداتابيز)
-            let formattedDate = o.time || 'Just now'; 
+            let formattedDate = o.time || 'Just now';
             if (o.created_at) {
               const dateObj = new Date(o.created_at);
-              formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+              formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
-            
+
             // تحديد لون النقطة بناءً على اسم المنتج (Variant)
             let dotColor = '#6b7280'; // Default gray
             const variantStr = (o.variant_details || '').toLowerCase();
@@ -95,13 +95,13 @@ const Orders = () => {
   }
 
   const filteredRows = orders.filter(r => {
-    const matchesSearch = 
-      (r.id && r.id.toLowerCase().includes(searchQuery.toLowerCase())) || 
-      (r.customer && r.customer.toLowerCase().includes(searchQuery.toLowerCase())) || 
+    const matchesSearch =
+      (r.id && r.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (r.customer && r.customer.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (r.product && r.product.toLowerCase().includes(searchQuery.toLowerCase()));
-    
+
     const matchesFilter = filterStatus === 'All' || r.status === filterStatus;
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -123,28 +123,28 @@ const Orders = () => {
       </div>
 
       <div className="filter-row" style={{ marginBottom: '24px' }}>
-          <div className="search-wide-wrap">
-              <Search className="search-wide-icon" size={18} />
-              <input 
-                  type="search" 
-                  className="field-input" 
-                  placeholder="Search orders, customers..." 
-                  style={{ width: '100%', paddingLeft: '44px' }}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-              />
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-              {['All', 'Shipped', 'Processing', 'Delivered', 'Pending'].map(s => (
-                  <button 
-                    key={s}
-                    className={`filter-pill ${filterStatus === s ? 'active' : ''}`}
-                    onClick={() => setFilterStatus(s)}
-                  >
-                      {s}
-                  </button>
-              ))}
-          </div>
+        <div className="search-wide-wrap">
+          <Search className="search-wide-icon" size={18} />
+          <input
+            type="search"
+            className="field-input"
+            placeholder="Search orders, customers..."
+            style={{ width: '100%', paddingLeft: '44px' }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {['All', 'Shipped', 'Processing', 'Delivered', 'Pending'].map(s => (
+            <button
+              key={s}
+              className={`filter-pill ${filterStatus === s ? 'active' : ''}`}
+              onClick={() => setFilterStatus(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="web-card orders-table-card">
@@ -175,7 +175,7 @@ const Orders = () => {
               ) : (
                 filteredRows.map((r, index) => (
                   // حطينا index مع ال id عشان لو ال order_number اتكرر بالغلط في الداتا الوهمية الـ React ميزعلش
-                  <tr key={`${r.id}-${index}`}> 
+                  <tr key={`${r.id}-${index}`}>
                     <td>
                       <div className="ord-id">{r.id}</div>
                       <div className="ord-when">

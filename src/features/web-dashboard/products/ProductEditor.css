@@ -1,5 +1,6 @@
 .product-editor-page {
-  max-width: 960px;
+  max-width: 1440px;
+  width: 100%;
 }
 
 .product-editor-top {
@@ -29,9 +30,15 @@
 
 /* Media management redesign */
 .product-media-management {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 32px;
+}
+
+@media (max-width: 1024px) {
+  .product-media-management {
+    grid-template-columns: 1fr;
+  }
 }
 
 .media-section {
@@ -56,8 +63,14 @@
 }
 
 .media-drop-zone:hover {
-  border-color: var(--c-primary-red);
+  border-color: #e03232;
   background: rgba(224, 50, 50, 0.03);
+}
+
+.media-drop-zone.dragging {
+  border-color: #e03232;
+  background: rgba(224, 50, 50, 0.1);
+  transform: scale(1.02);
 }
 
 .media-placeholder {

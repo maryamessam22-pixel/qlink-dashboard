@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Package, Loader2, Edit2, Trash2 } from 'lucide-react';
-import { supabase } from '../../../lib/supabase'; 
+import { supabase } from '../../../lib/supabase';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import '../../../styles/web-dashboard-pages.css';
@@ -12,7 +12,7 @@ const Products = () => {
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [filterStock, setFilterStock] = useState('All');
-  
+
   const [seo, setSeo] = useState({
     slug: 'shop/bracelet',
     metaTitle: 'Product catalog — Qlink Admin',
@@ -73,7 +73,7 @@ const Products = () => {
           description_en: updatedSeo.metaDescription,
         })
         .eq('slug', 'shop/bracelet');
-      
+
       if (error) throw error;
     } catch (error) {
       console.error('Error updating SEO:', error.message);
@@ -96,22 +96,22 @@ const Products = () => {
   // 4. الفلترة والبحث
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
-    
+
     return products.filter((p) => {
       const nameEn = p.name_en || '';
       const nameAr = p.name_ar || '';
       const id = p.sku || p.id || '';
       const inStock = p.status === 'In Stock';
 
-      const matchesSearch = !s || 
-        id.toLowerCase().includes(s) || 
-        nameEn.toLowerCase().includes(s) || 
+      const matchesSearch = !s ||
+        id.toLowerCase().includes(s) ||
+        nameEn.toLowerCase().includes(s) ||
         nameAr.includes(q);
 
-      const matchesFilter = filterStock === 'All' || 
-          (filterStock === 'In Stock' && inStock) || 
-          (filterStock === 'Out of Stock' && !inStock);
-      
+      const matchesFilter = filterStock === 'All' ||
+        (filterStock === 'In Stock' && inStock) ||
+        (filterStock === 'Out of Stock' && !inStock);
+
       return matchesSearch && matchesFilter;
     });
   }, [q, filterStock, products]);
@@ -138,28 +138,28 @@ const Products = () => {
       </div>
 
       <div className="filter-row" style={{ marginBottom: '24px' }}>
-          <div className="search-wide-wrap">
-              <Search className="search-wide-icon" size={18} />
-              <input 
-                  type="search" 
-                  className="field-input" 
-                  placeholder="Search by product name or SKU…" 
-                  style={{ width: '100%', paddingLeft: '44px' }}
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-              />
-          </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-              {['All', 'In Stock', 'Out of Stock'].map(st => (
-                  <button 
-                    key={st}
-                    className={`filter-pill ${filterStock === st ? 'active' : ''}`}
-                    onClick={() => setFilterStock(st)}
-                  >
-                      {st}
-                  </button>
-              ))}
-          </div>
+        <div className="search-wide-wrap">
+          <Search className="search-wide-icon" size={18} />
+          <input
+            type="search"
+            className="field-input"
+            placeholder="Search by product name or SKU…"
+            style={{ width: '100%', paddingLeft: '44px' }}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {['All', 'In Stock', 'Out of Stock'].map(st => (
+            <button
+              key={st}
+              className={`filter-pill ${filterStock === st ? 'active' : ''}`}
+              onClick={() => setFilterStock(st)}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="product-grid">
@@ -168,18 +168,38 @@ const Products = () => {
             <Link to={`/web/products/${encodeURIComponent(p.id)}/edit`} className="product-card-link">
               <div className="product-card-image-wrap">
                 {p.status === 'In Stock' && <span className="stock-badge">In stock</span>}
-                <img src={p.image_url} alt={p.name_en} className="product-card-img" />
                 
+                {p.image_url ? (
+                  <img 
+                    src={p.image_url} 
+                    alt={p.featured_image_alt || p.name_en} 
+                    className="product-card-img" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+
+                <div className="product-no-image" style={{ display: p.image_url ? 'none' : 'flex' }}>
+                  <div className="no-image-text">No image</div>
+                  {p.featured_image_alt && (
+                    <div className="no-image-alt-hint">
+                      &quot;{p.featured_image_alt}&quot;
+                    </div>
+                  )}
+                </div>
+
                 {/* Overlay buttons appearing on hover */}
                 <div className="product-card-overlay" onClick={(e) => e.preventDefault()}>
-                  <Link 
+                  <Link
                     to={`/web/products/${encodeURIComponent(p.id)}/edit`}
                     className="overlay-btn btn-edit-overlay"
                     title="Edit Product"
                   >
                     <Edit2 size={20} />
                   </Link>
-                  <button 
+                  <button
                     type="button"
                     className="overlay-btn btn-delete-overlay"
                     title="Delete Product"
@@ -211,11 +231,11 @@ const Products = () => {
         ))}
       </div>
 
-      <SeoSection 
-        title="Catalog page SEO" 
-        slugPrefix="qlink.com/shop/" 
-        value={seo} 
-        onChange={handleSeoChange} 
+      <SeoSection
+        title="Catalog page SEO"
+        slugPrefix="qlink.com/shop/"
+        value={seo}
+        onChange={handleSeoChange}
       />
     </div>
   );

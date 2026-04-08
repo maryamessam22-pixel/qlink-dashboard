@@ -42,6 +42,11 @@ const ProductEditor = () => {
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  // Drag states
+  const [isDraggingMain, setIsDraggingMain] = useState(false);
+  const [draggingGalleryIdx, setDraggingGalleryIdx] = useState(null);
 
   // Core Fields
   const [nameEn, setNameEn] = useState('');
@@ -53,11 +58,11 @@ const ProductEditor = () => {
   const [mainImage, setMainImage] = useState('');
   const [gallery, setGallery] = useState([]);
   const [status, setStatus] = useState('In Stock');
-  
+
   // Description & Details
   const [descEn, setDescEn] = useState('');
   const [descAr, setDescAr] = useState('');
-  
+
   const [featuresEn, setFeaturesEn] = useState([]);
   const [featuresAr, setFeaturesAr] = useState([]);
 
@@ -70,7 +75,7 @@ const ProductEditor = () => {
   const [detailSubAr, setDetailSubAr] = useState('');
   const [detailDescEn, setDetailDescEn] = useState('');
   const [detailDescAr, setDetailDescAr] = useState('');
-  
+
   const [seo, setSeo] = useState({
     slug: '',
     metaTitle: '',
@@ -110,7 +115,7 @@ const ProductEditor = () => {
           const extra = data.extra_data || {};
           setInTheBox(extra.in_the_box || []);
           setPrivacyNotes(extra.privacy_notes || []);
-          
+
           if (extra.product_details) {
             setDetailTitleEn(extra.product_details.title_en || '');
             setDetailTitleAr(extra.product_details.title_ar || '');
@@ -236,6 +241,53 @@ const ProductEditor = () => {
     }));
   };
 
+  // ----- التعديل الأساسي هنا عشان الـ Drag & Drop يشتغل -----
+  const uploadFile = async (file, onComplete) => {
+    try {
+      setUploading(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      
+      // خليت الـ Path يدخل جوه فولدر products
+      const filePath = `products/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('qlink-assets') // اسم الباكت الصح من الصورة بتاعتك
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('qlink-assets') // اسم الباكت الصح هنا كمان
+        .getPublicUrl(filePath);
+
+      onComplete(data.publicUrl);
+    } catch (err) {
+      console.error('Upload failed:', err.message);
+      alert('Upload failed. Please ensure your bucket allows uploads.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDropMain = (e) => {
+    e.preventDefault();
+    setIsDraggingMain(false);
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      uploadFile(file, setMainImage);
+    }
+  };
+
+  const handleDropGallery = (e, idx) => {
+    e.preventDefault();
+    setDraggingGalleryIdx(null);
+    const file = e.dataTransfer.files[0];
+    if (file && (file.type.startsWith('image/') || file.type.startsWith('video/'))) {
+      uploadFile(file, (url) => setGalleryImage(idx, url));
+    }
+  };
+
   const title = isNew ? 'Add New Product' : 'Edit Product';
 
   return (
@@ -259,33 +311,80 @@ const ProductEditor = () => {
 
       <section className="web-card">
         <h2 className="web-card-title" style={{ marginBottom: 16 }}>Product Media</h2>
-        
+
         <div className="product-media-management">
           <div className="media-section">
             <label className="field-label">Main Image</label>
-            <div className="media-drop-zone">
-              {mainImage ? (
+            <div
+              className={`media-drop-zone ${isDraggingMain ? 'dragging' : ''}`}
+              onDragOver={(e) => { e.preventDefault(); setIsDraggingMain(true); }}
+              onDragLeave={() => setIsDraggingMain(false)}
+              onDrop={handleDropMain}
+              onClick={() => document.getElementById('main-image-upload').click()}
+              style={{ cursor: 'pointer' }}
+            >
+              <input
+                id="main-image-upload"
+                type="file"
+                hidden
+                accept="image/*,video/*"
+                onChange={(e) => {
+                  const file = e.target.files[0];
+                  if (file) uploadFile(file, setMainImage);
+                }}
+              />
+              {uploading && !mainImage ? (
+                <div className="media-placeholder">
+                  <Loader2 className="animate-spin" size={32} />
+                  <span>Uploading...</span>
+                </div>
+              ) : mainImage ? (
                 <div className="media-preview-container">
                   {mainImage.match(/\.(mp4|webm|ogg|mov)$/i) ? (
                     <video src={mainImage} className="media-full-preview" controls muted />
                   ) : (
-                    <img src={mainImage} alt="Main Preview" className="media-full-preview" />
+                    <img src={mainImage} alt={seo.featuredImageAlt || "Main Preview"} className="media-full-preview" />
                   )}
-                  <button type="button" className="media-remove-overlay" onClick={() => setMainImage('')}>
+                  <button
+                    type="button"
+                    className="media-remove-overlay"
+                    onClick={(e) => { e.stopPropagation(); setMainImage(''); }}
+                  >
                     <Trash2 size={24} />
                   </button>
                 </div>
               ) : (
-                <div className="media-placeholder">
+                <div className="media-placeholder" style={{ textAlign: 'center', padding: '0 20px' }}>
                   <Plus size={32} />
-                  <span>Drag main image or paste URL below</span>
+                  <span style={{ fontWeight: 600, display: 'block' }}>
+                    {seo.featuredImageAlt || nameEn || "Drag main image or click to upload"}
+                  </span>
+                  {(seo.featuredImageAlt || nameEn) && (
+                    <small style={{ display: 'block', fontSize: '11px', opacity: 0.6, marginTop: 4 }}>
+                      {seo.featuredImageAlt ? "Custom Alt Text" : "Product Name Fallback"}
+                    </small>
+                  )}
                 </div>
               )}
-              <input 
-                className="field-input media-url-input" 
-                placeholder="Main Image URL..." 
-                value={mainImage} 
-                onChange={(e) => setMainImage(e.target.value)} 
+              <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: '400px', marginTop: 12 }}>
+                <input
+                  className="field-input media-url-input"
+                  placeholder="Or paste image URL here..."
+                  value={mainImage}
+                  onChange={(e) => setMainImage(e.target.value)}
+                />
+              </div>
+            </div>
+            <div style={{ marginTop: 14 }}>
+              <label className="field-label" style={{ fontSize: 13, display: 'block', marginBottom: 6 }}>
+                Featured Image Alt Text (SEO)
+              </label>
+              <input
+                className="field-input"
+                style={{ width: '100%', fontSize: 14 }}
+                placeholder="e.g. Qlink Nova black bracelet on wrist..."
+                value={seo.featuredImageAlt}
+                onChange={(e) => setSeo({ ...seo, featuredImageAlt: e.target.value })}
               />
             </div>
           </div>
@@ -297,10 +396,28 @@ const ProductEditor = () => {
                 <Plus size={14} /> Add Slot
               </button>
             </div>
-            
+
             <div className="gallery-grid">
               {gallery.map((img, i) => (
-                <div key={i} className="media-drop-zone gallery-item">
+                <div
+                  key={i}
+                  className={`media-drop-zone gallery-item ${draggingGalleryIdx === i ? 'dragging' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); setDraggingGalleryIdx(i); }}
+                  onDragLeave={() => setDraggingGalleryIdx(null)}
+                  onDrop={(e) => handleDropGallery(e, i)}
+                  onClick={() => document.getElementById(`gallery-upload-${i}`).click()}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <input
+                    id={`gallery-upload-${i}`}
+                    type="file"
+                    hidden
+                    accept="image/*,video/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) uploadFile(file, (url) => setGalleryImage(i, url));
+                    }}
+                  />
                   {img ? (
                     <div className="media-preview-container small">
                       {img.match(/\.(mp4|webm|ogg|mov)$/i) ? (
@@ -308,22 +425,28 @@ const ProductEditor = () => {
                       ) : (
                         <img src={img} alt={`Gallery ${i}`} className="media-full-preview" />
                       )}
-                      <button type="button" className="media-remove-overlay small" onClick={() => removeGalleryImage(i)}>
+                      <button
+                        type="button"
+                        className="media-remove-overlay small"
+                        onClick={(e) => { e.stopPropagation(); removeGalleryImage(i); }}
+                      >
                         <X size={18} />
                       </button>
                     </div>
                   ) : (
                     <div className="media-placeholder small">
                       <Plus size={20} />
-                      <span>URL below</span>
+                      <span style={{ fontSize: '11px' }}>{nameEn || "Slot " + (i + 1)}</span>
                     </div>
                   )}
-                  <input 
-                    className="field-input media-url-input-small" 
-                    placeholder="URL..." 
-                    value={img} 
-                    onChange={(e) => setGalleryImage(i, e.target.value)} 
-                  />
+                  <div onClick={(e) => e.stopPropagation()} style={{ width: '100%' }}>
+                    <input
+                      className="field-input media-url-input-small"
+                      placeholder="URL..."
+                      value={img}
+                      onChange={(e) => setGalleryImage(i, e.target.value)}
+                    />
+                  </div>
                 </div>
               ))}
               {gallery.length === 0 && (
@@ -362,9 +485,9 @@ const ProductEditor = () => {
           <div className="bilingual-field">
             <label className="field-label">Stock Status</label>
             <select className="field-input" value={status} onChange={(e) => setStatus(e.target.value)}>
-               <option value="In Stock">In Stock</option>
-               <option value="Out of Stock">Out of Stock</option>
-               <option value="Low Stock">Low Stock</option>
+              <option value="In Stock">In Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+              <option value="Low Stock">Low Stock</option>
             </select>
           </div>
         </div>
@@ -386,26 +509,26 @@ const ProductEditor = () => {
         </div>
         <ul className="feature-list">
           {featuresEn.map((f, i) => (
-            <li key={i} className="feature-row" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px' }}>
+            <li key={i} className="feature-row" style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '20px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', alignItems: 'flex-start' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span className="feature-bullet" style={{ background: '#e03232', boxShadow: '0 0 8px rgba(224, 50, 50, 0.4)' }} aria-hidden />
-                <input 
-                  className="field-input feature-input" 
-                  placeholder="Feature (EN)" 
-                  value={f} 
-                  onChange={(e) => setFeatureEn(i, e.target.value)} 
+                <input
+                  className="field-input feature-input"
+                  placeholder="Feature (EN)"
+                  value={f}
+                  onChange={(e) => setFeatureEn(i, e.target.value)}
                   style={{ textAlign: 'left' }}
                 />
                 <button type="button" className="feature-trash" onClick={() => removeFeature(i)} aria-label="Remove">
                   <Trash2 size={16} />
                 </button>
               </div>
-              <input 
-                className="field-input feature-input" 
-                dir="rtl" 
-                placeholder="الميزة (AR)" 
-                value={featuresAr[i] || ''} 
-                onChange={(e) => setFeatureAr(i, e.target.value)} 
+              <input
+                className="field-input feature-input"
+                dir="rtl"
+                placeholder="الميزة (AR)"
+                value={featuresAr[i] || ''}
+                onChange={(e) => setFeatureAr(i, e.target.value)}
                 style={{ textAlign: 'right' }}
               />
             </li>
@@ -459,12 +582,12 @@ const ProductEditor = () => {
 
       <div className="product-editor-footer">
         <button type="button" className="btn-ghost" onClick={() => navigate('/web/products')}>Discard</button>
-        <button 
-            type="button" 
-            className="btn-publish" 
-            disabled={saving || loading}
-            onClick={handleSave}
-            style={{ minWidth: '180px' }}
+        <button
+          type="button"
+          className="btn-publish"
+          disabled={saving || loading}
+          onClick={handleSave}
+          style={{ minWidth: '180px' }}
         >
           {saving ? (
             <><Loader2 className="animate-spin" size={18} /> Saving...</>
