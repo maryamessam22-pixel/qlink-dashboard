@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  setAuthenticated,
   getIntendedDashboard,
-  clearIntendedDashboard,
   isAuthenticated,
 } from '../../lib/authStorage';
 import logoImg from '../../assets/logos/QLINK.png';
@@ -20,21 +18,23 @@ const AdminLogin = () => {
   useEffect(() => {
     if (isAuthenticated()) {
       const target = location.state?.from;
-      if (typeof target === 'string' && (target.startsWith('/web') || target.startsWith('/app'))) {
-        navigate(target, { replace: true });
-      } else {
-        navigate(intended === 'app' ? '/app/overview' : '/web/overview', { replace: true });
-      }
+      const dest =
+        typeof target === 'string' && (target.startsWith('/web') || target.startsWith('/app'))
+          ? target
+          : intended === 'app'
+            ? '/app/overview'
+            : '/web/overview';
+      navigate('/loading', { replace: true, state: { dest } });
     }
   }, [navigate, location.state, intended]);
 
   const handleLogin = (e) => {
     e.preventDefault();
+    if (isLoggingIn) return;
     setIsLoggingIn(true);
 
-    // Simulate system initialization/auth delay
+    // Simulate auth delay before entering loading screen.
     setTimeout(() => {
-      setAuthenticated(true);
       const from = location.state?.from;
       const dest =
         typeof from === 'string' && (from.startsWith('/web') || from.startsWith('/app'))
@@ -42,21 +42,12 @@ const AdminLogin = () => {
           : intended === 'app'
             ? '/app/overview'
             : '/web/overview';
-      clearIntendedDashboard();
-      navigate(dest, { replace: true });
-    }, 2000);
+      navigate('/loading', { replace: true, state: { dest, authReady: true } });
+    }, 900);
   };
 
   return (
     <div className="login-container">
-      {isLoggingIn && (
-        <div className="login-loading-overlay">
-          <div className="loading-content">
-            <img src={logoImg} alt="Qlink" className="loading-logo" />
-            <div className="loading-spinner"></div>
-          </div>
-        </div>
-      )}
       <div className="login-card">
         <div className="login-header">
           <img src={logoImg} alt="Qlink Logo" className="logo-image" />
@@ -95,8 +86,8 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          <button type="submit" className="login-button">
-            Continue to dashboard
+          <button type="submit" className="login-button" disabled={isLoggingIn}>
+            {isLoggingIn ? 'Preparing secure session...' : 'Continue to dashboard'}
           </button>
 
           <button

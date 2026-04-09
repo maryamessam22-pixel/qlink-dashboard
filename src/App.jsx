@@ -7,6 +7,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 
 import DashboardChoice from './features/auth/DashboardChoice';
 import AdminLogin from './features/auth/AdminLogin';
+import LoadingScreen from './features/auth/LoadingScreen';
 
 import WebOverview from './features/web-dashboard/overview/WebOverview';
 import Orders from './features/web-dashboard/orders/Orders';
@@ -41,6 +42,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<DashboardChoice />} />
         <Route path="/login" element={<AdminLogin />} />
+        <Route path="/loading" element={<LoadingScreen />} />
 
         <Route
           path="/web"

@@ -1,0 +1,57 @@
+.auth-loading-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(4 10 24);
+  font-family: var(--font-en), Arial, sans-serif;
+}
+
+.auth-loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.auth-loading-logo {
+  height: 64px;
+  object-fit: contain;
+  animation: authPulse 1.9s infinite ease-in-out;
+}
+
+.auth-loading-spinner {
+  width: 42px;
+  height: 42px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: authSpin 1s linear infinite;
+}
+
+.auth-loading-text {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+@keyframes authSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes authPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+}

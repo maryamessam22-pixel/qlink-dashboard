@@ -1,34 +1,97 @@
-import React, { useState } from 'react';
-import PageMeta from '../../../components/seo/PageMeta';
-import SeoSection from '../../../components/seo/SeoSection';
-import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import '../../../styles/web-dashboard-pages.css';
+import React, { useState } from "react";
+import { Search } from "lucide-react";
+import PageMeta from "../../../components/seo/PageMeta";
+import SeoSection from "../../../components/seo/SeoSection";
+import myPic from "../../../assets/imges/my-pic.png";
+import "./AppSettings.css";
 
 const AppSettings = () => {
-  const [policyEn, setPolicyEn] = useState('<p>App policy notes (EN).</p>');
-  const [policyAr, setPolicyAr] = useState('<p>ملاحظات سياسة التطبيق (AR).</p>');
+  const [name, setName] = useState("M.Farid");
+  const [title, setTitle] = useState("Founder & CEO");
+  const [email, setEmail] = useState("muryamessam22@gmail.com");
+  const [curPass, setCurPass] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [confirmPass, setConfirmPass] = useState("");
   const [seo, setSeo] = useState({
-    slug: 'app-settings',
-    metaTitle: 'App settings',
-    metaDescription: 'Mobile app configuration.',
-    keywords: 'settings, app, qlink',
-    featuredImageAlt: 'App settings',
+    slug: "project-slug",
+    metaTitle: "SEO title displayed in Google Search",
+    metaDescription: "Brief summary for search engines...",
+    keywords: "profile, qlink, app settings",
+    featuredImageAlt: "Describe the image for accessibility and SEO",
   });
 
   return (
-    <div className="web-page">
+    <div className="app-settings-page">
       <PageMeta title="App · Settings" description={seo.metaDescription} keywords={seo.keywords} />
-      <h1 className="web-page-title">App settings</h1>
-      <p className="web-page-sub">Placeholder — extend with feature flags and remote config.</p>
-      <section className="web-card" style={{ marginTop: 24 }}>
-        <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Policy (EN)</label>
-        <RichTextEditor value={policyEn} onChange={setPolicyEn} />
-        <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>السياسة (AR)</label>
-          <RichTextEditor value={policyAr} onChange={setPolicyAr} rtl />
+
+      <div className="app-settings-head">
+        <h1 className="app-settings-title">Settings</h1>
+        <p className="app-settings-sub">Manage Profile Settings</p>
+      </div>
+
+      <section className="app-settings-card">
+        <div className="app-settings-profile-head">
+          <div className="app-settings-profile-who">
+            <img src={myPic} alt="" className="app-settings-avatar" />
+            <div>
+              <h2 className="app-settings-inline-name">{name}</h2>
+              <p className="app-settings-inline-role">{title}</p>
+            </div>
+          </div>
+          <button type="button" className="app-settings-save-btn">
+            Save Changes
+          </button>
+        </div>
+
+        <div className="app-settings-field">
+          <label>Full Name</label>
+          <input value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="app-settings-field">
+          <label>Job Title</label>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </div>
+        <div className="app-settings-field">
+          <label>Email Address (Login)</label>
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
       </section>
-      <SeoSection title="App settings SEO" slugPrefix="admin.qlink.com/app/settings/" value={seo} onChange={setSeo} badge="Internal" />
+
+      <section className="app-settings-card">
+        <h2 className="app-settings-card-title">Security</h2>
+        <div className="app-settings-field">
+          <label>Current password</label>
+          <input type="password" value={curPass} onChange={(e) => setCurPass(e.target.value)} />
+        </div>
+        <div className="app-settings-pass-row">
+          <div className="app-settings-field">
+            <label>New password</label>
+            <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} />
+          </div>
+          <div className="app-settings-field">
+            <label>Confirm password</label>
+            <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} />
+          </div>
+        </div>
+      </section>
+
+      <div className="app-settings-seo-wrap">
+        <div className="app-settings-seo-head">
+          <Search size={18} className="app-settings-seo-icon" />
+          <h2 className="app-settings-card-title" style={{ margin: 0 }}>
+            Edit Profile SEO
+          </h2>
+          <span className="seo-badge">Global Requirement</span>
+        </div>
+        <SeoSection
+          title=""
+          slugPrefix="mariamfarid.com/"
+          slugSuffixHint="project-slug"
+          value={seo}
+          onChange={setSeo}
+          showFeaturedAlt
+        />
+      </div>
     </div>
   );
 };

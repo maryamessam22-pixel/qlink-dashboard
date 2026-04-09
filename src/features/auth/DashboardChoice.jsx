@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Globe, Smartphone } from 'lucide-react';
-import { setIntendedDashboard } from '../../lib/authStorage';
+import { clearAuth, setIntendedDashboard } from '../../lib/authStorage';
 import logoImg from '../../assets/logos/QLINK.png';
 import DynamicBackground from '../../components/DynamicBackground';
 import { useIntersectionObserver } from '../../hooks/useIntersectionObserver';
@@ -13,6 +13,8 @@ const DashboardChoice = () => {
   const [cardsRef, cardsVisible] = useIntersectionObserver();
 
   const choose = (mode) => {
+    // Always restart auth flow from login after dashboard selection.
+    clearAuth();
     setIntendedDashboard(mode);
     navigate('/login');
   };

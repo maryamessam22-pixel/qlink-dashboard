@@ -1,0 +1,187 @@
+.app-settings-page {
+  font-family: var(--font-en), "Roboto", system-ui, sans-serif;
+  color: var(--app-text-primary);
+  max-width: 1280px;
+}
+
+.app-settings-head {
+  margin-bottom: 14px;
+}
+
+.app-settings-title {
+  margin: 0 0 4px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.app-settings-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--app-text-secondary);
+}
+
+.app-settings-card {
+  margin-bottom: 14px;
+  padding: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--app-primary);
+  background: var(--app-bg-page);
+}
+
+.app-settings-profile-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--app-border-subtle);
+  margin-bottom: 14px;
+}
+
+.app-settings-profile-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-settings-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--app-border-subtle);
+}
+
+.app-settings-inline-name {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app-settings-inline-role {
+  margin: 0;
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.app-settings-save-btn {
+  border: 0;
+  border-radius: 9px;
+  padding: 9px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--app-primary);
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.32);
+  cursor: pointer;
+}
+
+.app-settings-field {
+  margin-bottom: 12px;
+}
+
+.app-settings-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--app-text-primary);
+}
+
+.app-settings-field input {
+  width: 100%;
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--app-border-subtle);
+  background: #edf2fa;
+  color: var(--app-text-primary);
+  padding: 0 12px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.app-settings-pass-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.app-settings-card-title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.app-settings-seo-wrap {
+  border: 1px solid var(--app-primary);
+  border-radius: 10px;
+  background: var(--app-bg-page);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.app-settings-seo-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px 0;
+}
+
+.app-settings-seo-icon {
+  color: var(--app-text-primary);
+}
+
+/* keep SEO section fully light */
+.app-settings-seo-wrap .seo-section {
+  margin: 0;
+  border: none;
+  background: var(--app-bg-page);
+  box-shadow: none;
+}
+
+.app-settings-seo-wrap .seo-section-title {
+  display: none;
+}
+
+.app-settings-page .seo-label {
+  color: var(--app-primary);
+}
+
+.app-settings-page .seo-badge {
+  color: var(--app-primary);
+  background: rgba(26, 115, 232, 0.12);
+}
+
+.app-settings-page .seo-input,
+.app-settings-page .seo-slug-row {
+  border-color: var(--app-border-subtle);
+  background: #edf2fa;
+  color: var(--app-text-primary);
+}
+
+.app-settings-page .seo-slug-prefix {
+  border-color: var(--app-border-subtle);
+  color: var(--app-primary);
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.app-settings-page .seo-input::placeholder {
+  color: var(--app-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .app-settings-page {
+    padding-top: 12px;
+  }
+
+  .app-settings-title {
+    font-size: 28px;
+  }
+
+  .app-settings-pass-row {
+    grid-template-columns: 1fr;
+  }
+}
