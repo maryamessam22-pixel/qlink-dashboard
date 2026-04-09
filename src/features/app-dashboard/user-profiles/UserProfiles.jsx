@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import "./UserProfiles.css";
@@ -85,6 +85,9 @@ function bloodClass(type) {
 const UserProfiles = () => {
   const navigate = useNavigate();
   const [tick, setTick] = useState(0);
+  const [query, setQuery] = useState("");
+  const [bloodFilter, setBloodFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [overrides, setOverrides] = useState({});
   const [seo, setSeo] = useState({
     slug: "user-profiles",
@@ -101,15 +104,34 @@ const UserProfiles = () => {
 
   const payload = useMemo(() => getProfilesPayload(9, Date.now() + tick), [tick]);
 
-  const isActive = (row) => {
-    const o = overrides[row.id];
-    if (o && typeof o.active === "boolean") return o.active;
-    return row.active;
-  };
+  const isActive = useCallback(
+    (row) => {
+      const o = overrides[row.id];
+      if (o && typeof o.active === "boolean") return o.active;
+      return row.active;
+    },
+    [overrides]
+  );
 
   const setProfileActive = (id, active) => {
     setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
   };
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return payload.rows.filter((p) => {
+      const active = isActive(p);
+      const matchQuery =
+        !q ||
+        p.fullName.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.linkedGuardian.toLowerCase().includes(q) ||
+        p.bloodType.toLowerCase().includes(q);
+      const matchBlood = bloodFilter === "all" || p.bloodType === bloodFilter;
+      const matchStatus = statusFilter === "all" || (statusFilter === "active" ? active : !active);
+      return matchQuery && matchBlood && matchStatus;
+    });
+  }, [payload.rows, query, bloodFilter, statusFilter, isActive]);
 
   return (
     <div className="app-profiles-page">
@@ -132,6 +154,35 @@ const UserProfiles = () => {
         </button>
       </div>
 
+      <div className="app-profiles-toolbar">
+        <div className="app-profiles-search">
+          <Search size={18} aria-hidden />
+          <input
+            type="search"
+            placeholder="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search profiles"
+          />
+        </div>
+        <select className="app-profiles-filter" value={bloodFilter} onChange={(e) => setBloodFilter(e.target.value)} aria-label="Filter by blood type">
+          <option value="all">All blood types</option>
+          {BLOOD.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </select>
+        <select className="app-profiles-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter by profile status">
+          <option value="all">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <span className="app-profiles-summary">
+          Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
+        </span>
+      </div>
+
       <div className="app-profiles-table-wrap">
         <div className="app-profiles-table-scroll">
           <table className="app-profiles-table">
@@ -146,7 +197,7 @@ const UserProfiles = () => {
               </tr>
             </thead>
             <tbody>
-              {payload.rows.map((p) => (
+              {rows.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <div className="app-profiles-user-cell">

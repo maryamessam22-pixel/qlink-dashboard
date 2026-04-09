@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Clock3, Link2 } from "lucide-react";
+import { Clock3, Link2, Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import "./Bracelets.css";
@@ -67,6 +67,8 @@ function getBraceletsPayload(count = 8, nowMs = Date.now()) {
 
 const Bracelets = () => {
   const [tick, setTick] = useState(0);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [seo, setSeo] = useState({
     slug: "bracelets",
     metaTitle: "Manage bracelets — Qlink App",
@@ -81,6 +83,18 @@ const Bracelets = () => {
   }, []);
 
   const payload = useMemo(() => getBraceletsPayload(8, Date.now() + tick), [tick]);
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return payload.rows.filter((b) => {
+      const matchQuery =
+        !q ||
+        b.id.toLowerCase().includes(q) ||
+        b.assignedProfile.toLowerCase().includes(q) ||
+        b.contact.toLowerCase().includes(q);
+      const matchStatus = statusFilter === "all" || (statusFilter === "active" ? b.active : !b.active);
+      return matchQuery && matchStatus;
+    });
+  }, [payload.rows, query, statusFilter]);
 
   return (
     <div className="app-bracelets-page">
@@ -96,6 +110,27 @@ const Bracelets = () => {
         <p className="app-bracelets-sub">Manage Qlink hardware devices and assignments</p>
       </div>
 
+      <div className="app-bracelets-toolbar">
+        <div className="app-bracelets-search">
+          <Search size={18} aria-hidden />
+          <input
+            type="search"
+            placeholder="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search bracelets"
+          />
+        </div>
+        <select className="app-bracelets-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter bracelets by status">
+          <option value="all">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <span className="app-bracelets-summary">
+          Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
+        </span>
+      </div>
+
       <div className="app-bracelets-table-wrap">
         <div className="app-bracelets-table-scroll">
           <table className="app-bracelets-table">
@@ -109,7 +144,7 @@ const Bracelets = () => {
               </tr>
             </thead>
             <tbody>
-              {payload.rows.map((b) => (
+              {rows.map((b) => (
                 <tr key={b.id}>
                   <td>
                     <div className="app-bracelets-id-cell">

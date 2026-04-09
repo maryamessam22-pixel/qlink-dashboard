@@ -78,6 +78,8 @@ function getUsersPayload(count = 8, nowMs = Date.now()) {
 const Users = () => {
   const [tick, setTick] = useState(0);
   const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [overrides, setOverrides] = useState({});
   const [seo, setSeo] = useState({
     slug: 'users',
@@ -94,18 +96,6 @@ const Users = () => {
 
   const payload = useMemo(() => getUsersPayload(9, Date.now() + tick), [tick]);
 
-  const rows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return payload.rows;
-    return payload.rows.filter(
-      (r) =>
-        r.fullName.toLowerCase().includes(q) ||
-        r.email.toLowerCase().includes(q) ||
-        r.id.toLowerCase().includes(q) ||
-        r.role.includes(q)
-    );
-  }, [payload.rows, query]);
-
   const isActive = useCallback(
     (u) => {
       const o = overrides[u.id];
@@ -114,6 +104,22 @@ const Users = () => {
     },
     [overrides]
   );
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return payload.rows.filter((r) => {
+      const matchQuery =
+        !q ||
+        r.fullName.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q) ||
+        r.id.toLowerCase().includes(q) ||
+        r.role.includes(q);
+      const matchRole = roleFilter === 'all' || r.role === roleFilter;
+      const active = isActive(r);
+      const matchStatus = statusFilter === 'all' || (statusFilter === 'active' ? active : !active);
+      return matchQuery && matchRole && matchStatus;
+    });
+  }, [payload.rows, query, roleFilter, statusFilter, isActive]);
 
   const setUserActive = (id, active) => {
     setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
@@ -164,6 +170,16 @@ const Users = () => {
             aria-label="Search users"
           />
         </div>
+        <select className="app-users-filter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} aria-label="Filter users by role">
+          <option value="all">All roles</option>
+          <option value="guardian">Guardian</option>
+          <option value="patient">Patient</option>
+        </select>
+        <select className="app-users-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter users by status">
+          <option value="all">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
         <span className="app-users-summary">
           Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
         </span>

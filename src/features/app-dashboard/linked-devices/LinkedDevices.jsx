@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import "./LinkedDevices.css";
@@ -64,6 +65,9 @@ function getLinkedDevicesPayload(count = 8, nowMs = Date.now()) {
 
 const LinkedDevices = () => {
   const [tick, setTick] = useState(0);
+  const [query, setQuery] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [overrides, setOverrides] = useState({});
   const [seo, setSeo] = useState({
     slug: "linked-devices",
@@ -80,11 +84,14 @@ const LinkedDevices = () => {
 
   const payload = useMemo(() => getLinkedDevicesPayload(9, Date.now() + tick), [tick]);
 
-  const isActive = (row) => {
-    const o = overrides[row.id];
-    if (o && typeof o.active === "boolean") return o.active;
-    return row.active;
-  };
+  const isActive = useCallback(
+    (row) => {
+      const o = overrides[row.id];
+      if (o && typeof o.active === "boolean") return o.active;
+      return row.active;
+    },
+    [overrides]
+  );
 
   const setDeviceActive = (id, active) => {
     setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
@@ -95,6 +102,22 @@ const LinkedDevices = () => {
     if (!active) return 0;
     return row.batteryLevel;
   };
+
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return payload.rows.filter((d) => {
+      const active = isActive(d);
+      const matchQuery =
+        !q ||
+        d.deviceName.toLowerCase().includes(q) ||
+        d.id.toLowerCase().includes(q) ||
+        d.linkedProfile.toLowerCase().includes(q) ||
+        d.type.toLowerCase().includes(q);
+      const matchType = typeFilter === "all" || d.type === typeFilter;
+      const matchStatus = statusFilter === "all" || (statusFilter === "active" ? active : !active);
+      return matchQuery && matchType && matchStatus;
+    });
+  }, [payload.rows, query, typeFilter, statusFilter, isActive]);
 
   return (
     <div className="app-linked-page">
@@ -111,6 +134,32 @@ const LinkedDevices = () => {
         <p className="app-linked-sub">Manage all connected devices and their status</p>
       </div>
 
+      <div className="app-linked-toolbar">
+        <div className="app-linked-search">
+          <Search size={18} aria-hidden />
+          <input
+            type="search"
+            placeholder="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            aria-label="Search linked devices"
+          />
+        </div>
+        <select className="app-linked-filter" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} aria-label="Filter by device type">
+          <option value="all">All types</option>
+          <option value="Qlink Bracelet">Qlink Bracelet</option>
+          <option value="Apple Watch">Apple Watch</option>
+        </select>
+        <select className="app-linked-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter by status">
+          <option value="all">All status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+        <span className="app-linked-summary">
+          Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
+        </span>
+      </div>
+
       <div className="app-linked-table-wrap">
         <div className="app-linked-table-scroll">
           <table className="app-linked-table">
@@ -125,7 +174,7 @@ const LinkedDevices = () => {
               </tr>
             </thead>
             <tbody>
-              {payload.rows.map((d) => {
+              {rows.map((d) => {
                 const active = isActive(d);
                 const battery = effectiveBattery(d);
                 const batteryClass = battery <= 10 ? "low" : "ok";

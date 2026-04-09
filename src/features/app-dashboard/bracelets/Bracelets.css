@@ -27,6 +27,70 @@
   color: var(--app-text-secondary);
 }
 
+.app-bracelets-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.app-bracelets-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border-subtle);
+  background: var(--app-bg-card);
+  box-shadow: var(--app-card-shadow);
+}
+
+.app-bracelets-search svg {
+  color: var(--app-text-secondary);
+  flex-shrink: 0;
+}
+
+.app-bracelets-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--app-text-primary);
+  outline: none;
+}
+
+.app-bracelets-search input::placeholder {
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-filter {
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border-subtle);
+  background: var(--app-bg-card);
+  color: var(--app-text-primary);
+  padding: 0 14px;
+  font-size: 13px;
+  font-family: inherit;
+  box-shadow: var(--app-card-shadow);
+}
+
+.app-bracelets-summary {
+  font-size: 13px;
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-summary strong {
+  color: var(--app-primary);
+  font-weight: 600;
+}
+
 .app-bracelets-table-wrap {
   background: var(--app-bg-card);
   border-radius: 16px;

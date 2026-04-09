@@ -100,6 +100,18 @@
   color: var(--app-text-secondary);
 }
 
+.app-users-filter {
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid var(--app-border-subtle);
+  background: var(--app-bg-card);
+  color: var(--app-text-primary);
+  padding: 0 14px;
+  font-size: 13px;
+  font-family: inherit;
+  box-shadow: var(--app-card-shadow);
+}
+
 .app-users-summary {
   font-size: 13px;
   color: var(--app-text-secondary);
