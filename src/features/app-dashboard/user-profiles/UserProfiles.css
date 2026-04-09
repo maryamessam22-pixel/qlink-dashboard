@@ -236,3 +236,40 @@
 .app-profiles-icon-btn--danger {
   color: var(--app-danger);
 }
+
+.app-profiles-page .seo-section {
+  border-color: var(--app-border-subtle);
+  background: var(--app-bg-card);
+  box-shadow: var(--app-card-shadow);
+  margin-top: 28px;
+}
+
+.app-profiles-page .seo-section-title {
+  color: var(--app-text-primary);
+}
+
+.app-profiles-page .seo-label {
+  color: var(--app-primary);
+}
+
+.app-profiles-page .seo-badge {
+  background: rgba(26, 115, 232, 0.12);
+  color: var(--app-primary);
+}
+
+.app-profiles-page .seo-input,
+.app-profiles-page .seo-slug-row {
+  border-color: var(--app-border-subtle);
+  background: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+.app-profiles-page .seo-slug-prefix {
+  color: var(--app-primary);
+  background: rgba(26, 115, 232, 0.08);
+  border-color: var(--app-border-subtle);
+}
+
+.app-profiles-page .seo-input::placeholder {
+  color: var(--app-text-secondary);
+}
