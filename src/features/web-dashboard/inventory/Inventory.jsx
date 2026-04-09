@@ -1,12 +1,41 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { SAMPLE_PRODUCTS } from '../products/ProductEditor';
+import { supabase } from '../../../lib/supabase';
 import '../../../styles/web-dashboard-pages.css';
 import './Inventory.css';
+
+const REFRESH_MS = 60_000;
+
+function mapInventoryRow(row) {
+  const available = Number(row.available_units) || 0;
+  const reserved = Number(row.reserved_units) || 0;
+  const total = Math.max(1, available + reserved);
+  const stockLabel = String(row.stock ?? '').trim() || '—';
+  return {
+    id: row.id,
+    productId: row.product_id,
+    image: row['product-img'] || '',
+    nameEn: row['product-name'] || 'Product',
+    sku: row.serial || '—',
+    stockLabel,
+    avail: available,
+    reserved,
+    availPct: Math.round((available / total) * 100),
+    resPct: Math.round((reserved / total) * 100),
+    imageAlt: row.featured_image_alt || row['product-name'] || 'Product',
+  };
+}
+
+function stockBadgeClass(stockLabel) {
+  const s = stockLabel.toLowerCase();
+  if (s === 'out of stock' || s === 'out') return 'inv-stock-badge inv-stock-badge--out';
+  if (s === 'low stock' || s === 'low') return 'inv-stock-badge inv-stock-badge--low';
+  return 'inv-stock-badge inv-stock-badge--ok';
+}
 
 const Inventory = () => {
   const [policyEn, setPolicyEn] = useState('<p>Restock when available units fall below threshold.</p>');
@@ -21,28 +50,53 @@ const Inventory = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStock, setFilterStock] = useState('All');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
-  const items = SAMPLE_PRODUCTS.map((p, i) => {
-    const reserved = 40 + i * 5;
-    const avail = Math.max(0, p.stock - reserved);
-    const cap = p.stock + 200;
-    const availPct = Math.min(100, Math.round((avail / cap) * 100));
-    const resPct = Math.min(100, Math.round((reserved / cap) * 100));
-    return { ...p, avail, reserved, availPct, resPct, sku: `QL-SLV-${String(i + 2).padStart(3, '0')}` };
-  });
+  useEffect(() => {
+    let mounted = true;
+    const fetchInventory = async () => {
+      setFetchError('');
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('inventory')
+        .select('*')
+        .order('updated_at', { ascending: false });
+      if (!mounted) return;
+      if (error) {
+        setFetchError(error.message || 'Failed to load inventory.');
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+      setItems((data || []).map(mapInventoryRow));
+      setLoading(false);
+    };
+    fetchInventory();
+    const id = window.setInterval(fetchInventory, REFRESH_MS);
+    return () => {
+      mounted = false;
+      window.clearInterval(id);
+    };
+  }, []);
 
-  const filteredItems = items.filter(it => {
-    const matchesSearch = 
-        it.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        it.sku.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesFilter = filterStock === 'All' || 
-        (filterStock === 'In Stock' && it.stock > 0) || 
-        (filterStock === 'Low Stock' && it.stock > 0 && it.stock < 50) || 
-        (filterStock === 'Out of Stock' && it.stock === 0);
-    
-    return matchesSearch && matchesFilter;
-  });
+  const filteredItems = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return items.filter((it) => {
+      const matchesSearch =
+        !q ||
+        it.nameEn.toLowerCase().includes(q) ||
+        it.sku.toLowerCase().includes(q);
+      const stockNorm = it.stockLabel.toLowerCase();
+      const matchesFilter =
+        filterStock === 'All' ||
+        (filterStock === 'In Stock' && stockNorm === 'in stock') ||
+        (filterStock === 'Low Stock' && stockNorm === 'low stock') ||
+        (filterStock === 'Out of Stock' && (stockNorm === 'out of stock' || it.avail === 0));
+      return matchesSearch && matchesFilter;
+    });
+  }, [items, searchQuery, filterStock]);
 
   return (
     <div className="web-page inventory-page">
@@ -81,16 +135,27 @@ const Inventory = () => {
           </div>
       </div>
 
+      {fetchError ? (
+        <p className="inventory-error" role="alert">{fetchError}</p>
+      ) : null}
+
       <div className="inventory-grid">
-        {filteredItems.map((it) => (
+        {loading ? (
+          <p className="inventory-loading">Loading inventory…</p>
+        ) : filteredItems.length === 0 ? (
+          <p className="inventory-empty">
+            {items.length === 0 ? 'No inventory rows yet.' : 'No rows match your filters.'}
+          </p>
+        ) : (
+          filteredItems.map((it) => (
           <article key={it.id} className="inv-card">
             <div className="inv-card-top">
-              <img src={it.image} alt="" className="inv-thumb" />
+              <img src={it.image} alt={it.imageAlt} className="inv-thumb" />
               <div>
                 <h2 className="inv-name">{it.nameEn}</h2>
                 <p className="inv-sku">{it.sku}</p>
               </div>
-              <span className="inv-stock-badge">In stock</span>
+              <span className={stockBadgeClass(it.stockLabel)}>{it.stockLabel}</span>
             </div>
             <div className="inv-metric">
               <div className="inv-metric-label">
@@ -115,7 +180,8 @@ const Inventory = () => {
               <button type="button" className="btn-secondary">History</button>
             </div>
           </article>
-        ))}
+        ))
+        )}
       </div>
 
       <section className="web-card">

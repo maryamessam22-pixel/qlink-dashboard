@@ -31,6 +31,7 @@
   color: #e6edf3;
   font-size: 14px;
   font-family: inherit;
+  margin-top: 10px;
 }
 
 .field-input:focus {

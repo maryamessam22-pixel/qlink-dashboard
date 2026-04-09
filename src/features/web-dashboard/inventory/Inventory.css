@@ -5,6 +5,24 @@
   margin-bottom: 28px;
 }
 
+.inventory-grid > .inventory-loading,
+.inventory-grid > .inventory-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+.inventory-error {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(220, 53, 69, 0.12);
+  border: 1px solid rgba(220, 53, 69, 0.35);
+  color: #f87171;
+  font-size: 14px;
+}
+
 .inv-card {
   background: #131c2f;
   border: 1px solid #1f2937;
@@ -45,10 +63,23 @@
   font-weight: 700;
   padding: 6px 12px;
   border-radius: 8px;
-  background: #10b981;
   color: #fff;
   white-space: nowrap;
+}
+
+.inv-stock-badge--ok {
+  background: #10b981;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.inv-stock-badge--low {
+  background: #d97706;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
+}
+
+.inv-stock-badge--out {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
 }
 
 .inv-metric {

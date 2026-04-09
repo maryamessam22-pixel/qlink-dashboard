@@ -63,7 +63,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
       <div className="topbar-actions">
         
         {/* Search Bar - Independent State */}
-        <div className={`search-wrapper ${isSearchOpen ? 'visible' : ''}`}>
+        {/* <div className={`search-wrapper ${isSearchOpen ? 'visible' : ''}`}>
           {isSearchOpen ? (
             <X 
               size={18} 
@@ -83,7 +83,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
             className="search-input" 
             placeholder="Search" 
           />
-        </div>
+        </div> */}
 
         <button className="notification-btn">
           <Bell size={24} />
