@@ -28,6 +28,7 @@ import CmsEmails from './features/web-dashboard/cms/emails/CmsEmails';
 import AppOverview from './features/app-dashboard/overview/AppOverview';
 import Users from './features/app-dashboard/users/Users';
 import UserProfiles from './features/app-dashboard/user-profiles/UserProfiles';
+import EditUserProfile from './features/app-dashboard/user-profiles/EditUserProfile';
 import LinkedDevices from './features/app-dashboard/linked-devices/LinkedDevices';
 import Bracelets from './features/app-dashboard/bracelets/Bracelets';
 import AppSettings from './features/app-dashboard/settings/AppSettings';
@@ -82,6 +83,7 @@ const App = () => {
           <Route path="overview" element={<AppOverview />} />
           <Route path="users" element={<Users />} />
           <Route path="user-profiles" element={<UserProfiles />} />
+          <Route path="user-profiles/:profileId/edit" element={<EditUserProfile />} />
           <Route path="linked-devices" element={<LinkedDevices />} />
           <Route path="bracelets" element={<Bracelets />} />
           <Route path="settings" element={<AppSettings />} />

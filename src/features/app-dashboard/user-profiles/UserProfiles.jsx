@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
@@ -31,6 +32,7 @@ function bloodClass(type) {
 }
 
 const UserProfiles = () => {
+  const navigate = useNavigate();
   const [tick, setTick] = useState(0);
   const [overrides, setOverrides] = useState({});
   const [seo, setSeo] = useState({
@@ -133,7 +135,7 @@ const UserProfiles = () => {
                       <button
                         type="button"
                         className="app-profiles-icon-btn"
-                        onClick={() => window.alert(`Edit profile: ${p.fullName}`)}
+                        onClick={() => navigate(`/app/user-profiles/${encodeURIComponent(p.id)}/edit`, { state: { profile: p } })}
                         aria-label={`Edit ${p.fullName}`}
                       >
                         <Pencil size={16} />

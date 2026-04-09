@@ -9,6 +9,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
   
   const getCurrentPageName = () => {
     const path = location.pathname;
+    if (path.includes('/user-profiles/') && path.includes('/edit')) return 'Edit Profile';
     if (path.includes('/settings')) return 'Settings';
     if (path.includes('/products/new')) return 'Add New Product';
     if (path.includes('/products/') && path.includes('/edit')) return 'Edit Product';
