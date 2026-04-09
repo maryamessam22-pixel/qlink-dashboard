@@ -1,0 +1,182 @@
+.app-bracelets-page {
+  font-family: var(--font-en), "Roboto", system-ui, sans-serif;
+  color: var(--app-text-primary);
+  max-width: 1280px;
+}
+
+.app-bracelets-meta {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-head {
+  margin-bottom: 16px;
+}
+
+.app-bracelets-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--app-text-primary);
+}
+
+.app-bracelets-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-table-wrap {
+  background: var(--app-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--app-card-shadow);
+  overflow: hidden;
+}
+
+.app-bracelets-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-bracelets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 920px;
+}
+
+.app-bracelets-table thead th {
+  text-align: left;
+  padding: 14px 18px;
+  background: var(--app-table-header-bg);
+  color: var(--app-table-header-text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.app-bracelets-table tbody tr {
+  border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.app-bracelets-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.app-bracelets-table tbody td {
+  padding: 16px 18px;
+  vertical-align: middle;
+  color: var(--app-text-primary);
+}
+
+.app-bracelets-id-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-bracelets-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ah, 210), 55%, 48%),
+    hsl(calc(var(--ah, 210) + 40), 50%, 42%)
+  );
+}
+
+.app-bracelets-id {
+  margin: 0 0 2px;
+  font-weight: 700;
+}
+
+.app-bracelets-contact {
+  margin: 0;
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-status {
+  display: inline-flex;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-bracelets-status--active {
+  background: rgba(52, 168, 83, 0.14);
+  color: #1e8e3e;
+}
+
+.app-bracelets-status--inactive {
+  background: rgba(217, 48, 37, 0.12);
+  color: #c5221f;
+}
+
+.app-bracelets-profile {
+  font-weight: 600;
+  color: var(--app-text-primary);
+}
+
+.app-bracelets-sync {
+  color: var(--app-text-secondary);
+}
+
+.app-bracelets-action {
+  border: 0;
+  background: transparent;
+  color: var(--app-primary);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.app-bracelets-action:hover {
+  text-decoration: underline;
+}
+
+.app-bracelets-page .seo-section {
+  border-color: var(--app-border-subtle);
+  background: var(--app-bg-card);
+  box-shadow: var(--app-card-shadow);
+  margin-top: 28px;
+}
+
+.app-bracelets-page .seo-section-title {
+  color: var(--app-text-primary);
+}
+
+.app-bracelets-page .seo-label {
+  color: var(--app-primary);
+}
+
+.app-bracelets-page .seo-badge {
+  background: rgba(26, 115, 232, 0.12);
+  color: var(--app-primary);
+}
+
+.app-bracelets-page .seo-input,
+.app-bracelets-page .seo-slug-row {
+  border-color: var(--app-border-subtle);
+  background: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+.app-bracelets-page .seo-slug-prefix {
+  color: var(--app-primary);
+  background: rgba(26, 115, 232, 0.08);
+  border-color: var(--app-border-subtle);
+}
+
+.app-bracelets-page .seo-input::placeholder {
+  color: var(--app-text-secondary);
+}
