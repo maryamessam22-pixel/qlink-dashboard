@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
+import qFavicon from './assets/logos/Q.png';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import DashboardLayout from './layouts/DashboardLayout';
@@ -37,6 +38,16 @@ import AppSettings from './features/app-dashboard/settings/AppSettings';
 import { isAuthenticated } from './lib/authStorage';
 
 const App = () => {
+  useEffect(() => {
+    let link = document.querySelector("link[rel*='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'icon');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', qFavicon);
+  }, []);
+
   return (
     <BrowserRouter>
       <Routes>

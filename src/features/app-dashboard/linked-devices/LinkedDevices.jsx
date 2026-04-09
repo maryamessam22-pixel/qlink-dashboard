@@ -2,69 +2,39 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
+import { supabase } from "../../../lib/supabase";
 import "./LinkedDevices.css";
 
 const REFRESH_MS = 60_000;
 
-function mulberry32(a) {
-  return function () {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function avatarHueFromId(id = "") {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(hash) % 360;
 }
 
-function seedFromTime(nowMs = Date.now()) {
-  const bucket = Math.floor(nowMs / 60000);
-  return mulberry32((bucket % 2147483647) + 11);
-}
-
-const PROFILES = ["Mohmed Saber", "Karma Ahmed", "Hoda Mansour", "Mariam Essam", "Omar Farid", "Nour Saad"];
-const BRACELET_NAMES = ['Qlink Smart Bracelet "Nova"', 'Qlink Smart Bracelet "Pulse"', 'Qlink Smart Bracelet "Core"'];
-const WATCH_NAMES = ["Smartwatch Pro #5678", "Apple Watch S9", "Galaxy Watch 6"];
-
-function pick(arr, next) {
-  return arr[Math.floor(next() * arr.length)];
-}
-
-function getLinkedDevicesPayload(count = 8, nowMs = Date.now()) {
-  const next = seedFromTime(nowMs);
-  const rows = [];
-  for (let i = 0; i < count; i += 1) {
-    const useWatch = next() > 0.72;
-    const type = useWatch ? "Apple Watch" : "Qlink Bracelet";
-    const active = next() > 0.25;
-    const batteryLevel = active ? Math.max(5, Math.floor(next() * 100)) : Math.floor(next() * 12);
-    rows.push({
-      id: `DEV-${1500 + Math.floor(next() * 7000)}`,
-      deviceName: useWatch ? pick(WATCH_NAMES, next) : pick(BRACELET_NAMES, next),
-      type,
-      typeClass: type === "Apple Watch" ? "watch" : "qlink",
-      linkedProfile: pick(PROFILES, next),
-      active,
-      batteryLevel,
-      avatarHue: Math.floor(next() * 360),
-    });
-  }
-  if (rows.length >= 3) {
-    rows[0] = { ...rows[0], deviceName: 'Qlink Smart Bracelet "Nova"', type: "Qlink Bracelet", typeClass: "qlink", linkedProfile: "Mohmed Saber", active: true, batteryLevel: 85 };
-    rows[1] = { ...rows[1], deviceName: 'Qlink Smart Bracelet "Pulse"', type: "Qlink Bracelet", typeClass: "qlink", linkedProfile: "Karma Ahmed", active: true, batteryLevel: 85 };
-    rows[2] = { ...rows[2], deviceName: "Smartwatch Pro #5678", type: "Apple Watch", typeClass: "watch", linkedProfile: "Hoda Mansour", active: false, batteryLevel: 0 };
-  }
+function mapDeviceRow(row) {
+  const linkedProfile = row.linekd_profile || "Unassigned";
+  const type = row.type || "Qlink Bracelet";
   return {
-    rows,
-    updatedLabel: new Date(nowMs).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }),
-    summary: {
-      total: rows.length,
-      active: rows.filter((r) => r.active).length,
-      avgBattery: rows.length > 0 ? Math.round(rows.reduce((sum, r) => sum + r.batteryLevel, 0) / rows.length) : 0,
-    },
+    id: row.id,
+    deviceName: row.device_name || row.device_code || "Unnamed device",
+    type,
+    typeClass: String(type).toLowerCase().includes("apple") ? "watch" : "qlink",
+    linkedProfile,
+    active: Boolean(row.status),
+    batteryLevel: Number.isFinite(row.battery_level) ? row.battery_level : 0,
+    avatarHue: avatarHueFromId(row.id),
+    image: row.image || "",
+    action: row.action || "Disconnect",
   };
 }
 
 const LinkedDevices = () => {
-  const [tick, setTick] = useState(0);
+  const [devices, setDevices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
+  const [updatedLabel, setUpdatedLabel] = useState("");
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -77,12 +47,35 @@ const LinkedDevices = () => {
     featuredImageAlt: "Linked devices",
   });
 
-  useEffect(() => {
-    const id = window.setInterval(() => setTick((t) => t + 1), REFRESH_MS);
-    return () => window.clearInterval(id);
+  const fetchDevices = useCallback(async () => {
+    setFetchError("");
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("devices")
+      .select("id, device_name, device_code, type, profile_id, status, battery_level, action, created_at, linekd_profile, image")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      setFetchError(error.message || "Failed to load devices.");
+      setDevices([]);
+      setLoading(false);
+      return;
+    }
+    setDevices((data || []).map(mapDeviceRow));
+    setUpdatedLabel(
+      new Date().toLocaleString(undefined, {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    );
+    setLoading(false);
   }, []);
 
-  const payload = useMemo(() => getLinkedDevicesPayload(9, Date.now() + tick), [tick]);
+  useEffect(() => {
+    fetchDevices();
+    const id = window.setInterval(fetchDevices, REFRESH_MS);
+    return () => window.clearInterval(id);
+  }, [fetchDevices]);
 
   const isActive = useCallback(
     (row) => {
@@ -105,7 +98,7 @@ const LinkedDevices = () => {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return payload.rows.filter((d) => {
+    return devices.filter((d) => {
       const active = isActive(d);
       const matchQuery =
         !q ||
@@ -117,16 +110,22 @@ const LinkedDevices = () => {
       const matchStatus = statusFilter === "all" || (statusFilter === "active" ? active : !active);
       return matchQuery && matchType && matchStatus;
     });
-  }, [payload.rows, query, typeFilter, statusFilter, isActive]);
+  }, [devices, query, typeFilter, statusFilter, isActive]);
+
+  const summary = useMemo(() => {
+    const total = devices.length;
+    const active = devices.filter((r) => isActive(r)).length;
+    const avgBattery = total > 0 ? Math.round(devices.reduce((sum, r) => sum + (Number(r.batteryLevel) || 0), 0) / total) : 0;
+    return { total, active, avgBattery };
+  }, [devices, isActive]);
 
   return (
     <div className="app-linked-page">
       <PageMeta title="App · Linked Devices" description={seo.metaDescription} keywords={seo.keywords} />
 
       <p className="app-linked-meta">
-        Live sample data · {payload.updatedLabel} · refreshes every minute ·{" "}
-        <strong>{payload.summary.active}</strong> active of <strong>{payload.summary.total}</strong> · avg battery{" "}
-        <strong>{payload.summary.avgBattery}%</strong>
+        Supabase devices · {loading ? "Loading..." : `Updated ${updatedLabel}`} · <strong>{summary.active}</strong> active of{" "}
+        <strong>{summary.total}</strong> · avg battery <strong>{summary.avgBattery}%</strong>
       </p>
 
       <div className="app-linked-head">
@@ -156,9 +155,12 @@ const LinkedDevices = () => {
           <option value="inactive">Inactive</option>
         </select>
         <span className="app-linked-summary">
-          Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
+          Showing <strong>{rows.length}</strong> of <strong>{devices.length}</strong>
         </span>
       </div>
+
+      {fetchError ? <p className="app-linked-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
+      {loading ? <p className="app-linked-meta">Loading devices...</p> : null}
 
       <div className="app-linked-table-wrap">
         <div className="app-linked-table-scroll">
@@ -183,12 +185,16 @@ const LinkedDevices = () => {
                     <td>
                       <div className="app-linked-device-cell">
                         <div className="app-linked-avatar" style={{ "--ah": d.avatarHue }} aria-hidden>
-                          {d.deviceName
-                            .split(" ")
-                            .map((x) => x[0])
-                            .join("")
-                            .slice(0, 2)
-                            .toUpperCase()}
+                          {d.image ? (
+                            <img src={d.image} alt={d.linkedProfile} className="app-linked-avatar-img" />
+                          ) : (
+                            d.deviceName
+                              .split(" ")
+                              .map((x) => x[0])
+                              .join("")
+                              .slice(0, 2)
+                              .toUpperCase()
+                          )}
                         </div>
                         <p className="app-linked-device-name">{d.deviceName}</p>
                       </div>
@@ -226,9 +232,9 @@ const LinkedDevices = () => {
                         <button
                           type="button"
                           className="app-linked-disconnect"
-                          onClick={() => window.alert(`Disconnect queued: ${d.deviceName}`)}
+                          onClick={() => window.alert(`${d.action} queued: ${d.deviceName}`)}
                         >
-                          Disconnect
+                          {d.action}
                         </button>
                       </div>
                     </td>
