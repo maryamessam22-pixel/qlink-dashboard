@@ -136,7 +136,7 @@ const Bracelets = () => {
       </div>
 
       {fetchError ? <p className="app-bracelets-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-bracelets-meta">Loading bracelets...</p> : null}
+      {loading ? <p className="app-bracelets-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading bracelets...</p> : null}
 
       <div className="app-bracelets-table-wrap">
         <div className="app-bracelets-table-scroll">

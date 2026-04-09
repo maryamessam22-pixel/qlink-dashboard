@@ -21,6 +21,20 @@
   color: var(--app-text-secondary);
 }
 
+.app-settings-note {
+  margin: 0 0 12px;
+  font-size: 13px;
+}
+
+.app-settings-note--loading {
+  color: var(--app-primary);
+  font-weight: 600;
+}
+
+.app-settings-note--error {
+  color: var(--app-danger);
+}
+
 .app-settings-card {
   margin-bottom: 14px;
   padding: 18px;

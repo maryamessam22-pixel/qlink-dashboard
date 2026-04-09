@@ -160,7 +160,7 @@ const LinkedDevices = () => {
       </div>
 
       {fetchError ? <p className="app-linked-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-linked-meta">Loading devices...</p> : null}
+      {loading ? <p className="app-linked-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading devices...</p> : null}
 
       <div className="app-linked-table-wrap">
         <div className="app-linked-table-scroll">

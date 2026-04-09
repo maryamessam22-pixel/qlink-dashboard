@@ -2,81 +2,39 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Eye, Plus, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
+import { supabase } from '../../../lib/supabase';
 import './Users.css';
 
 const REFRESH_MS = 60_000;
 
-function mulberry32(a) {
-  return function () {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+function avatarHueFromId(id = '') {
+  let hash = 0;
+  for (let i = 0; i < id.length; i += 1) hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  return Math.abs(hash) % 360;
 }
 
-function seedFromTime(nowMs = Date.now()) {
-  const bucket = Math.floor(nowMs / 60000);
-  return mulberry32((bucket % 2147483647) + 1);
-}
-
-const FIRST = [
-  'Ahmed', 'Fatima', 'Omar', 'Layla', 'Youssef', 'Nour', 'Karim', 'Mariam', 'Hassan', 'Salma',
-  'Malak', 'Khaled', 'Zeina', 'Tarek', 'Dina', 'Mohamed', 'Reem', 'Hana', 'Amr', 'Yasmin',
-];
-const LAST = [
-  'El-Sayed', 'Hassan', 'Ibrahim', 'Mahmoud', 'Farid', 'Ali', 'Nasser', 'Khalil', 'Soliman', 'Fouad',
-  'Sabry', 'Othman', 'Zaki', 'Rashid', 'Adel', 'Mansour', 'Hakim', 'Samir', 'Tawfik', 'Gamal',
-];
-
-function pick(arr, next) {
-  return arr[Math.floor(next() * arr.length)];
-}
-
-function formatDate(next) {
-  const d = new Date();
-  d.setDate(d.getDate() - Math.floor(next() * 400));
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
-function getUsersPayload(count = 8, nowMs = Date.now()) {
-  const next = seedFromTime(nowMs);
-  const used = new Set();
-  const rows = [];
-  for (let i = 0; i < count; i += 1) {
-    let id = `USR-${1000 + Math.floor(next() * 9000)}`;
-    while (used.has(id)) id = `USR-${1000 + Math.floor(next() * 9000)}`;
-    used.add(id);
-    const first = pick(FIRST, next);
-    const last = pick(LAST, next);
-    const role = next() > 0.42 ? 'guardian' : 'patient';
-    rows.push({
-      id,
-      fullName: `${first} ${last}`,
-      email: `${first.toLowerCase()}.${last.toLowerCase().replace(/[^a-z]/g, '')}${Math.floor(next() * 90)}@email.com`,
-      role,
-      registrationDate: formatDate(next),
-      active: next() > 0.15,
-      profilesManaged: role === 'guardian' ? Math.floor(next() * 5) + 1 : Math.floor(next() * 3),
-      avatarHue: Math.floor(next() * 360),
-    });
-  }
-  rows.sort((a, b) => a.registrationDate.localeCompare(b.registrationDate));
+function mapProfileRow(row) {
+  const roleNorm = String(row.role || 'patient').toLowerCase();
+  const role = roleNorm === 'guardian' ? 'guardian' : 'patient';
   return {
-    rows,
-    updatedLabel: new Date(nowMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
-    summary: {
-      guardians: rows.filter((r) => r.role === 'guardian').length,
-      patients: rows.filter((r) => r.role === 'patient').length,
-    },
+    id: row.id,
+    fullName: row.full_name || 'Unknown',
+    email: row.email || '-',
+    role,
+    registrationDate: row.registration_date || '',
+    active: Boolean(row.status),
+    profilesManaged: role === 'guardian' ? 1 : 0,
+    avatarHue: avatarHueFromId(row.id),
+    avatarUrl: row.avatar_url || '',
+    jobTitle: row.job_title || '',
   };
 }
 
 const Users = () => {
-  const [tick, setTick] = useState(0);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const [updatedLabel, setUpdatedLabel] = useState('');
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -90,11 +48,32 @@ const Users = () => {
   });
 
   useEffect(() => {
-    const id = window.setInterval(() => setTick((t) => t + 1), REFRESH_MS);
-    return () => window.clearInterval(id);
+    let mounted = true;
+    const fetchUsers = async () => {
+      setFetchError('');
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, full_name, job_title, email, role, status, registration_date, avatar_url, created_at')
+        .order('created_at', { ascending: false });
+      if (!mounted) return;
+      if (error) {
+        setFetchError(error.message || 'Failed to load profiles.');
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+      setUsers((data || []).map(mapProfileRow));
+      setUpdatedLabel(new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }));
+      setLoading(false);
+    };
+    fetchUsers();
+    const id = window.setInterval(fetchUsers, REFRESH_MS);
+    return () => {
+      mounted = false;
+      window.clearInterval(id);
+    };
   }, []);
-
-  const payload = useMemo(() => getUsersPayload(9, Date.now() + tick), [tick]);
 
   const isActive = useCallback(
     (u) => {
@@ -107,7 +86,7 @@ const Users = () => {
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return payload.rows.filter((r) => {
+    return users.filter((r) => {
       const matchQuery =
         !q ||
         r.fullName.toLowerCase().includes(q) ||
@@ -119,7 +98,7 @@ const Users = () => {
       const matchStatus = statusFilter === 'all' || (statusFilter === 'active' ? active : !active);
       return matchQuery && matchRole && matchStatus;
     });
-  }, [payload.rows, query, roleFilter, statusFilter, isActive]);
+  }, [users, query, roleFilter, statusFilter, isActive]);
 
   const setUserActive = (id, active) => {
     setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
@@ -144,8 +123,8 @@ const Users = () => {
       <PageMeta title="App · Users" description={seo.metaDescription} keywords={seo.keywords} />
 
       <p className="app-users-meta">
-        Live sample data · {payload.updatedLabel} · refreshes every minute ·{' '}
-        <strong>{payload.summary.guardians}</strong> guardians, <strong>{payload.summary.patients}</strong> patients
+        Supabase profiles · {loading ? 'Loading...' : `Updated ${updatedLabel}`} · refreshes every minute ·{' '}
+        <strong>{users.filter((r) => r.role === 'guardian').length}</strong> guardians, <strong>{users.filter((r) => r.role === 'patient').length}</strong> patients
       </p>
 
       <div className="app-users-head">
@@ -181,9 +160,12 @@ const Users = () => {
           <option value="inactive">Inactive</option>
         </select>
         <span className="app-users-summary">
-          Showing <strong>{rows.length}</strong> of <strong>{payload.rows.length}</strong>
+          Showing <strong>{rows.length}</strong> of <strong>{users.length}</strong>
         </span>
       </div>
+
+      {fetchError ? <p className="app-users-meta" style={{ color: 'var(--app-danger)' }}>{fetchError}</p> : null}
+      {loading ? <p className="app-users-meta" style={{ color: 'var(--app-primary)', fontWeight: 600 }}>Loading profiles...</p> : null}
 
       <div className="app-users-table-wrap">
         <div className="app-users-table-scroll">
@@ -208,12 +190,16 @@ const Users = () => {
                         style={{ '--ah': u.avatarHue }}
                         aria-hidden
                       >
-                        {u.fullName
-                          .split(' ')
-                          .map((p) => p[0])
-                          .join('')
-                          .slice(0, 2)
-                          .toUpperCase()}
+                        {u.avatarUrl ? (
+                          <img src={u.avatarUrl} alt={u.fullName} className="app-users-avatar-img" />
+                        ) : (
+                          u.fullName
+                            .split(' ')
+                            .map((p) => p[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()
+                        )}
                       </div>
                       <div>
                         <p className="app-users-name">{u.fullName}</p>

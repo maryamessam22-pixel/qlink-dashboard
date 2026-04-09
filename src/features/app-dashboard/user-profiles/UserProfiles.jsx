@@ -181,7 +181,7 @@ const UserProfiles = () => {
       </div>
 
       {fetchError ? <p className="app-profiles-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-profiles-meta">Loading patient profiles...</p> : null}
+      {loading ? <p className="app-profiles-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading patient profiles...</p> : null}
 
       <div className="app-profiles-table-wrap">
         <div className="app-profiles-table-scroll">

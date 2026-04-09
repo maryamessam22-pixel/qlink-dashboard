@@ -182,6 +182,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  overflow: hidden;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -194,6 +195,12 @@
     hsl(var(--ah, 210), 55%, 48%),
     hsl(calc(var(--ah, 210) + 40), 50%, 42%)
   );
+}
+
+.app-users-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .app-users-name {

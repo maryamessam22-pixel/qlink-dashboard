@@ -1,14 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import myPic from "../../../assets/imges/my-pic.png";
+import { supabase } from "../../../lib/supabase";
 import "./AppSettings.css";
 
 const AppSettings = () => {
-  const [name, setName] = useState("M.Farid");
-  const [title, setTitle] = useState("Founder & CEO");
-  const [email, setEmail] = useState("muryamessam22@gmail.com");
+  const [name, setName] = useState("");
+  const [title, setTitle] = useState("");
+  const [email, setEmail] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
   const [curPass, setCurPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -19,6 +23,46 @@ const AppSettings = () => {
     keywords: "profile, qlink, app settings",
     featuredImageAlt: "Describe the image for accessibility and SEO",
   });
+
+  useEffect(() => {
+    let mounted = true;
+    const fetchProfile = async () => {
+      setLoading(true);
+      setFetchError("");
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name, job_title, email, avatar_url, seo_slug, meta_title_en, meta_description_en, featured_image_alt_en, created_at")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!mounted) return;
+      if (error) {
+        setFetchError(error.message || "Failed to load profile.");
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setName(data.full_name || "");
+        setTitle(data.job_title || "");
+        setEmail(data.email || "");
+        setAvatarUrl(data.avatar_url || "");
+        setSeo((prev) => ({
+          ...prev,
+          slug: data.seo_slug || prev.slug,
+          metaTitle: data.meta_title_en || prev.metaTitle,
+          metaDescription: data.meta_description_en || prev.metaDescription,
+          featuredImageAlt: data.featured_image_alt_en || prev.featuredImageAlt,
+        }));
+      }
+      setLoading(false);
+    };
+    fetchProfile();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <div className="app-settings-page">
@@ -32,7 +76,7 @@ const AppSettings = () => {
       <section className="app-settings-card">
         <div className="app-settings-profile-head">
           <div className="app-settings-profile-who">
-            <img src={myPic} alt="" className="app-settings-avatar" />
+            <img src={avatarUrl || myPic} alt="" className="app-settings-avatar" />
             <div>
               <h2 className="app-settings-inline-name">{name}</h2>
               <p className="app-settings-inline-role">{title}</p>
@@ -56,6 +100,9 @@ const AppSettings = () => {
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </div>
       </section>
+
+      {fetchError ? <p className="app-settings-note app-settings-note--error">{fetchError}</p> : null}
+      {loading ? <p className="app-settings-note app-settings-note--loading">Loading profile data...</p> : null}
 
       <section className="app-settings-card">
         <h2 className="app-settings-card-title">Security</h2>
