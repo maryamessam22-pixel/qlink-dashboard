@@ -178,7 +178,7 @@ const AppOverview = () => {
                 return (
                   <g key={tv}>
                     <line x1={chart.padL} x2={chart.W - 20} y1={y} y2={y} stroke="#e4e7ec" strokeWidth="1" />
-                    <text x={8} y={y + 4} fontSize="11" fill="#6b778c">
+                    <text x={8} y={y + 4} fontSize="11" fill="var(--app-text-secondary)">
                       {formatK(tv)}
                     </text>
                   </g>
@@ -191,7 +191,7 @@ const AppOverview = () => {
               <path d={chart.linePrimary} fill="none" stroke="var(--app-chart-line-a)" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
 
               {data.monthLabels.map((label, i) => (
-                <text key={label} x={chart.xAt(i)} y={chart.H - 12} fontSize="11" fill="#6b778c" textAnchor="middle">
+                <text key={label} x={chart.xAt(i)} y={chart.H - 12} fontSize="11" fill="var(--app-text-secondary)" textAnchor="middle">
                   {label}
                 </text>
               ))}

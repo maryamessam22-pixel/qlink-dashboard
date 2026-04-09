@@ -267,6 +267,10 @@
   box-shadow: none;
 }
 
+.sidebar-container.app-theme .nav-item.active {
+  box-shadow: inset 4px 0 0 var(--app-primary);
+}
+
 .sidebar-container.web-theme .nav-item.active {
   box-shadow: 0px 4px 12px rgba(224, 50, 50, 0.25);
 }

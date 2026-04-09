@@ -42,6 +42,15 @@
   --app-chart-fill-b: rgba(100, 181, 246, 0.28);
   --app-chart-line-a: #1a73e8;
   --app-chart-line-b: #42a5f5;
+
+  /* App tables & actions (users, etc.) */
+  --app-table-header-bg: #1565c0;
+  --app-table-header-text: #ffffff;
+  --app-role-guardian-bg: #e8f0fe;
+  --app-role-guardian-text: #1a73e8;
+  --app-role-patient-bg: #e8f5e9;
+  --app-role-patient-text: #2e7d32;
+  --app-toggle-on: #34a853;
 }
 
 * {
@@ -87,6 +96,8 @@ body {
 
 .layout-wrapper--app .page-container {
   background: var(--app-bg-page);
+  /* Body uses light text for web; force app shell copy to dark blue */
+  color: var(--app-text-primary);
 }
 
 @media screen and (max-width: 768px) {

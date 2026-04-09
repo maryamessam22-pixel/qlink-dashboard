@@ -253,6 +253,15 @@
   box-shadow: var(--app-card-shadow);
 }
 
+.app-overview-page .seo-section-title {
+  color: var(--app-text-primary);
+}
+
+.app-overview-page .seo-badge {
+  background: rgba(26, 115, 232, 0.12);
+  color: var(--app-primary);
+}
+
 .app-overview-page .seo-label {
   color: var(--app-primary);
 }
@@ -267,4 +276,9 @@
 .app-overview-page .seo-slug-row {
   border-color: var(--app-border-subtle);
   background: var(--app-bg-page);
+  color: var(--app-text-primary);
+}
+
+.app-overview-page .seo-input::placeholder {
+  color: var(--app-text-secondary);
 }
