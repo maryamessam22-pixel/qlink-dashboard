@@ -7,12 +7,15 @@ import { supabase } from "../../../lib/supabase";
 import "./AppSettings.css";
 
 const AppSettings = () => {
+  const [profileId, setProfileId] = useState("");
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [saveMessage, setSaveMessage] = useState("");
   const [curPass, setCurPass] = useState("");
   const [newPass, setNewPass] = useState("");
   const [confirmPass, setConfirmPass] = useState("");
@@ -31,7 +34,7 @@ const AppSettings = () => {
       setFetchError("");
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, job_title, email, avatar_url, seo_slug, meta_title_en, meta_description_en, featured_image_alt_en, created_at")
+        .select("id, full_name, job_title, email, avatar_url, seo_slug, meta_title_en, meta_description_en, featured_image_alt_en, created_at")
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -44,6 +47,7 @@ const AppSettings = () => {
       }
 
       if (data) {
+        setProfileId(data.id || "");
         setName(data.full_name || "");
         setTitle(data.job_title || "");
         setEmail(data.email || "");
@@ -64,6 +68,52 @@ const AppSettings = () => {
     };
   }, []);
 
+  const handleSave = async () => {
+    if (!profileId) {
+      setSaveMessage("Profile id is missing, cannot save.");
+      return;
+    }
+
+    if ((newPass || confirmPass || curPass) && newPass !== confirmPass) {
+      setSaveMessage("New password and confirm password do not match.");
+      return;
+    }
+
+    setSaving(true);
+    setSaveMessage("");
+
+    const payload = {
+      full_name: name,
+      job_title: title,
+      email,
+      seo_slug: seo.slug,
+      meta_title_en: seo.metaTitle,
+      meta_description_en: seo.metaDescription,
+      featured_image_alt_en: seo.featuredImageAlt,
+    };
+
+    if (newPass && confirmPass) {
+      payload.password = newPass;
+    }
+
+    const { error } = await supabase
+      .from("profiles")
+      .update(payload)
+      .eq("id", profileId);
+
+    if (error) {
+      setSaveMessage(error.message || "Failed to save changes.");
+      setSaving(false);
+      return;
+    }
+
+    setSaveMessage("Changes saved successfully.");
+    setCurPass("");
+    setNewPass("");
+    setConfirmPass("");
+    setSaving(false);
+  };
+
   return (
     <div className="app-settings-page">
       <PageMeta title="App · Settings" description={seo.metaDescription} keywords={seo.keywords} />
@@ -82,8 +132,8 @@ const AppSettings = () => {
               <p className="app-settings-inline-role">{title}</p>
             </div>
           </div>
-          <button type="button" className="app-settings-save-btn">
-            Save Changes
+          <button type="button" className="app-settings-save-btn" onClick={handleSave} disabled={saving || loading}>
+            {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
 
@@ -103,6 +153,11 @@ const AppSettings = () => {
 
       {fetchError ? <p className="app-settings-note app-settings-note--error">{fetchError}</p> : null}
       {loading ? <p className="app-settings-note app-settings-note--loading">Loading profile data...</p> : null}
+      {saveMessage ? (
+        <p className={`app-settings-note ${saveMessage.includes("successfully") ? "app-settings-note--success" : "app-settings-note--error"}`}>
+          {saveMessage}
+        </p>
+      ) : null}
 
       <section className="app-settings-card">
         <h2 className="app-settings-card-title">Security</h2>

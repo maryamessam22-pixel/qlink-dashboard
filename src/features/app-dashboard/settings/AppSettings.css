@@ -35,6 +35,11 @@
   color: var(--app-danger);
 }
 
+.app-settings-note--success {
+  color: #1e8e3e;
+  font-weight: 600;
+}
+
 .app-settings-card {
   margin-bottom: 14px;
   padding: 18px;
@@ -90,6 +95,11 @@
   background: var(--app-primary);
   box-shadow: 0 2px 8px rgba(26, 115, 232, 0.32);
   cursor: pointer;
+}
+
+.app-settings-save-btn:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 .app-settings-field {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link2, Phone, User, Watch } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
+import { supabase } from '../../../lib/supabase';
 import './AppOverview.css';
 
 const REFRESH_MS = 60_000;
@@ -32,12 +33,7 @@ function lastNMonthLabels(n, now = new Date()) {
 function getOverviewPayload(nowMs = Date.now()) {
   const next = seedFromTime(nowMs);
   const now = new Date(nowMs);
-  const totalUsers = 2 + Math.floor(next() * 48);
-  const totalBracelets = Math.max(totalUsers, 2 + Math.floor(next() * 55));
-  const linkedBracelets = Math.min(totalBracelets, Math.max(0, Math.floor(totalBracelets * (0.25 + next() * 0.65))));
   const emergencyContacts = Math.floor(next() * 15);
-  const linkedPct = totalBracelets > 0 ? Math.round((linkedBracelets / totalBracelets) * 100) : Math.round(next() * 40 + 30);
-  const unlinkedPct = Math.max(0, 100 - linkedPct);
   const monthLabels = lastNMonthLabels(6, now);
   let primary = 12000 + next() * 14000;
   let secondary = 9000 + next() * 11000;
@@ -52,15 +48,34 @@ function getOverviewPayload(nowMs = Date.now()) {
   const maxVal = Math.max(...growthPrimary, ...growthSecondary, 1);
   const yCap = Math.ceil(maxVal / 10000) * 10000;
   return {
-    kpis: { totalUsers, totalBracelets, linkedBracelets, emergencyContacts },
-    linkedPct,
-    unlinkedPct,
+    kpis: { emergencyContacts },
     monthLabels,
     growthPrimary,
     growthSecondary,
     yMax: Math.max(90000, yCap),
     tooltipIndex: Math.min(5, Math.floor(next() * 6)),
     updatedLabel: now.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
+  };
+}
+
+async function fetchOverviewKpiCounts() {
+  const [profilesRes, braceletsRes, linkedRes] = await Promise.all([
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
+    supabase.from('bracelets').select('id', { count: 'exact', head: true }),
+    supabase.from('bracelets').select('id', { count: 'exact', head: true }).not('assigned_profile_id', 'is', null),
+  ]);
+
+  const firstError = profilesRes.error || braceletsRes.error || linkedRes.error;
+  if (firstError) throw firstError;
+
+  const totalBracelets = braceletsRes.count ?? 0;
+  let linkedBracelets = linkedRes.count ?? 0;
+  if (linkedBracelets > totalBracelets) linkedBracelets = totalBracelets;
+
+  return {
+    totalUsers: profilesRes.count ?? 0,
+    totalBracelets,
+    linkedBracelets,
   };
 }
 
@@ -113,6 +128,10 @@ const AppOverview = () => {
   const [tick, setTick] = useState(0);
   const [period, setPeriod] = useState('monthly');
   const [hoverIdx, setHoverIdx] = useState(null);
+  const [kpiCounts, setKpiCounts] = useState({ totalUsers: 0, totalBracelets: 0, linkedBracelets: 0 });
+  const [kpiLoading, setKpiLoading] = useState(true);
+  const [kpiError, setKpiError] = useState('');
+  const [kpiUpdatedLabel, setKpiUpdatedLabel] = useState('');
   const [seo, setSeo] = useState({
     slug: 'app-overview',
     metaTitle: 'App dashboard overview',
@@ -126,7 +145,43 @@ const AppOverview = () => {
     return () => window.clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    const load = async (isInitial) => {
+      if (isInitial) {
+        setKpiError('');
+        setKpiLoading(true);
+      }
+      try {
+        const counts = await fetchOverviewKpiCounts();
+        if (!mounted) return;
+        setKpiCounts(counts);
+        setKpiUpdatedLabel(new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }));
+        setKpiError('');
+      } catch (e) {
+        if (!mounted) return;
+        setKpiError(e?.message || 'Failed to load overview counts.');
+      } finally {
+        if (mounted && isInitial) setKpiLoading(false);
+      }
+    };
+    load(true);
+    const id = window.setInterval(() => load(false), REFRESH_MS);
+    return () => {
+      mounted = false;
+      window.clearInterval(id);
+    };
+  }, []);
+
   const data = useMemo(() => getOverviewPayload(Date.now() + tick), [tick]);
+
+  const { linkedPct, unlinkedPct } = useMemo(() => {
+    const total = kpiCounts.totalBracelets;
+    if (total <= 0) return { linkedPct: 0, unlinkedPct: 100 };
+    const linked = Math.min(kpiCounts.linkedBracelets, total);
+    const lp = Math.round((linked / total) * 100);
+    return { linkedPct: lp, unlinkedPct: Math.max(0, 100 - lp) };
+  }, [kpiCounts.totalBracelets, kpiCounts.linkedBracelets]);
 
   const chart = useMemo(
     () => buildGrowthChartModel(data.growthPrimary, data.growthSecondary, data.yMax),
@@ -173,7 +228,15 @@ const AppOverview = () => {
     <div className="app-overview-page">
       <PageMeta title="App · Overview" description={seo.metaDescription} keywords={seo.keywords} />
 
-      <p className="app-overview-meta">Updated {data.updatedLabel} · refreshes every minute</p>
+      <p className="app-overview-meta">
+        {kpiError ? (
+          <span className="app-overview-meta-error">{kpiError}</span>
+        ) : (
+          <>
+            KPIs updated {kpiLoading ? '…' : kpiUpdatedLabel || '—'} · refreshes every minute
+          </>
+        )}
+      </p>
       <h1 className="app-overview-heading">Overview</h1>
       <p className="app-overview-lead">System overview and analytics</p>
 
@@ -183,7 +246,7 @@ const AppOverview = () => {
             <User size={22} strokeWidth={2} />
           </div>
           <p className="app-kpi-label">Total users</p>
-          <p className="app-kpi-value">{data.kpis.totalUsers.toLocaleString()}</p>
+          <p className="app-kpi-value">{kpiLoading ? '…' : kpiCounts.totalUsers.toLocaleString()}</p>
         </article>
 
         <article className="app-kpi-card">
@@ -191,7 +254,7 @@ const AppOverview = () => {
             <Watch size={22} strokeWidth={2} />
           </div>
           <p className="app-kpi-label">Total bracelets</p>
-          <p className="app-kpi-value">{data.kpis.totalBracelets.toLocaleString()}</p>
+          <p className="app-kpi-value">{kpiLoading ? '…' : kpiCounts.totalBracelets.toLocaleString()}</p>
         </article>
 
         <article className="app-kpi-card">
@@ -199,7 +262,7 @@ const AppOverview = () => {
             <Link2 size={22} strokeWidth={2} />
           </div>
           <p className="app-kpi-label">Linked bracelets</p>
-          <p className="app-kpi-value">{data.kpis.linkedBracelets.toLocaleString()}</p>
+          <p className="app-kpi-value">{kpiLoading ? '…' : kpiCounts.linkedBracelets.toLocaleString()}</p>
         </article>
 
         <article className="app-kpi-card app-kpi-card--wide">
@@ -291,23 +354,23 @@ const AppOverview = () => {
               className="app-donut"
               style={{
                 background:
-                  data.linkedPct <= 0
+                  linkedPct <= 0
                     ? 'conic-gradient(var(--app-chart-purple) 0deg 360deg)'
-                    : data.linkedPct >= 100
+                    : linkedPct >= 100
                       ? 'conic-gradient(var(--app-chart-blue) 0deg 360deg)'
-                      : `conic-gradient(var(--app-chart-blue) 0% ${data.linkedPct}%, var(--app-chart-purple) ${data.linkedPct}% 100%)`,
+                      : `conic-gradient(var(--app-chart-blue) 0% ${linkedPct}%, var(--app-chart-purple) ${linkedPct}% 100%)`,
               }}
               role="img"
-              aria-label={`Linked ${data.linkedPct} percent, unlinked ${data.unlinkedPct} percent`}
+              aria-label={`Linked ${linkedPct} percent, unlinked ${unlinkedPct} percent`}
             />
             <div className="app-donut-legend">
               <span className="app-donut-legend-item">
                 <span className="app-donut-dot app-donut-dot--linked" />
-                Linked {data.linkedPct}%
+                Linked {linkedPct}%
               </span>
               <span className="app-donut-legend-item">
                 <span className="app-donut-dot app-donut-dot--unlinked" />
-                Unlinked {data.unlinkedPct}%
+                Unlinked {unlinkedPct}%
               </span>
             </div>
           </div>

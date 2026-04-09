@@ -10,6 +10,10 @@
   color: var(--app-text-secondary);
 }
 
+.app-overview-meta-error {
+  color: var(--app-danger);
+}
+
 .app-overview-heading {
   margin: 0 0 6px;
   font-size: 22px;
