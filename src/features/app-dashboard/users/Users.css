@@ -264,6 +264,25 @@
   transform: translateX(20px);
 }
 
+.app-users-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-users-status-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-users-status-text.is-active {
+  color: #1e8e3e;
+}
+
+.app-users-status-text.is-inactive {
+  color: var(--app-text-secondary);
+}
+
 .app-users-profiles {
   font-size: 13px;
   color: var(--app-text-primary);

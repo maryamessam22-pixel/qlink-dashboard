@@ -4,17 +4,53 @@ import { Plus, X } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import RichTextEditor from "../../../components/rich-text/RichTextEditor";
-import { getAppProfilesList } from "../../../data/appProfiles";
 import "./EditUserProfile.css";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+function mulberry32(a) {
+  return function () {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedFromTime(nowMs = Date.now()) {
+  const bucket = Math.floor(nowMs / 60000);
+  return mulberry32((bucket % 2147483647) + 3);
+}
+
+const FIRST = ["Mariam", "Mohamed", "Karma", "Yousef", "Leila", "Hoda", "Ola", "Zeinab", "Rania", "Farah", "Tamer", "Nada", "Ibrahim", "Rami", "Nour", "Jana"];
+const LAST = ["Essam", "Saber", "Ahmed", "Mansour", "Wahba", "Mostafa", "Hassan", "Kamel", "Mahmoud", "Farid", "Saad", "Nabil"];
+
+function pick(arr, next) {
+  return arr[Math.floor(next() * arr.length)];
+}
+
+function getFallbackProfiles(count = 15, nowMs = Date.now()) {
+  const next = seedFromTime(nowMs);
+  const rows = [];
+  for (let i = 0; i < count; i += 1) {
+    const fullName = `${pick(FIRST, next)} ${pick(LAST, next)}`;
+    const age = Math.floor(next() * 85) + 1;
+    rows.push({
+      id: `PRF-${1200 + Math.floor(next() * 8000)}`,
+      fullName,
+      age,
+      bloodType: BLOOD_TYPES[Math.floor(next() * BLOOD_TYPES.length)],
+    });
+  }
+  return rows;
+}
 
 const EditUserProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profileId } = useParams();
 
-  const fallbackProfiles = useMemo(() => getAppProfilesList(15).rows, []);
+  const fallbackProfiles = useMemo(() => getFallbackProfiles(15), []);
   const selectedProfile = useMemo(() => {
     const fromState = location.state?.profile;
     if (fromState && fromState.id) return fromState;

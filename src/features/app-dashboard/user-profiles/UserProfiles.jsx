@@ -3,10 +3,61 @@ import { useNavigate } from "react-router-dom";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
-import { getAppProfilesList } from "../../../data/appProfiles";
 import "./UserProfiles.css";
 
 const REFRESH_MS = 60_000;
+
+function mulberry32(a) {
+  return function () {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedFromTime(nowMs = Date.now()) {
+  const bucket = Math.floor(nowMs / 60000);
+  return mulberry32((bucket % 2147483647) + 3);
+}
+
+const FIRST = ["Mariam", "Mohamed", "Karma", "Yousef", "Leila", "Hoda", "Ola", "Zeinab", "Rania", "Farah", "Tamer", "Nada", "Ibrahim", "Rami", "Nour", "Jana"];
+const LAST = ["Essam", "Saber", "Ahmed", "Mansour", "Wahba", "Mostafa", "Hassan", "Kamel", "Mahmoud", "Farid", "Saad", "Nabil"];
+const BLOOD = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+function pick(arr, next) {
+  return arr[Math.floor(next() * arr.length)];
+}
+
+function getProfilesPayload(count = 8, nowMs = Date.now()) {
+  const next = seedFromTime(nowMs);
+  const rows = [];
+  const guardianNames = [];
+  for (let i = 0; i < Math.max(3, Math.floor(count / 2)); i += 1) guardianNames.push(`${pick(FIRST, next)} ${pick(LAST, next)}`);
+  for (let i = 0; i < count; i += 1) {
+    const fullName = `${pick(FIRST, next)} ${pick(LAST, next)}`;
+    const ageBase = Math.floor(next() * 85) + 1;
+    rows.push({
+      id: `PRF-${1200 + Math.floor(next() * 8000)}`,
+      fullName,
+      age: i === 0 ? 23 : i === 1 ? 74 : i === 2 ? 10 : ageBase,
+      bloodType: i === 0 ? "O+" : i === 1 ? "AB-" : i === 2 ? "O+" : pick(BLOOD, next),
+      linkedGuardian: pick(guardianNames, next),
+      active: next() > 0.32,
+      avatarHue: Math.floor(next() * 360),
+    });
+  }
+  rows.sort((a, b) => a.fullName.localeCompare(b.fullName));
+  return {
+    rows,
+    updatedLabel: new Date(nowMs).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" }),
+    summary: {
+      total: rows.length,
+      active: rows.filter((r) => r.active).length,
+      avgAge: rows.length > 0 ? Math.round(rows.reduce((sum, r) => sum + r.age, 0) / rows.length) : 0,
+    },
+  };
+}
 
 function bloodClass(type) {
   switch (type) {
@@ -48,7 +99,7 @@ const UserProfiles = () => {
     return () => window.clearInterval(id);
   }, []);
 
-  const payload = useMemo(() => getAppProfilesList(9, Date.now() + tick), [tick]);
+  const payload = useMemo(() => getProfilesPayload(9, Date.now() + tick), [tick]);
 
   const isActive = (row) => {
     const o = overrides[row.id];
@@ -120,15 +171,20 @@ const UserProfiles = () => {
                     <span className="app-profiles-guardian">{p.linkedGuardian}</span>
                   </td>
                   <td>
-                    <label className="app-profiles-toggle">
-                      <input
-                        type="checkbox"
-                        checked={isActive(p)}
-                        onChange={(e) => setProfileActive(p.id, e.target.checked)}
-                        aria-label={`Active status for ${p.fullName}`}
-                      />
-                      <span className="app-profiles-toggle-slider" />
-                    </label>
+                    <div className="app-profiles-status-cell">
+                      <label className="app-profiles-toggle">
+                        <input
+                          type="checkbox"
+                          checked={isActive(p)}
+                          onChange={(e) => setProfileActive(p.id, e.target.checked)}
+                          aria-label={`Active status for ${p.fullName}`}
+                        />
+                        <span className="app-profiles-toggle-slider" />
+                      </label>
+                      <span className={`app-profiles-status-text ${isActive(p) ? "is-active" : "is-inactive"}`}>
+                        {isActive(p) ? "Active" : "Inactive"}
+                      </span>
+                    </div>
                   </td>
                   <td>
                     <div className="app-profiles-actions">

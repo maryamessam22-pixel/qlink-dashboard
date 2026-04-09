@@ -2,10 +2,78 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Eye, Plus, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
-import { getAppUsersList } from '../../../data/appUsers';
 import './Users.css';
 
 const REFRESH_MS = 60_000;
+
+function mulberry32(a) {
+  return function () {
+    let t = (a += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function seedFromTime(nowMs = Date.now()) {
+  const bucket = Math.floor(nowMs / 60000);
+  return mulberry32((bucket % 2147483647) + 1);
+}
+
+const FIRST = [
+  'Ahmed', 'Fatima', 'Omar', 'Layla', 'Youssef', 'Nour', 'Karim', 'Mariam', 'Hassan', 'Salma',
+  'Malak', 'Khaled', 'Zeina', 'Tarek', 'Dina', 'Mohamed', 'Reem', 'Hana', 'Amr', 'Yasmin',
+];
+const LAST = [
+  'El-Sayed', 'Hassan', 'Ibrahim', 'Mahmoud', 'Farid', 'Ali', 'Nasser', 'Khalil', 'Soliman', 'Fouad',
+  'Sabry', 'Othman', 'Zaki', 'Rashid', 'Adel', 'Mansour', 'Hakim', 'Samir', 'Tawfik', 'Gamal',
+];
+
+function pick(arr, next) {
+  return arr[Math.floor(next() * arr.length)];
+}
+
+function formatDate(next) {
+  const d = new Date();
+  d.setDate(d.getDate() - Math.floor(next() * 400));
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function getUsersPayload(count = 8, nowMs = Date.now()) {
+  const next = seedFromTime(nowMs);
+  const used = new Set();
+  const rows = [];
+  for (let i = 0; i < count; i += 1) {
+    let id = `USR-${1000 + Math.floor(next() * 9000)}`;
+    while (used.has(id)) id = `USR-${1000 + Math.floor(next() * 9000)}`;
+    used.add(id);
+    const first = pick(FIRST, next);
+    const last = pick(LAST, next);
+    const role = next() > 0.42 ? 'guardian' : 'patient';
+    rows.push({
+      id,
+      fullName: `${first} ${last}`,
+      email: `${first.toLowerCase()}.${last.toLowerCase().replace(/[^a-z]/g, '')}${Math.floor(next() * 90)}@email.com`,
+      role,
+      registrationDate: formatDate(next),
+      active: next() > 0.15,
+      profilesManaged: role === 'guardian' ? Math.floor(next() * 5) + 1 : Math.floor(next() * 3),
+      avatarHue: Math.floor(next() * 360),
+    });
+  }
+  rows.sort((a, b) => a.registrationDate.localeCompare(b.registrationDate));
+  return {
+    rows,
+    updatedLabel: new Date(nowMs).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }),
+    summary: {
+      guardians: rows.filter((r) => r.role === 'guardian').length,
+      patients: rows.filter((r) => r.role === 'patient').length,
+    },
+  };
+}
 
 const Users = () => {
   const [tick, setTick] = useState(0);
@@ -24,7 +92,7 @@ const Users = () => {
     return () => window.clearInterval(id);
   }, []);
 
-  const payload = useMemo(() => getAppUsersList(9, Date.now() + tick), [tick]);
+  const payload = useMemo(() => getUsersPayload(9, Date.now() + tick), [tick]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -148,15 +216,20 @@ const Users = () => {
                     <span className="app-users-date">{u.registrationDate}</span>
                   </td>
                   <td>
-                    <label className="app-users-toggle">
-                      <input
-                        type="checkbox"
-                        checked={isActive(u)}
-                        onChange={(e) => setUserActive(u.id, e.target.checked)}
-                        aria-label={`Active status for ${u.fullName}`}
-                      />
-                      <span className="app-users-toggle-slider" />
-                    </label>
+                    <div className="app-users-status-cell">
+                      <label className="app-users-toggle">
+                        <input
+                          type="checkbox"
+                          checked={isActive(u)}
+                          onChange={(e) => setUserActive(u.id, e.target.checked)}
+                          aria-label={`Active status for ${u.fullName}`}
+                        />
+                        <span className="app-users-toggle-slider" />
+                      </label>
+                      <span className={`app-users-status-text ${isActive(u) ? 'is-active' : 'is-inactive'}`}>
+                        {isActive(u) ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
                   </td>
                   <td>
                     <span className="app-users-profiles">

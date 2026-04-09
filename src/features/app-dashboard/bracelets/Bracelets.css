@@ -128,10 +128,16 @@
 }
 
 .app-bracelets-sync {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--app-text-secondary);
 }
 
 .app-bracelets-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: var(--app-primary);

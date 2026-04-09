@@ -210,6 +210,25 @@
   transform: translateX(20px);
 }
 
+.app-profiles-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-profiles-status-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-profiles-status-text.is-active {
+  color: #1e8e3e;
+}
+
+.app-profiles-status-text.is-inactive {
+  color: var(--app-text-secondary);
+}
+
 .app-profiles-actions {
   display: flex;
   align-items: center;
