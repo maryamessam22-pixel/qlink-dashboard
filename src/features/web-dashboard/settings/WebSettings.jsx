@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
@@ -7,22 +7,68 @@ import myPic from '../../../assets/imges/my-pic.png';
 import '../../../styles/web-dashboard-pages.css';
 import './WebSettings.css';
 
-const WebSettings = () => {
-  const [name, setName] = useState('M.Farid');
-  const [title, setTitle] = useState('Founder & CEO');
-  const [email, setEmail] = useState('admin@qlink.com');
-  const [curPass, setCurPass] = useState('');
-  const [newPass, setNewPass] = useState('');
-  const [confirmPass, setConfirmPass] = useState('');
-  const [bioEn, setBioEn] = useState('<p>Profile bio for the storefront team page (EN).</p>');
-  const [bioAr, setBioAr] = useState('<p>نبذة للملف في صفحة الفريق (AR).</p>');
-  const [seo, setSeo] = useState({
+const PROFILE_KEY = 'qlink_web_settings_profile_v1';
+
+const DEFAULT_PROFILE = {
+  name: 'M.Farid',
+  title: 'Founder & CEO',
+  email: 'admin@qlink.com',
+  bioEn: '<p>Profile bio for the storefront team page (EN).</p>',
+  bioAr: '<p>نبذة للملف في صفحة الفريق (AR).</p>',
+  seo: {
     slug: 'project-slug',
     metaTitle: 'SEO title displayed in Google Search',
     metaDescription: 'Brief summary for search engines…',
     keywords: 'qlink, profile, team',
     featuredImageAlt: 'Describe the image for accessibility and SEO',
-  });
+  },
+};
+
+const WebSettings = () => {
+  const [name, setName] = useState(DEFAULT_PROFILE.name);
+  const [title, setTitle] = useState(DEFAULT_PROFILE.title);
+  const [email, setEmail] = useState(DEFAULT_PROFILE.email);
+  const [curPass, setCurPass] = useState('');
+  const [newPass, setNewPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [bioEn, setBioEn] = useState(DEFAULT_PROFILE.bioEn);
+  const [bioAr, setBioAr] = useState(DEFAULT_PROFILE.bioAr);
+  const [seo, setSeo] = useState(DEFAULT_PROFILE.seo);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      if (!raw) return;
+      const p = JSON.parse(raw);
+      if (p.name != null) setName(p.name);
+      if (p.title != null) setTitle(p.title);
+      if (p.email != null) setEmail(p.email);
+      if (p.bioEn != null) setBioEn(p.bioEn);
+      if (p.bioAr != null) setBioAr(p.bioAr);
+      if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const saveProfile = () => {
+    localStorage.setItem(
+      PROFILE_KEY,
+      JSON.stringify({ name, title, email, bioEn, bioAr, seo })
+    );
+    alert('Profile saved in this browser (password fields are never stored).');
+  };
+
+  const resetProfile = () => {
+    if (!window.confirm('Reset profile and SEO to defaults and clear the saved browser draft?')) return;
+    localStorage.removeItem(PROFILE_KEY);
+    setName(DEFAULT_PROFILE.name);
+    setTitle(DEFAULT_PROFILE.title);
+    setEmail(DEFAULT_PROFILE.email);
+    setBioEn(DEFAULT_PROFILE.bioEn);
+    setBioAr(DEFAULT_PROFILE.bioAr);
+    setSeo({ ...DEFAULT_PROFILE.seo });
+  };
 
   return (
     <div className="web-page settings-page">
@@ -44,7 +90,14 @@ const WebSettings = () => {
               <p className="settings-inline-role">{title}</p>
             </div>
           </div>
-          <button type="button" className="btn-primary">Save changes</button>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+            <button type="button" className="btn-secondary" onClick={resetProfile}>
+              Reset / clear draft
+            </button>
+            <button type="button" className="btn-primary" onClick={saveProfile}>
+              Save changes
+            </button>
+          </div>
         </div>
 
         <div className="settings-field">

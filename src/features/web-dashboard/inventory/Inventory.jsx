@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -53,10 +53,11 @@ const Inventory = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     let mounted = true;
-    const fetchInventory = async () => {
+    const load = async () => {
       setFetchError('');
       setLoading(true);
       const { data, error } = await supabase
@@ -73,13 +74,27 @@ const Inventory = () => {
       setItems((data || []).map(mapInventoryRow));
       setLoading(false);
     };
-    fetchInventory();
-    const id = window.setInterval(fetchInventory, REFRESH_MS);
+    load();
+    const id = window.setInterval(load, REFRESH_MS);
     return () => {
       mounted = false;
       window.clearInterval(id);
     };
   }, []);
+
+  const handleDeleteRow = async (rowId, name) => {
+    if (!window.confirm(`Remove “${name}” from inventory? This deletes the row in Supabase.`)) return;
+    try {
+      setDeletingId(rowId);
+      const { error } = await supabase.from('inventory').delete().eq('id', rowId);
+      if (error) throw error;
+      setItems((prev) => prev.filter((x) => x.id !== rowId));
+    } catch (e) {
+      alert(e?.message || 'Delete failed.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredItems = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
@@ -176,8 +191,24 @@ const Inventory = () => {
               </div>
             </div>
             <div className="inv-actions">
+              {it.productId ? (
+                <Link to={`/web/products/${it.productId}/edit`} className="btn-secondary" style={{ textAlign: 'center', textDecoration: 'none' }}>
+                  Edit product
+                </Link>
+              ) : null}
               <button type="button" className="btn-secondary">Restock</button>
               <button type="button" className="btn-secondary">History</button>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ color: '#f87171', borderColor: 'rgba(248,113,113,0.4)' }}
+                disabled={deletingId === it.id}
+                onClick={() => handleDeleteRow(it.id, it.nameEn)}
+                aria-label={`Delete ${it.nameEn}`}
+              >
+                <Trash2 size={16} style={{ verticalAlign: 'middle', marginRight: 6 }} />
+                Delete
+              </button>
             </div>
           </article>
         ))

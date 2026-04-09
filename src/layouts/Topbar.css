@@ -11,11 +11,12 @@
 }
 
 .topbar-container--app {
-  align-items: flex-start;
-  padding-top: 16px;
-  padding-bottom: 16px;
+  margin-top: 16px;
   background-color: var(--app-bg-page);
   border-bottom-color: var(--app-border-subtle);
+  display: flex;
+  align-items: center;
+
 }
 
 .topbar-titles {

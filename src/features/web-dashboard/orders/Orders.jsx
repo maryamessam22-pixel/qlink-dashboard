@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Download, Filter, Search, Loader2 } from 'lucide-react';
+import { Clock, Download, Search, Loader2, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -18,6 +18,7 @@ const statusClass = (s) => {
 const Orders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   const [notesEn, setNotesEn] = useState('<p>Internal notes for fulfillment (EN).</p>');
   const [notesAr, setNotesAr] = useState('<p>ملاحظات داخلية للتنفيذ (AR).</p>');
@@ -64,7 +65,8 @@ const Orders = () => {
             else if (variantStr.includes('blue')) dotColor = '#3b82f6';
 
             return {
-              id: o.order_number || o.id.toString().substring(0, 8), // هنا استخدمنا الـ order_number
+              dbId: o.id,
+              id: o.order_number || (o.id != null ? String(o.id).substring(0, 8) : ''),
               when: formattedDate,
               customer: o.customer_name || 'Unknown',
               product: o.variant_details || 'Qlink Bracelet', // استخدمنا variant_details
@@ -84,6 +86,21 @@ const Orders = () => {
 
     fetchOrders();
   }, []);
+
+  const handleDeleteOrder = async (dbId) => {
+    if (dbId == null) return;
+    if (!window.confirm('Delete this order from the database? This cannot be undone.')) return;
+    try {
+      setDeletingId(dbId);
+      const { error } = await supabase.from('order').delete().eq('id', dbId);
+      if (error) throw error;
+      setOrders((prev) => prev.filter((o) => o.dbId !== dbId));
+    } catch (e) {
+      alert(e?.message || 'Failed to delete order.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -157,25 +174,26 @@ const Orders = () => {
                 <th>Product variant</th>
                 <th>Status</th>
                 <th>Revenue</th>
+                <th style={{ width: 100 }}>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
                     Loading orders...
                   </td>
                 </tr>
               ) : filteredRows.length === 0 ? (
                 <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '20px', color: '#8b949e' }}>
                     No orders found.
                   </td>
                 </tr>
               ) : (
                 filteredRows.map((r, index) => (
                   // حطينا index مع ال id عشان لو ال order_number اتكرر بالغلط في الداتا الوهمية الـ React ميزعلش
-                  <tr key={`${r.id}-${index}`}>
+                  <tr key={`${r.dbId ?? r.id}-${index}`}>
                     <td>
                       <div className="ord-id">{r.id}</div>
                       <div className="ord-when">
@@ -192,6 +210,19 @@ const Orders = () => {
                       <span className={`status-pill ${statusClass(r.status)}`}>{r.status}</span>
                     </td>
                     <td className="ord-revenue">{r.revenue}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ padding: '8px 10px', color: '#f87171', borderColor: 'rgba(248,113,113,0.4)' }}
+                        disabled={deletingId === r.dbId || r.dbId == null}
+                        title="Delete order"
+                        aria-label="Delete order"
+                        onClick={() => handleDeleteOrder(r.dbId)}
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}

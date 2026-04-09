@@ -1,7 +1,9 @@
-import React, { useCallback, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { Save, Plus, FilePlus } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Plus, FilePlus } from 'lucide-react';
 import './CmsLayout.css';
+
+const STORAGE_KEY = 'qlink_cms_extra_tabs';
 
 const INITIAL_TABS = [
   { to: 'home', label: 'Homepage' },
@@ -13,8 +15,31 @@ const INITIAL_TABS = [
   { to: 'emails', label: 'Emails' },
 ];
 
+const initialTabPaths = new Set(INITIAL_TABS.map((t) => t.to));
+
+function loadMergedTabs() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const extra = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(extra)) return [...INITIAL_TABS];
+    return [...INITIAL_TABS, ...extra.filter((t) => t && typeof t.to === 'string' && typeof t.label === 'string')];
+  } catch {
+    return [...INITIAL_TABS];
+  }
+}
+
+function persistExtraTabs(allTabs) {
+  const extra = allTabs.filter((t) => !initialTabPaths.has(t.to));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(extra));
+  } catch {
+    /* ignore */
+  }
+}
+
 const CmsLayout = () => {
-  const [tabs, setTabs] = useState(INITIAL_TABS);
+  const navigate = useNavigate();
+  const [tabs, setTabs] = useState(loadMergedTabs);
   const [toast, setToast] = useState('');
   const toastTimer = useRef(null);
 
@@ -25,22 +50,51 @@ const CmsLayout = () => {
   }, []);
 
   const onAddSection = () => {
-    showToast('New section added to the current editor!');
+    showToast('New section added in the editor below — use Save Changes on that page to publish.');
     window.dispatchEvent(new CustomEvent('cms:add-section'));
   };
 
+  useEffect(() => {
+    const onRemoveTab = (e) => {
+      const to = e.detail?.to;
+      if (!to || initialTabPaths.has(to)) return;
+      setTabs((prev) => {
+        const next = prev.filter((t) => t.to !== to);
+        persistExtraTabs(next);
+        return next;
+      });
+    };
+    window.addEventListener('cms:remove-custom-tab', onRemoveTab);
+    return () => window.removeEventListener('cms:remove-custom-tab', onRemoveTab);
+  }, []);
+
   const onAddPage = () => {
     const name = window.prompt('New page name:', 'New Landing');
-    if (name) {
-      const slug = name.toLowerCase().replace(/\s+/g, '-');
-      setTabs((prev) => [...prev, { to: slug, label: name }]);
-      showToast(`Page “${name}” added to tabs! (Requires route config to open)`);
+    if (!name?.trim()) return;
+    const slug = name
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '');
+    if (!slug) {
+      showToast('Use letters and numbers in the page name.');
+      return;
     }
-  };
-
-  const onSave = () => {
-    window.dispatchEvent(new CustomEvent('cms:save'));
-    showToast('Changes saved locally (wire to API when ready).');
+    const to = `p/${slug}`;
+    let added = false;
+    setTabs((prev) => {
+      if (prev.some((t) => t.to === to)) return prev;
+      added = true;
+      const next = [...prev, { to, label: name.trim() }];
+      persistExtraTabs(next);
+      return next;
+    });
+    navigate(to);
+    showToast(
+      added
+        ? `Page “${name.trim()}” added — use Save Changes on this page to publish.`
+        : 'Opening existing page tab.'
+    );
   };
 
   return (
@@ -49,12 +103,6 @@ const CmsLayout = () => {
         <div>
           <h1 className="web-page-title">Content Management System</h1>
           <p className="web-page-sub">Manage your website content, FAQs, legal documents, and email templates.</p>
-        </div>
-        <div className="cms-hero-actions">
-          <button type="button" className="btn-primary" onClick={onSave}>
-            <Save size={18} />
-            Save Changes
-          </button>
         </div>
       </div>
 

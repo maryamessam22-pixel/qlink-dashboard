@@ -68,20 +68,44 @@ const CmsHome = () => {
             else if (row.section_key === 'home_features') {
               setWhatSubtitleEn(row.subtitle_en || '');
               setWhatSubtitleAr(row.subtitle_ar || '');
-              setCards([
-                { 
-                  titleEn: row['card-one-title-en'] || '', titleAr: row['card-one-title-ar'] || '', 
-                  descEn: row['card-one-desc-en'] || '', descAr: row['card-one-desc-ar'] || '' 
+              const three = [
+                {
+                  titleEn: row['card-one-title-en'] || '',
+                  titleAr: row['card-one-title-ar'] || '',
+                  descEn: row['card-one-desc-en'] || '',
+                  descAr: row['card-one-desc-ar'] || '',
                 },
-                { 
-                  titleEn: row['card-two-title-en'] || '', titleAr: row['card-two-title-ar'] || '', 
-                  descEn: row['card-two-desc-en'] || '', descAr: row['card-two-desc-ar'] || '' 
+                {
+                  titleEn: row['card-two-title-en'] || '',
+                  titleAr: row['card-two-title-ar'] || '',
+                  descEn: row['card-two-desc-en'] || '',
+                  descAr: row['card-two-desc-ar'] || '',
                 },
-                { 
-                  titleEn: row['card-three-title-en'] || '', titleAr: row['card-three-title-ar'] || '', 
-                  descEn: row['card-three-desc-en'] || '', descAr: row['card-three-desc-ar'] || '' 
+                {
+                  titleEn: row['card-three-title-en'] || '',
+                  titleAr: row['card-three-title-ar'] || '',
+                  descEn: row['card-three-desc-en'] || '',
+                  descAr: row['card-three-desc-ar'] || '',
+                },
+              ];
+              let extras = [];
+              try {
+                const raw = row.content_en;
+                if (raw && typeof raw === 'string' && raw.trim().startsWith('{')) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && Array.isArray(parsed.extra_feature_cards)) {
+                    extras = parsed.extra_feature_cards.map((c) => ({
+                      titleEn: c.titleEn || '',
+                      titleAr: c.titleAr || '',
+                      descEn: c.descEn || '',
+                      descAr: c.descAr || '',
+                    }));
+                  }
                 }
-              ]);
+              } catch {
+                /* ignore non-JSON legacy content_en */
+              }
+              setCards([...three, ...extras]);
             }
             else if (row.section_key === 'home_simple_secure') {
               setSimpleRteEn(row.content_en || '');
@@ -161,22 +185,32 @@ const CmsHome = () => {
       }).eq('section_key', 'home_hero');
       if (err1) throw err1;
 
+      const padCard = (i) =>
+        cards[i] || { titleEn: '', titleAr: '', descEn: '', descAr: '' };
+      const c0 = padCard(0);
+      const c1 = padCard(1);
+      const c2 = padCard(2);
+      const extraCards = cards.slice(3);
+      const contentEnExtras =
+        extraCards.length > 0 ? JSON.stringify({ extra_feature_cards: extraCards }) : null;
+
       const { error: err2 } = await supabase.from('cms_content').update({
         subtitle_en: whatSubtitleEn,
         subtitle_ar: whatSubtitleAr,
-        'card-one-title-en': cards[0]?.titleEn,
-        'card-one-title-ar': cards[0]?.titleAr,
-        'card-one-desc-en': cards[0]?.descEn,
-        'card-one-desc-ar': cards[0]?.descAr,
-        'card-two-title-en': cards[1]?.titleEn,
-        'card-two-title-ar': cards[1]?.titleAr,
-        'card-two-desc-en': cards[1]?.descEn,
-        'card-two-desc-ar': cards[1]?.descAr,
-        'card-three-title-en': cards[2]?.titleEn,
-        'card-three-title-ar': cards[2]?.titleAr,
-        'card-three-desc-en': cards[2]?.descEn,
-        'card-three-desc-ar': cards[2]?.descAr,
-        updated_at: now
+        'card-one-title-en': c0.titleEn,
+        'card-one-title-ar': c0.titleAr,
+        'card-one-desc-en': c0.descEn,
+        'card-one-desc-ar': c0.descAr,
+        'card-two-title-en': c1.titleEn,
+        'card-two-title-ar': c1.titleAr,
+        'card-two-desc-en': c1.descEn,
+        'card-two-desc-ar': c1.descAr,
+        'card-three-title-en': c2.titleEn,
+        'card-three-title-ar': c2.titleAr,
+        'card-three-desc-en': c2.descEn,
+        'card-three-desc-ar': c2.descAr,
+        content_en: contentEnExtras,
+        updated_at: now,
       }).eq('section_key', 'home_features');
       if (err2) throw err2;
 

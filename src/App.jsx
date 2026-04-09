@@ -26,6 +26,7 @@ import CmsFaqs from './features/web-dashboard/cms/faqs/CmsFaqs';
 import CmsContact from './features/web-dashboard/cms/contact/CmsContact';
 import CmsTerms from './features/web-dashboard/cms/terms/CmsTerms';
 import CmsEmails from './features/web-dashboard/cms/emails/CmsEmails';
+import CmsCustomPage from './features/web-dashboard/cms/CmsCustomPage';
 
 import AppOverview from './features/app-dashboard/overview/AppOverview';
 import Users from './features/app-dashboard/users/Users';
@@ -80,6 +81,7 @@ const App = () => {
             <Route path="contact" element={<CmsContact />} />
             <Route path="terms" element={<CmsTerms />} />
             <Route path="emails" element={<CmsEmails />} />
+            <Route path="p/:pageSlug" element={<CmsCustomPage />} />
           </Route>
           <Route path="settings" element={<WebSettings />} />
         </Route>
