@@ -38,17 +38,24 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
     setIsSearchOpen(!isSearchOpen);
   };
 
+  const isApp = location.pathname.startsWith('/app');
+
   return (
-    <div className="topbar-container">
-      
+    <div className={`topbar-container${isApp ? ' topbar-container--app' : ''}`}>
       <div className="left-section">
-        {/* Burger Menu Button - Independent State */}
-        <button className="menu-btn" onClick={toggleSidebar}>
+        <button type="button" className="menu-btn" onClick={toggleSidebar} aria-label="Toggle menu">
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-        <div className="breadcrumb">
-          <span className="breadcrumb-muted">Dashboard /</span>
-          <span>{getCurrentPageName()}</span>
+        <div className="topbar-titles">
+          <div className="breadcrumb">
+            <span className="breadcrumb-muted">Dashboard /</span>
+            <span>{getCurrentPageName()}</span>
+          </div>
+          {isApp ? (
+            <p className="topbar-welcome">
+              Welcome back, <strong>M.Farid</strong>
+            </p>
+          ) : null}
         </div>
       </div>
 

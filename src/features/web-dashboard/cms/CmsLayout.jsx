@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 import { Save, Plus, FilePlus } from 'lucide-react';
 import './CmsLayout.css';
 
-const tabs = [
+const INITIAL_TABS = [
   { to: 'home', label: 'Homepage' },
   { to: 'about', label: 'About' },
   { to: 'reviews', label: 'Reviews' },
@@ -14,6 +14,7 @@ const tabs = [
 ];
 
 const CmsLayout = () => {
+  const [tabs, setTabs] = useState(INITIAL_TABS);
   const [toast, setToast] = useState('');
   const toastTimer = useRef(null);
 
@@ -24,13 +25,17 @@ const CmsLayout = () => {
   }, []);
 
   const onAddSection = () => {
-    showToast('New section scaffold added in the editor below (demo). Duplicate blocks as needed.');
+    showToast('New section added to the current editor!');
     window.dispatchEvent(new CustomEvent('cms:add-section'));
   };
 
   const onAddPage = () => {
-    const name = window.prompt('New page name (slug will be generated in production):', 'Landing');
-    if (name) showToast(`Page “${name}” queued — connect to API to persist.`);
+    const name = window.prompt('New page name:', 'New Landing');
+    if (name) {
+      const slug = name.toLowerCase().replace(/\s+/g, '-');
+      setTabs((prev) => [...prev, { to: slug, label: name }]);
+      showToast(`Page “${name}” added to tabs! (Requires route config to open)`);
+    }
   };
 
   const onSave = () => {

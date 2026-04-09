@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const toggleSidebar = () => setSidebarOpen((o) => !o);
+  const location = useLocation();
+  const isApp = location.pathname.startsWith('/app');
 
   return (
     <div
-      className="layout-wrapper"
-      style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--c-bg-dark)' }}
+      className={`layout-wrapper${isApp ? ' layout-wrapper--app' : ''}`}
+      style={{
+        display: 'flex',
+        minHeight: '100vh',
+        backgroundColor: isApp ? 'var(--app-bg-page)' : 'var(--c-bg-dark)',
+      }}
     >
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 

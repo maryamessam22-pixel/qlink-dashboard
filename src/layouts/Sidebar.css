@@ -18,15 +18,15 @@
 
 .sidebar-container.app-theme {
   --sb-bg: #ffffff;
-  --sb-text: #131722;
-  --sb-text-muted: #64748b;
-  --sb-border: #e2e8f0;
-  --sb-active-bg: #e0e7ff;
-  --sb-active-text: #1447E6;
-  --sb-divider: #e2e8f0;
-  --sb-toggle-bg: #1447E6;
-  --sb-scrollbar-bg: #0726b0;
-  --sb-scrollbar-thumb: #e2e8f0;
+  --sb-text: #172b4d;
+  --sb-text-muted: #6b778c;
+  --sb-border: #e4e7ec;
+  --sb-active-bg: #e8f0fe;
+  --sb-active-text: #1a73e8;
+  --sb-divider: #e4e7ec;
+  --sb-toggle-bg: #1a73e8;
+  --sb-scrollbar-bg: #e8f0fe;
+  --sb-scrollbar-thumb: #1a73e8;
 }
 
 .sidebar-container {
@@ -125,8 +125,21 @@
 }
 
 .sidebar-container.app-theme .profile-role {
-  color: #1447E6;
+  color: #1a73e8;
   font-weight: 600;
+}
+
+.sidebar-container.app-theme .logout-button {
+  color: #d93025;
+}
+
+.sidebar-container.app-theme .sidebar-close-btn {
+  color: #6b778c;
+}
+
+.sidebar-container.app-theme .sidebar-close-btn:hover {
+  color: #172b4d;
+  background-color: rgba(23, 43, 77, 0.06);
 }
 
 .profile-divider {

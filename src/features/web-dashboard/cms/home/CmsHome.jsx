@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sparkles, Loader2, Save } from 'lucide-react';
+import { Sparkles, Loader2, Save, Trash2 } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput, BilingualTextarea } from '../../../../components/bilingual/BilingualField';
@@ -117,7 +117,17 @@ const CmsHome = () => {
       }
     };
 
+    const onAdd = () => {
+      setCards((c) => [
+        ...c,
+        { titleEn: 'New feature', titleAr: 'ميزة جديدة', descEn: 'Description', descAr: 'الوصف' },
+      ]);
+    };
+    window.addEventListener('cms:add-section', onAdd);
+
     fetchCmsData();
+
+    return () => window.removeEventListener('cms:add-section', onAdd);
   }, []);
 
   const updateCard = (i, field, lang, val) => {
@@ -127,6 +137,10 @@ const CmsHome = () => {
       next[i] = { ...next[i], [key]: val };
       return next;
     });
+  };
+
+  const removeCard = (i) => {
+    setCards((prev) => prev.filter((_, j) => j !== i));
   };
 
   const handleSave = async () => {
@@ -190,7 +204,12 @@ const CmsHome = () => {
   };
 
   if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: '#8b949e' }}>Loading CMS data...</div>;
+    return (
+      <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading homepage data...</p>
+      </div>
+    );
   }
 
   return (
@@ -268,8 +287,19 @@ const CmsHome = () => {
           rows={3}
         />
         {cards.map((card, i) => (
-          <div key={i} style={{ marginTop: 20, paddingTop: 20, borderTop: i ? '1px solid #1f2937' : 'none' }}>
-            <p style={{ margin: '0 0 12px', fontSize: 13, color: '#8b949e' }}>Card {i + 1}</p>
+          <div key={i} style={{ marginTop: 20, paddingTop: 20, borderTop: i ? '1px solid #1f2937' : 'none', position: 'relative' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <p style={{ margin: 0, fontSize: 13, color: '#8b949e' }}>Card {i + 1}</p>
+              <button 
+                type="button" 
+                onClick={() => removeCard(i)}
+                style={{ background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer' }}
+                onMouseEnter={(e) => e.target.style.color = '#e03232'}
+                onMouseLeave={(e) => e.target.style.color = '#6b7280'}
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
             <BilingualTextInput
               labelEn="Title (EN)"
               labelAr="العنوان (AR)"

@@ -97,7 +97,16 @@ const CmsAbout = () => {
       }
     };
 
+    const onAdd = () => {
+      setMembers((m) => [...m, { 
+        name: 'New Member', role_en: '', role_ar: '', image_url: '', display_order: m.length + 1 
+      }]);
+    };
+    window.addEventListener('cms:add-section', onAdd);
+
     fetchAllData();
+
+    return () => window.removeEventListener('cms:add-section', onAdd);
   }, []);
 
   const updateMember = (i, key, val) => {
@@ -149,17 +158,34 @@ const CmsAbout = () => {
         description_en: seo.metaDescription,
       }).eq('slug', 'about/our-story');
 
+      // التعديل السحري هنا:
       if (members.length > 0) {
-        const teamPayload = members.map((m, i) => ({
-          ...(m.id ? { id: m.id } : {}), 
-          name: m.name || '',
-          role_en: m.role_en || '',
-          role_ar: m.role_ar || '',
-          image_url: m.image_url || '',
-          display_order: i + 1
-        }));
-        await supabase.from('team_members').upsert(teamPayload);
+        for (let i = 0; i < members.length; i++) {
+          const m = members[i];
+          const payload = {
+            name: m.name || '',
+            role_en: m.role_en || '',
+            role_ar: m.role_ar || '',
+            image_url: m.image_url || '',
+            display_order: i + 1
+          };
+
+          if (m.id) {
+            // لو عنده ID يبقى ده شخص قديم، نعمله تعديل (Update)
+            await supabase.from('team_members').update(payload).eq('id', m.id);
+          } else {
+            // لو معندوش ID يبقى ده شخص جديد إنتي لسه ضايفاه، نعمله إضافة (Insert)
+            await supabase.from('team_members').insert([payload]);
+          }
+        }
       }
+
+      // بنجيب الناس تاني من الداتابيز عشان الداشبورد تحدث الـ IDs الجديدة
+      const { data: updatedTeam } = await supabase
+        .from('team_members')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (updatedTeam) setMembers(updatedTeam);
 
       alert('About page content saved successfully!');
     } catch (error) {
@@ -171,7 +197,12 @@ const CmsAbout = () => {
   };
 
   if (loading) {
-    return <div style={{ padding: '40px', textAlign: 'center', color: '#8b949e' }}>Loading CMS data...</div>;
+    return (
+      <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading about page data...</p>
+      </div>
+    );
   }
 
   return (
@@ -274,7 +305,7 @@ const CmsAbout = () => {
                 <Trash2 size={16} />
               </button>
               <div className="about-team-avatar-wrap">
-                <img src={mem.image_url || 'https://placehold.co/96x96/png'} alt="" className="about-team-avatar" />
+                <img src={mem.image_url || 'https://placehold.co/96x96/png'} alt={mem.name || 'Team member'} className="about-team-avatar" />
               </div>
               <div style={{ marginTop: 12 }}>
                 <label className="field-label">Name (EN & AR)</label>

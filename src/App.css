@@ -18,9 +18,30 @@
   --sidebar-width: 260px;
   --topbar-height: 80px;
 
-  /* Typography */
+  /* Typography — Roboto loaded via Google Fonts import above */
   --font-en: 'Roboto', sans-serif;
   --font-ar: 'Noto Kufi Arabic', sans-serif;
+
+  /* App dashboard (light) — used under .layout-wrapper--app */
+  --app-bg-page: #f8f9fa;
+  --app-bg-card: #ffffff;
+  --app-primary: #1a73e8;
+  --app-nav-active-bg: #e8f0fe;
+  --app-text-primary: #172b4d;
+  --app-text-secondary: #6b778c;
+  --app-danger: #d93025;
+  --app-border-subtle: #e4e7ec;
+  --app-card-shadow: 0 1px 3px rgba(23, 43, 77, 0.08), 0 4px 12px rgba(23, 43, 77, 0.06);
+  --app-icon-purple: #9c27b0;
+  --app-icon-blue: #1976d2;
+  --app-icon-dark-blue: #283593;
+  --app-icon-green: #2e7d32;
+  --app-chart-blue: #1a73e8;
+  --app-chart-purple: #7b61ff;
+  --app-chart-fill-a: rgba(26, 115, 232, 0.22);
+  --app-chart-fill-b: rgba(100, 181, 246, 0.28);
+  --app-chart-line-a: #1a73e8;
+  --app-chart-line-b: #42a5f5;
 }
 
 * {
@@ -57,6 +78,15 @@ body {
 .page-container {
   padding: 32px;
   flex: 1;
+}
+
+/* Light shell when browsing /app/* */
+.layout-wrapper--app .main-content {
+  background: var(--app-bg-page);
+}
+
+.layout-wrapper--app .page-container {
+  background: var(--app-bg-page);
 }
 
 @media screen and (max-width: 768px) {
