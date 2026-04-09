@@ -1,0 +1,238 @@
+.app-profiles-page {
+  font-family: var(--font-en), "Roboto", system-ui, sans-serif;
+  color: var(--app-text-primary);
+  max-width: 1280px;
+}
+
+.app-profiles-meta {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--app-text-secondary);
+}
+
+.app-profiles-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.app-profiles-title {
+  margin: 0 0 6px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--app-text-primary);
+  letter-spacing: -0.02em;
+}
+
+.app-profiles-sub {
+  margin: 0;
+  font-size: 14px;
+  color: var(--app-text-secondary);
+  line-height: 1.5;
+}
+
+.app-profiles-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--app-table-header-bg);
+  color: var(--app-table-header-text);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.25);
+}
+
+.app-profiles-add-btn:hover {
+  filter: brightness(1.06);
+}
+
+.app-profiles-table-wrap {
+  background: var(--app-bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--app-border-subtle);
+  box-shadow: var(--app-card-shadow);
+  overflow: hidden;
+}
+
+.app-profiles-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.app-profiles-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 940px;
+}
+
+.app-profiles-table thead th {
+  text-align: left;
+  padding: 14px 18px;
+  background: var(--app-table-header-bg);
+  color: var(--app-table-header-text);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.app-profiles-table tbody tr {
+  border-bottom: 1px solid var(--app-border-subtle);
+}
+
+.app-profiles-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.app-profiles-table tbody td {
+  padding: 16px 18px;
+  vertical-align: middle;
+  color: var(--app-text-primary);
+}
+
+.app-profiles-user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-profiles-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--ah, 210), 55%, 48%),
+    hsl(calc(var(--ah, 210) + 40), 50%, 42%)
+  );
+}
+
+.app-profiles-name {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.app-profiles-age-young {
+  color: var(--app-age-young);
+  font-weight: 600;
+}
+
+.app-profiles-age-senior {
+  color: var(--app-age-senior);
+  font-weight: 600;
+}
+
+.app-profiles-blood-pill {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.app-profiles-blood-pill--op,
+.app-profiles-blood-pill--ap,
+.app-profiles-blood-pill--bp,
+.app-profiles-blood-pill--abp {
+  background: var(--app-blood-pos-bg);
+  color: var(--app-blood-pos-text);
+}
+
+.app-profiles-blood-pill--on,
+.app-profiles-blood-pill--an,
+.app-profiles-blood-pill--bn,
+.app-profiles-blood-pill--abn {
+  background: var(--app-blood-neg-bg);
+  color: var(--app-blood-neg-text);
+}
+
+.app-profiles-guardian {
+  font-size: 14px;
+  color: var(--app-text-primary);
+  font-weight: 600;
+}
+
+.app-profiles-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.app-profiles-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.app-profiles-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--app-toggle-off);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.app-profiles-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  background: var(--app-toggle-knob);
+  border-radius: 50%;
+  transition: transform 0.2s;
+}
+
+.app-profiles-toggle input:checked + .app-profiles-toggle-slider {
+  background: var(--app-toggle-on);
+}
+
+.app-profiles-toggle input:checked + .app-profiles-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.app-profiles-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.app-profiles-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--app-primary);
+  cursor: pointer;
+}
+
+.app-profiles-icon-btn:hover {
+  background: var(--app-nav-active-bg);
+}
+
+.app-profiles-icon-btn--danger {
+  color: var(--app-danger);
+}

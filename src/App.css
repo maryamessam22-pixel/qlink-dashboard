@@ -51,6 +51,14 @@
   --app-role-patient-bg: #e8f5e9;
   --app-role-patient-text: #2e7d32;
   --app-toggle-on: #34a853;
+  --app-toggle-off: #cfd4dc;
+  --app-toggle-knob: #ffffff;
+  --app-blood-pos-bg: #fdecef;
+  --app-blood-pos-text: #d93025;
+  --app-blood-neg-bg: #fce8ef;
+  --app-blood-neg-text: #b4235d;
+  --app-age-young: #16a34a;
+  --app-age-senior: #15803d;
 }
 
 * {
