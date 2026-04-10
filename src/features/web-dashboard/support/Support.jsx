@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Trash2, Search, Loader2 } from 'lucide-react';
+import { MessageCircle, Trash2, Search, Loader2, Save } from 'lucide-react';
 import { useSearchParams, useLocation } from 'react-router-dom';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
@@ -17,6 +17,7 @@ const Support = () => {
 
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [seoSaving, setSeoSaving] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -121,6 +122,7 @@ const Support = () => {
   }
 
   const saveSeoToDb = async () => {
+    setSeoSaving(true);
     try {
       const { error } = await supabase
         .from('seo')
@@ -135,6 +137,8 @@ const Support = () => {
     } catch (error) {
       console.error('Error updating SEO:', error.message);
       alert('Failed to update SEO');
+    } finally {
+      setSeoSaving(false);
     }
   };
 
@@ -360,8 +364,15 @@ const Support = () => {
         badge={isAppView ? 'Internal' : 'Live'}
       />
       <div className="support-seo-actions">
-        <button type="button" className="btn-secondary support-seo-save" onClick={saveSeoToDb}>
-          Save SEO changes
+        <button
+          type="button"
+          className="btn-publish support-seo-save"
+          onClick={saveSeoToDb}
+          disabled={seoSaving}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+        >
+          {seoSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+          {seoSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>

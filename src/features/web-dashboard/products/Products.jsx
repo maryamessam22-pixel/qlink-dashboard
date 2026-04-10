@@ -118,7 +118,7 @@ const Products = () => {
 
   if (loading) {
     return (
-      <div className="web-page-loading" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+      <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
         <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
         <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading catalog...</p>
       </div>

@@ -194,9 +194,19 @@ const CmsContact = () => {
 
   if (loading) {
     return (
-      <div className="web-card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 24 }}>
-        <Loader2 className="animate-spin" size={22} />
-        <span>Loading contact CMS…</span>
+      <div
+        className="web-page-loading"
+        style={{
+          height: '70vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+        }}
+      >
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading contact page…</p>
       </div>
     );
   }
@@ -222,9 +232,15 @@ const CmsContact = () => {
           <button type="button" className="btn-secondary" disabled={saving} onClick={() => loadData()}>
             Reload
           </button>
-          <button type="button" className="btn-publish" disabled={saving} onClick={handleSave}>
-            {saving ? <Loader2 size={18} className="animate-spin" style={{ marginRight: 8 }} /> : <Save size={18} style={{ marginRight: 8 }} />}
-            Save to Supabase
+          <button
+            type="button"
+            className="btn-publish"
+            disabled={saving}
+            onClick={handleSave}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+          >
+            {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

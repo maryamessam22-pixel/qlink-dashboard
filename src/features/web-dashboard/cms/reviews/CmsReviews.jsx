@@ -314,7 +314,7 @@ const CmsReviews = () => {
         </h1>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
           <button type="button" className="btn-secondary" onClick={loadAll}>
-            Refresh
+            Reload
           </button>
           <button type="button" className="btn-primary" onClick={handleAddReview} disabled={adding}>
             {adding ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
@@ -593,9 +593,15 @@ const CmsReviews = () => {
 
       <SeoSection title="Reviews SEO" slugPrefix="qlink.com/" value={seo} onChange={setSeo} badge="Live" />
       <div style={{ marginTop: 12 }}>
-        <button type="button" className="btn-publish" onClick={saveSeo} disabled={seoSaving}>
-          {seoSaving ? <Loader2 className="animate-spin" size={18} style={{ marginRight: 8 }} /> : null}
-          Save SEO
+        <button
+          type="button"
+          className="btn-publish"
+          onClick={saveSeo}
+          disabled={seoSaving}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+        >
+          {seoSaving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+          {seoSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
     </div>

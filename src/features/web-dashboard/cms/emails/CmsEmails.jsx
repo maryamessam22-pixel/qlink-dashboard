@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Save } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
@@ -79,8 +80,14 @@ const CmsEmails = () => {
           <button type="button" className="btn-secondary" onClick={resetDraft}>
             Reset / clear draft
           </button>
-          <button type="button" className="btn-publish" onClick={saveDraft}>
-            Save draft
+          <button
+            type="button"
+            className="btn-publish"
+            onClick={saveDraft}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+          >
+            <Save size={18} />
+            Save Changes
           </button>
         </div>
       </div>
