@@ -1,171 +1,570 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Star, Trash2, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Eye, EyeOff, Loader2, Plus, Save, Search, Star, Trash2 } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
-import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
+import { supabase } from '../../../../lib/supabase';
 import '../../../../styles/web-dashboard-pages.css';
 
+const SEO_SLUG = 'reviews';
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Normalize plain-text DB values for RichTextEditor */
+function reviewTextToHtml(raw) {
+  if (raw == null || String(raw).trim() === '') return '<p></p>';
+  const t = String(raw).trim();
+  if (t.startsWith('<')) return t;
+  return `<p>${escapeHtml(t).replace(/\n/g, '<br/>')}</p>`;
+}
+
+function mapRow(row) {
+  const vis = row.is_visible;
+  return {
+    id: row.id,
+    customer_name: row.customer_name ?? '',
+    customer_subtitle: row.customer_subtitle ?? '',
+    rating: Math.min(5, Math.max(1, Number(row.rating) || 5)),
+    review_text: reviewTextToHtml(row.review_text),
+    is_featured: Boolean(row.is_featured),
+    /* DB column is_visible boolean NOT NULL DEFAULT true */
+    is_visible: vis === false ? false : true,
+    created_at: row.created_at,
+  };
+}
+
+function isMissingIsVisibleColumn(error) {
+  if (!error) return false;
+  const msg = `${error.message || ''} ${error.details || ''} ${error.hint || ''}`.toLowerCase();
+  return error.code === '42703' || msg.includes('is_visible');
+}
+
 const CmsReviews = () => {
-  const [quoteEn, setQuoteEn] = useState('“Qlink gave our family peace of mind.”');
-  const [quoteAr, setQuoteAr] = useState('«كيو لينك منح عائلتنا راحة البال»');
-  const [storyEn, setStoryEn] = useState('<p>Full featured story about a verified customer experience.</p>');
-  const [storyAr, setStoryAr] = useState('<p>قصة كاملة عن تجربة عميل موثقة.</p>');
-  const [authorEn, setAuthorEn] = useState('Malak Yasser');
-  const [authorAr, setAuthorAr] = useState('ملك ياسر');
-  const [authorSubEn, setAuthorSubEn] = useState('Verified purchase');
-  const [authorSubAr, setAuthorSubAr] = useState('شراء موثق');
-  const [reviews, setReviews] = useState([
-    { nameEn: 'Salma Ahmed', nameAr: 'سلمى أحمد', subEn: 'Diabetes patient', subAr: 'مريضة سكري', rating: 5, textEn: '<p>Excellent product.</p>', textAr: '<p>منتج ممتاز.</p>' },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [listError, setListError] = useState('');
+  const [schemaHint, setSchemaHint] = useState('');
+  /** When false, DB has no is_visible column — hide toggle and omit field from writes. */
+  const [hasIsVisibleColumn, setHasIsVisibleColumn] = useState(true);
+  const [reviews, setReviews] = useState([]);
+  const [savingId, setSavingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [seoSaving, setSeoSaving] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRating, setFilterRating] = useState('All');
+
   const [seo, setSeo] = useState({
-    slug: 'reviews',
+    slug: SEO_SLUG,
     metaTitle: 'Customer reviews — Qlink',
     metaDescription: 'Read verified Qlink bracelet reviews.',
     keywords: 'reviews, qlink, testimonials',
     featuredImageAlt: 'Reviews',
   });
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterRating, setFilterRating] = useState('All');
+  const loadReviews = useCallback(async () => {
+    setListError('');
+    setSchemaHint('');
+    const fullSelect =
+      'id, customer_name, customer_subtitle, rating, review_text, is_featured, is_visible, created_at';
+    const baseSelect = 'id, customer_name, customer_subtitle, rating, review_text, is_featured, created_at';
 
-  const filteredReviews = reviews.filter(rev => {
-    const matchesSearch = 
-        rev.nameEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        rev.textEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        rev.nameAr.includes(searchQuery) ||
-        rev.textAr.includes(searchQuery);
-    
-    const matchesFilter = filterRating === 'All' || rev.rating === Number(filterRating);
-    
-    return matchesSearch && matchesFilter;
-  });
+    let { data, error } = await supabase.from('reviews').select(fullSelect).order('created_at', { ascending: false });
+
+    if (error && isMissingIsVisibleColumn(error)) {
+      setHasIsVisibleColumn(false);
+      setSchemaHint(
+        'Show/hide on the website is optional: add column is_visible (file supabase/reviews_add_is_visible.sql). Until then, all reviews load normally and Featured still works.'
+      );
+      const second = await supabase.from('reviews').select(baseSelect).order('created_at', { ascending: false });
+      data = second.data;
+      error = second.error;
+    } else if (!error) {
+      setHasIsVisibleColumn(true);
+    }
+
+    if (error) {
+      setListError(error.message || 'Failed to load reviews. Check Supabase URL/key and RLS policies for table reviews.');
+      setReviews([]);
+      return;
+    }
+    setReviews((data || []).map(mapRow));
+  }, []);
+
+  const loadSeo = useCallback(async () => {
+    const { data, error } = await supabase.from('seo').select('*').eq('slug', SEO_SLUG).maybeSingle();
+    if (error && error.code !== 'PGRST116') console.error('SEO fetch:', error);
+    if (data) {
+      setSeo({
+        slug: data.slug || SEO_SLUG,
+        metaTitle: data.title_en || 'Customer reviews — Qlink',
+        metaDescription: data.description_en || '',
+        keywords: data.keywords || 'reviews, qlink, testimonials',
+        featuredImageAlt: data.featured_image_alt || 'Reviews',
+      });
+    }
+  }, []);
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([loadReviews(), loadSeo()]);
+    setLoading(false);
+  }, [loadReviews, loadSeo]);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
+  const patchLocal = (id, partial) => {
+    setReviews((prev) => prev.map((r) => (r.id === id ? { ...r, ...partial } : r)));
+  };
+
+  const handleAddReview = useCallback(async () => {
+    setAdding(true);
+    setListError('');
+    try {
+      const payload = {
+        customer_name: 'New customer',
+        customer_subtitle: '',
+        rating: 5,
+        review_text: '<p></p>',
+        is_featured: false,
+        is_visible: true,
+      };
+      let { data, error } = await supabase.from('reviews').insert([payload]).select('*').single();
+      if (error && isMissingIsVisibleColumn(error)) {
+        setHasIsVisibleColumn(false);
+        const { customer_name, customer_subtitle, rating, review_text, is_featured } = payload;
+        const retry = await supabase
+          .from('reviews')
+          .insert([{ customer_name, customer_subtitle, rating, review_text, is_featured }])
+          .select('*')
+          .single();
+        data = retry.data;
+        error = retry.error;
+      }
+      if (error) {
+        alert(error.message || 'Could not add review.');
+        return;
+      }
+      setReviews((prev) => [mapRow(data), ...prev]);
+    } finally {
+      setAdding(false);
+    }
+  }, []);
 
   useEffect(() => {
     const onAdd = () => {
-      setReviews((r) => [...r, { nameEn: '', nameAr: '', subEn: '', subAr: '', rating: 5, textEn: '', textAr: '' }]);
+      handleAddReview();
     };
     window.addEventListener('cms:add-section', onAdd);
     return () => window.removeEventListener('cms:add-section', onAdd);
-  }, []);
+  }, [handleAddReview]);
 
-  const patch = (i, key, val) => {
-    setReviews((prev) => {
-      const n = [...prev];
-      n[i] = { ...n[i], [key]: val };
-      return n;
-    });
+  const handleSaveReview = async (rev) => {
+    if (!rev.id) return;
+    setSavingId(rev.id);
+    setListError('');
+    try {
+      const basePayload = {
+        customer_name: rev.customer_name,
+        customer_subtitle: rev.customer_subtitle,
+        rating: rev.rating,
+        review_text: rev.review_text,
+        is_featured: rev.is_featured,
+      };
+      const payload = hasIsVisibleColumn ? { ...basePayload, is_visible: rev.is_visible } : basePayload;
+
+      let { error } = await supabase.from('reviews').update(payload).eq('id', rev.id);
+
+      if (error && hasIsVisibleColumn && isMissingIsVisibleColumn(error)) {
+        setHasIsVisibleColumn(false);
+        const { error: e2 } = await supabase.from('reviews').update(basePayload).eq('id', rev.id);
+        error = e2;
+      }
+
+      if (error) {
+        window.alert(error.message || 'Save failed.');
+        return;
+      }
+      await loadReviews();
+    } finally {
+      setSavingId(null);
+    }
   };
+
+  const handleDeleteReview = async (id) => {
+    if (!window.confirm('Delete this review permanently?')) return;
+    setDeletingId(id);
+    try {
+      const { error } = await supabase.from('reviews').delete().eq('id', id);
+      if (error) {
+        alert(error.message || 'Delete failed.');
+        return;
+      }
+      setReviews((prev) => prev.filter((r) => r.id !== id));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const toggleField = async (id, field, value) => {
+    if (field === 'is_visible' && !hasIsVisibleColumn) return;
+    patchLocal(id, { [field]: value });
+    const { error } = await supabase.from('reviews').update({ [field]: value }).eq('id', id);
+    if (error) {
+      patchLocal(id, { [field]: !value });
+      if (field === 'is_visible' && isMissingIsVisibleColumn(error)) {
+        setHasIsVisibleColumn(false);
+        setSchemaHint(
+          'Database has no is_visible column yet. Add it with supabase/reviews_add_is_visible.sql to use Show on site.'
+        );
+      } else {
+        window.alert(error.message || 'Update failed.');
+      }
+      await loadReviews();
+    }
+  };
+
+  const saveSeo = async () => {
+    setSeoSaving(true);
+    try {
+      const { data: existing } = await supabase.from('seo').select('id').eq('slug', seo.slug).maybeSingle();
+      const payload = {
+        slug: seo.slug,
+        title_en: seo.metaTitle,
+        description_en: seo.metaDescription,
+        keywords: seo.keywords,
+        featured_image_alt: seo.featuredImageAlt,
+      };
+      if (existing?.id) {
+        const { error } = await supabase.from('seo').update(payload).eq('id', existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('seo').insert([payload]);
+        if (error) throw error;
+      }
+      alert('SEO saved.');
+    } catch (e) {
+      console.error(e);
+      alert(e?.message || 'Failed to save SEO.');
+    } finally {
+      setSeoSaving(false);
+    }
+  };
+
+  const stripHtml = (html) =>
+    String(html || '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+
+  const filteredReviews = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return reviews.filter((rev) => {
+      const blob = `${rev.customer_name} ${rev.customer_subtitle} ${stripHtml(rev.review_text)}`.toLowerCase();
+      const matchesSearch = !q || blob.includes(q);
+      const matchesFilter = filterRating === 'All' || rev.rating === Number(filterRating);
+      return matchesSearch && matchesFilter;
+    });
+  }, [reviews, searchQuery, filterRating]);
+
+  if (loading) {
+    return (
+      <div
+        className="web-page-loading"
+        style={{
+          height: '70vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '16px',
+        }}
+      >
+        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
+        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading reviews…</p>
+      </div>
+    );
+  }
 
   return (
     <div>
       <PageMeta title="CMS · Reviews" description={seo.metaDescription} keywords={seo.keywords} />
 
-      <section className="web-card">
-        <h2 className="web-card-title" style={{ marginBottom: 16 }}>
-          <Star size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#eab308' }} />
-          Featured story
-        </h2>
-        <BilingualTextInput
-          labelEn="Headline quote (EN)"
-          labelAr="اقتباس العنوان (AR)"
-          valueEn={quoteEn}
-          valueAr={quoteAr}
-          onChangeEn={setQuoteEn}
-          onChangeAr={setQuoteAr}
-        />
-        <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Full story (EN)</label>
-          <RichTextEditor value={storyEn} onChange={setStoryEn} />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>القصة الكاملة (AR)</label>
-          <RichTextEditor value={storyAr} onChange={setStoryAr} rtl />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <BilingualTextInput
-            labelEn="Author name (EN)"
-            labelAr="اسم المؤلف (AR)"
-            valueEn={authorEn}
-            valueAr={authorAr}
-            onChangeEn={setAuthorEn}
-            onChangeAr={setAuthorAr}
-          />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <BilingualTextInput
-            labelEn="Author subtitle (EN)"
-            labelAr="العنوان الفرعي (AR)"
-            valueEn={authorSubEn}
-            valueAr={authorSubAr}
-            onChangeEn={setAuthorSubEn}
-            onChangeAr={setAuthorSubAr}
-          />
-        </div>
-      </section>
-
-      <section className="web-card">
-        <div className="web-card-head">
-          <h2 className="web-card-title">Customer reviews</h2>
-          <button type="button" className="btn-primary" onClick={() => setReviews((r) => [...r, { nameEn: '', nameAr: '', subEn: '', subAr: '', rating: 5, textEn: '', textAr: '' }])}>
-            <Plus size={18} />
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <h1 className="web-page-title" style={{ margin: 0 }}>
+          Reviews CMS
+        </h1>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <button type="button" className="btn-secondary" onClick={loadAll}>
+            Refresh
+          </button>
+          <button type="button" className="btn-primary" onClick={handleAddReview} disabled={adding}>
+            {adding ? <Loader2 className="animate-spin" size={18} /> : <Plus size={18} />}
             Add review
           </button>
         </div>
-        
-        <div className="filter-row" style={{ marginBottom: '24px' }}>
-            <div className="search-wide-wrap">
-                <Search className="search-wide-icon" size={18} />
-                <input 
-                    type="search" 
-                    className="field-input" 
-                    placeholder="Search reviews..." 
-                    style={{ width: '100%', paddingLeft: '44px' }}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                />
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-                {['All', '5', '4', '3', '2', '1'].map(r => (
-                    <button 
-                        key={r}
-                        className={`filter-pill ${filterRating === r ? 'active' : ''}`}
-                        onClick={() => setFilterRating(r)}
-                    >
-                        {r === 'All' ? 'All ratings' : `${r} Stars`}
-                    </button>
-                ))}
-            </div>
+      </div>
+
+      {listError ? (
+        <p className="field-label" style={{ color: '#f87171', marginBottom: 16 }}>
+          {listError}
+        </p>
+      ) : null}
+
+      {schemaHint ? (
+        <p
+          className="field-label"
+          style={{
+            color: '#86efac',
+            marginBottom: 16,
+            padding: '12px 14px',
+            background: 'rgba(34, 197, 94, 0.08)',
+            borderRadius: 10,
+            border: '1px solid rgba(34, 197, 94, 0.25)',
+            fontSize: 13,
+            lineHeight: 1.45,
+          }}
+        >
+          {schemaHint}
+        </p>
+      ) : null}
+
+      <section className="web-card">
+        <div className="web-card-head">
+          <h2 className="web-card-title">
+            <Star size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#eab308' }} />
+            Customer reviews (Supabase)
+          </h2>
+        </div>
+        <p style={{ margin: '0 0 8px', fontSize: 13, color: '#8b949e' }}>
+          Loaded <strong style={{ color: '#e6edf3' }}>{reviews.length}</strong> review{reviews.length === 1 ? '' : 's'}{' '}
+          from Supabase.
+          {hasIsVisibleColumn ? (
+            <>
+              {' '}
+              <strong style={{ color: '#e6edf3' }}>Show on site</strong> updates <code style={{ color: '#cbd5e1' }}>is_visible</code>
+              — the public site should only list rows where it is <code style={{ color: '#cbd5e1' }}>true</code>.
+              <strong style={{ color: '#e6edf3' }}> Featured</strong> is independent (marketing highlight).
+            </>
+          ) : (
+            <>
+              {' '}
+              Add column <code style={{ color: '#cbd5e1' }}>is_visible</code> (see <code style={{ color: '#cbd5e1' }}>supabase/reviews_add_is_visible.sql</code>)
+              to enable show/hide.
+            </>
+          )}
+        </p>
+        {(searchQuery.trim() || filterRating !== 'All') && filteredReviews.length < reviews.length ? (
+          <p style={{ margin: '0 0 16px', fontSize: 13, color: '#fbbf24' }}>
+            Filters hide {reviews.length - filteredReviews.length} review(s). Use &quot;All ratings&quot; and clear
+            search to see every row (e.g. 2-star reviews).
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ marginLeft: 10, padding: '4px 10px', fontSize: 12 }}
+              onClick={() => {
+                setSearchQuery('');
+                setFilterRating('All');
+              }}
+            >
+              Clear filters
+            </button>
+          </p>
+        ) : null}
+
+        <div className="filter-row" style={{ marginBottom: 24, marginTop: 8 }}>
+          <div className="search-wide-wrap">
+            <Search className="search-wide-icon" size={18} />
+            <input
+              type="search"
+              className="field-input"
+              placeholder="Search by name, subtitle, or review text…"
+              style={{ width: '100%', paddingLeft: 44 }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {['All', '5', '4', '3', '2', '1'].map((r) => (
+              <button
+                key={r}
+                type="button"
+                className={`filter-pill ${filterRating === r ? 'active' : ''}`}
+                onClick={() => setFilterRating(r)}
+              >
+                {r === 'All' ? 'All ratings' : `${r} stars`}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {filteredReviews.map((rev, i) => {
-          // Since we are mapping over filtered list but need to patch original index,
-          // we should find original index.
-          const originalIndex = reviews.indexOf(rev);
+        {filteredReviews.length === 0 && reviews.length > 0 ? (
+          <p style={{ color: '#8b949e', fontSize: 14 }}>
+            No reviews match your filters ({reviews.length} in database).{' '}
+            <button type="button" className="btn-ghost" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => {
+              setSearchQuery('');
+              setFilterRating('All');
+            }}>
+              Clear filters
+            </button>
+          </p>
+        ) : null}
+        {reviews.length === 0 && !listError ? (
+          <p style={{ color: '#8b949e', fontSize: 14 }}>
+            No rows returned. Confirm data exists in table <code style={{ color: '#cbd5e1' }}>reviews</code> and that
+            Row Level Security allows read for your anon key.
+          </p>
+        ) : null}
+
+        {filteredReviews.map((rev) => {
+          const created = rev.created_at
+            ? new Date(rev.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+            : '';
           return (
-            <div key={originalIndex} className="review-editor-block">
+            <div key={rev.id} className="review-editor-block">
               <div className="review-editor-block-head">
-                <span className="review-editor-index">Review {originalIndex + 1}</span>
-                <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Remove" onClick={() => setReviews((p) => p.filter((_, j) => j !== originalIndex))}>
-                  <Trash2 size={16} />
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span className="review-editor-index" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 8 }}>
+                    {rev.customer_name || 'Untitled'}
+                    {hasIsVisibleColumn && !rev.is_visible ? (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          background: 'rgba(248, 113, 113, 0.12)',
+                          color: '#f87171',
+                          border: '1px solid rgba(248, 113, 113, 0.35)',
+                        }}
+                      >
+                        Hidden on site
+                      </span>
+                    ) : null}
+                    {rev.is_featured ? (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                          padding: '3px 8px',
+                          borderRadius: 6,
+                          background: 'rgba(234, 179, 8, 0.12)',
+                          color: '#eab308',
+                          border: '1px solid rgba(234, 179, 8, 0.35)',
+                        }}
+                      >
+                        Featured
+                      </span>
+                    ) : null}
+                  </span>
+                  {created ? (
+                    <span style={{ fontSize: 11, color: '#8b949e', fontWeight: 500 }}>{created}</span>
+                  ) : null}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                  {hasIsVisibleColumn ? (
+                    <label
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        fontSize: 12,
+                        color: '#cbd5e1',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={rev.is_visible}
+                        onChange={(e) => toggleField(rev.id, 'is_visible', e.target.checked)}
+                      />
+                      {rev.is_visible ? <Eye size={14} /> : <EyeOff size={14} />}
+                      Show on site
+                    </label>
+                  ) : null}
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 12,
+                      color: '#cbd5e1',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={rev.is_featured}
+                      onChange={(e) => toggleField(rev.id, 'is_featured', e.target.checked)}
+                    />
+                    <Star size={14} style={{ color: '#eab308' }} />
+                    Featured
+                  </label>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ padding: '8px 14px', fontSize: 12 }}
+                    onClick={() => handleSaveReview(rev)}
+                    disabled={savingId === rev.id}
+                  >
+                    {savingId === rev.id ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    className="about-team-remove"
+                    style={{ position: 'static' }}
+                    aria-label="Delete review"
+                    onClick={() => handleDeleteReview(rev.id)}
+                    disabled={deletingId === rev.id}
+                  >
+                    {deletingId === rev.id ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                  </button>
+                </div>
               </div>
-              <BilingualTextInput
-                labelEn="Name (EN)"
-                labelAr="الاسم (AR)"
-                valueEn={rev.nameEn}
-                valueAr={rev.nameAr}
-                onChangeEn={(v) => patch(originalIndex, 'nameEn', v)}
-                onChangeAr={(v) => patch(originalIndex, 'nameAr', v)}
-              />
+
               <div style={{ marginTop: 12 }}>
-                <BilingualTextInput
-                  labelEn="Subtitle (EN)"
-                  labelAr="العنوان الفرعي (AR)"
-                  valueEn={rev.subEn}
-                  valueAr={rev.subAr}
-                  onChangeEn={(v) => patch(originalIndex, 'subEn', v)}
-                  onChangeAr={(v) => patch(originalIndex, 'subAr', v)}
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                  Customer name
+                </label>
+                <input
+                  className="field-input"
+                  style={{ width: '100%' }}
+                  value={rev.customer_name}
+                  onChange={(e) => patchLocal(rev.id, { customer_name: e.target.value })}
+                />
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                  Subtitle / role
+                </label>
+                <input
+                  className="field-input"
+                  style={{ width: '100%' }}
+                  value={rev.customer_subtitle}
+                  onChange={(e) => patchLocal(rev.id, { customer_subtitle: e.target.value })}
                 />
               </div>
               <div style={{ marginTop: 12 }} className="rating-row">
@@ -176,23 +575,29 @@ const CmsReviews = () => {
                   max={5}
                   className="field-input rating-input"
                   value={rev.rating}
-                  onChange={(e) => patch(originalIndex, 'rating', Number(e.target.value))}
+                  onChange={(e) =>
+                    patchLocal(rev.id, { rating: Math.min(5, Math.max(1, Number(e.target.value) || 1)) })
+                  }
                 />
               </div>
               <div style={{ marginTop: 12 }}>
-                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Review text (EN)</label>
-                <RichTextEditor value={rev.textEn} onChange={(v) => patch(originalIndex, 'textEn', v)} />
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>نص المراجعة (AR)</label>
-                <RichTextEditor value={rev.textAr} onChange={(v) => patch(originalIndex, 'textAr', v)} rtl />
+                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                  Review text
+                </label>
+                <RichTextEditor value={rev.review_text} onChange={(html) => patchLocal(rev.id, { review_text: html })} />
               </div>
             </div>
           );
         })}
       </section>
 
-      <SeoSection title="Reviews SEO" slugPrefix="qlink.com/reviews/" value={seo} onChange={setSeo} />
+      <SeoSection title="Reviews SEO" slugPrefix="qlink.com/" value={seo} onChange={setSeo} badge="Live" />
+      <div style={{ marginTop: 12 }}>
+        <button type="button" className="btn-publish" onClick={saveSeo} disabled={seoSaving}>
+          {seoSaving ? <Loader2 className="animate-spin" size={18} style={{ marginRight: 8 }} /> : null}
+          Save SEO
+        </button>
+      </div>
     </div>
   );
 };

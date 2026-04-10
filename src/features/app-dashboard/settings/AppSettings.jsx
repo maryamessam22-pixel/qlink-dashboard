@@ -4,6 +4,7 @@ import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import myPic from "../../../assets/imges/my-pic.png";
 import { supabase } from "../../../lib/supabase";
+import AppPageLoading from "../../../components/app/AppPageLoading";
 import "./AppSettings.css";
 
 const AppSettings = () => {
@@ -114,6 +115,15 @@ const AppSettings = () => {
     setSaving(false);
   };
 
+  if (loading) {
+    return (
+      <div className="app-settings-page">
+        <PageMeta title="App · Settings" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading profile…" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-settings-page">
       <PageMeta title="App · Settings" description={seo.metaDescription} keywords={seo.keywords} />
@@ -132,7 +142,7 @@ const AppSettings = () => {
               <p className="app-settings-inline-role">{title}</p>
             </div>
           </div>
-          <button type="button" className="app-settings-save-btn" onClick={handleSave} disabled={saving || loading}>
+          <button type="button" className="app-settings-save-btn" onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
@@ -152,7 +162,6 @@ const AppSettings = () => {
       </section>
 
       {fetchError ? <p className="app-settings-note app-settings-note--error">{fetchError}</p> : null}
-      {loading ? <p className="app-settings-note app-settings-note--loading">Loading profile data...</p> : null}
       {saveMessage ? (
         <p className={`app-settings-note ${saveMessage.includes("successfully") ? "app-settings-note--success" : "app-settings-note--error"}`}>
           {saveMessage}

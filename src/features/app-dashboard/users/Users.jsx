@@ -3,6 +3,7 @@ import { Eye, Plus, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import { supabase } from '../../../lib/supabase';
+import AppPageLoading from '../../../components/app/AppPageLoading';
 import './Users.css';
 
 const REFRESH_MS = 60_000;
@@ -133,6 +134,16 @@ const Users = () => {
     }
   };
 
+  const initialLoad = loading && users.length === 0 && !fetchError;
+  if (initialLoad) {
+    return (
+      <div className="app-users-page">
+        <PageMeta title="App · Users" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading profiles…" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-users-page">
       <PageMeta title="App · Users" description={seo.metaDescription} keywords={seo.keywords} />
@@ -153,7 +164,7 @@ const Users = () => {
         </button>
       </div>
 
-      <div className="app-users-toolbar">
+      <div className="app-users-toolbar app-toolbar-bar">
         <div className="app-users-search">
           <Search size={18} aria-hidden />
           <input
@@ -180,7 +191,6 @@ const Users = () => {
       </div>
 
       {fetchError ? <p className="app-users-meta" style={{ color: 'var(--app-danger)' }}>{fetchError}</p> : null}
-      {loading ? <p className="app-users-meta" style={{ color: 'var(--app-primary)', fontWeight: 600 }}>Loading profiles...</p> : null}
 
       <div className="app-users-table-wrap">
         <div className="app-users-table-scroll">

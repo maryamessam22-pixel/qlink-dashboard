@@ -4,6 +4,7 @@ import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import { supabase } from "../../../lib/supabase";
+import AppPageLoading from "../../../components/app/AppPageLoading";
 import "./UserProfiles.css";
 
 const BLOOD = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -146,6 +147,16 @@ const UserProfiles = () => {
     return { total, active, avgAge };
   }, [profiles, isActive]);
 
+  const initialLoad = loading && profiles.length === 0 && !fetchError;
+  if (initialLoad) {
+    return (
+      <div className="app-profiles-page">
+        <PageMeta title="App · User Profiles" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading profiles…" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-profiles-page">
       <PageMeta title="App · User Profiles" description={seo.metaDescription} keywords={seo.keywords} />
@@ -166,7 +177,7 @@ const UserProfiles = () => {
         </button>
       </div>
 
-      <div className="app-profiles-toolbar">
+      <div className="app-profiles-toolbar app-toolbar-bar">
         <div className="app-profiles-search">
           <Search size={18} aria-hidden />
           <input
@@ -196,7 +207,6 @@ const UserProfiles = () => {
       </div>
 
       {fetchError ? <p className="app-profiles-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-profiles-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading patient profiles...</p> : null}
 
       <div className="app-profiles-table-wrap">
         <div className="app-profiles-table-scroll">

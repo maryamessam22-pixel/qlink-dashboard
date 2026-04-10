@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { InboxProvider } from '../context/InboxContext';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import '../styles/app-dashboard-shared.css';
 
 const DashboardLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);

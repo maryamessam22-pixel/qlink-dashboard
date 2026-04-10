@@ -3,8 +3,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgb(4 10 24);
   font-family: var(--font-en), Arial, sans-serif;
+}
+
+.auth-loading-page--web {
+  background: rgb(4 10 24);
+}
+
+.auth-loading-page--app {
+  background: linear-gradient(165deg, #e8f0fe 0%, #f8f9fa 50%, #eef1f5 100%);
 }
 
 .auth-loading-content {
@@ -23,16 +30,31 @@
 .auth-loading-spinner {
   width: 42px;
   height: 42px;
-  border: 3px solid rgba(255, 255, 255, 0.12);
-  border-top-color: #ffffff;
   border-radius: 50%;
   animation: authSpin 1s linear infinite;
 }
 
+.auth-loading-page--web .auth-loading-spinner {
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #ffffff;
+}
+
+.auth-loading-page--app .auth-loading-spinner {
+  border: 3px solid rgba(26, 115, 232, 0.2);
+  border-top-color: var(--app-primary, #1a73e8);
+}
+
 .auth-loading-text {
   margin: 0;
-  color: #9ca3af;
   font-size: 14px;
+}
+
+.auth-loading-page--web .auth-loading-text {
+  color: #9ca3af;
+}
+
+.auth-loading-page--app .auth-loading-text {
+  color: var(--app-text-secondary, #6b778c);
 }
 
 @keyframes authSpin {

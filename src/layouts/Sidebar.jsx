@@ -13,6 +13,7 @@ import {
   Smartphone,
   Watch,
   LayoutTemplate,
+  Sparkles,
 } from 'lucide-react';
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
@@ -43,6 +44,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/web/products', name: 'Products', icon: <ShoppingBag size={20} /> },
     { path: '/web/inventory', name: 'Inventory', icon: <Package size={20} /> },
     { path: '/web/support', name: 'Support', icon: <LifeBuoy size={20} /> },
+    { path: '/web/ai-chat', name: 'AI chat', icon: <Sparkles size={20} /> },
     { path: '/web/cms', name: 'CMS', icon: <LayoutTemplate size={20} /> },
     { path: '/web/settings', name: 'Settings', icon: <Settings2 size={20} /> },
   ];

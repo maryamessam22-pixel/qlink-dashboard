@@ -46,8 +46,10 @@ const AdminLogin = () => {
     }, 900);
   };
 
+  const isAppLogin = intended === 'app';
+
   return (
-    <div className="login-container">
+    <div className={`login-container${isAppLogin ? ' login-container--app' : ' login-container--web'}`}>
       <div className="login-card">
         <div className="login-header">
           <img src={logoImg} alt="Qlink Logo" className="logo-image" />

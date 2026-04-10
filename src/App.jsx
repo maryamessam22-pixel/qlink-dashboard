@@ -16,6 +16,7 @@ import Products from './features/web-dashboard/products/Products';
 import ProductEditor from './features/web-dashboard/products/ProductEditor';
 import Inventory from './features/web-dashboard/inventory/Inventory';
 import Support from './features/web-dashboard/support/Support';
+import WebAiChat from './features/web-dashboard/ai-chat/WebAiChat';
 import WebSettings from './features/web-dashboard/settings/WebSettings';
 
 import CmsLayout from './features/web-dashboard/cms/CmsLayout';
@@ -72,6 +73,7 @@ const App = () => {
           <Route path="products/:productId/edit" element={<ProductEditor />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="support" element={<Support />} />
+          <Route path="ai-chat" element={<WebAiChat />} />
           <Route path="cms" element={<CmsLayout />}>
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<CmsHome />} />

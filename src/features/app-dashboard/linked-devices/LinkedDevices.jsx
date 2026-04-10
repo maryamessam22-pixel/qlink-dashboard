@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import { supabase } from "../../../lib/supabase";
+import AppPageLoading from "../../../components/app/AppPageLoading";
 import "./LinkedDevices.css";
 
 const REFRESH_MS = 60_000;
@@ -134,6 +135,16 @@ const LinkedDevices = () => {
     return { total, active, avgBattery };
   }, [devices, isActive]);
 
+  const initialLoad = loading && devices.length === 0 && !fetchError;
+  if (initialLoad) {
+    return (
+      <div className="app-linked-page">
+        <PageMeta title="App · Linked Devices" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading devices…" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-linked-page">
       <PageMeta title="App · Linked Devices" description={seo.metaDescription} keywords={seo.keywords} />
@@ -148,7 +159,7 @@ const LinkedDevices = () => {
         <p className="app-linked-sub">Manage all connected devices and their status</p>
       </div>
 
-      <div className="app-linked-toolbar">
+      <div className="app-linked-toolbar app-toolbar-bar">
         <div className="app-linked-search">
           <Search size={18} aria-hidden />
           <input
@@ -175,7 +186,6 @@ const LinkedDevices = () => {
       </div>
 
       {fetchError ? <p className="app-linked-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-linked-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading devices...</p> : null}
 
       <div className="app-linked-table-wrap">
         <div className="app-linked-table-scroll">

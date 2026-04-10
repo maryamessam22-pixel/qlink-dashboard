@@ -1,20 +1,99 @@
-
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: rgb(4 10 24);
   font-family: var(--font-en), Arial, sans-serif;
 }
 
+/* Web dashboard — dark */
+.login-container--web {
+  background: rgb(4 10 24);
+  color-scheme: dark;
+}
+
+.login-container--web .login-card {
+  background-color: #131722;
+  color: #ffffff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+/* App dashboard — light */
+.login-container--app {
+  background: linear-gradient(165deg, #e8f0fe 0%, #f8f9fa 45%, #eef1f5 100%);
+  color-scheme: light;
+}
+
+.login-container--app .login-card {
+  background-color: #ffffff;
+  color: var(--app-text-primary, #172b4d);
+  box-shadow: 0 8px 40px rgba(23, 43, 77, 0.12);
+  border: 1px solid var(--app-border-subtle, #e4e7ec);
+}
+
+.login-container--app .title-text {
+  color: var(--app-text-primary, #172b4d);
+}
+
+.login-container--app .subtitle-text {
+  color: var(--app-text-secondary, #6b778c);
+}
+
+.login-container--app .input-group label {
+  color: var(--app-text-secondary, #6b778c);
+}
+
+.login-container--app .input-wrapper {
+  background-color: #e8eaed;
+  border: 1px solid #dadce0;
+}
+
+.login-container--app .input-wrapper:focus-within {
+  border-color: var(--app-primary, #1a73e8);
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.18);
+}
+
+.login-container--app .icon {
+  color: var(--app-text-secondary, #6b778c);
+}
+
+.login-container--app .input-wrapper input {
+  color: var(--app-text-primary, #172b4d);
+  background-color: #e8eaed;
+}
+
+.login-container--app .input-wrapper input::placeholder {
+  color: #80868b;
+}
+
+.login-container--app .login-button {
+  background-color: var(--app-primary, #1a73e8);
+  box-shadow: 0 4px 16px rgba(26, 115, 232, 0.35);
+}
+
+.login-container--app .login-button:hover {
+  background-color: #1557b0;
+}
+
+.login-container--app .switch-dashboard-btn {
+  border-color: var(--app-border-subtle, #e4e7ec);
+  color: var(--app-text-secondary, #6b778c);
+}
+
+.login-container--app .switch-dashboard-btn:hover {
+  background: var(--app-nav-active-bg, #e8f0fe);
+  border-color: var(--app-primary, #1a73e8);
+  color: var(--app-primary, #1a73e8);
+}
+
+.login-container--app .login-footer {
+  color: #9aa0a6;
+}
+
 .login-card {
-  background-color: #131722; 
   width: 650px;
   padding: 48px;
   border-radius: 16px;
-  box-shadow: 0px 8px 32px rgba(0, 0, 0, 0.5);
-  color: #FFFFFF;
 }
 
 .login-header {
@@ -31,13 +110,20 @@
 .title-text {
   font-size: 22px;
   font-weight: 600;
-  margin: 0px 0px 8px 0px;
+  margin: 0 0 8px;
+}
+
+.login-container--web .title-text {
+  color: #ffffff;
 }
 
 .subtitle-text {
   font-size: 14px;
+  margin: 0;
+}
+
+.login-container--web .subtitle-text {
   color: #8b949e;
-  margin: 0px;
 }
 
 .login-form {
@@ -54,46 +140,79 @@
 
 .input-group label {
   font-size: 13px;
+}
+
+.login-container--web .input-group label {
   color: #8b949e;
 }
 
 .input-wrapper {
   display: flex;
   align-items: center;
-  background-color: #080a0f;
-  border: 1px solid #314158; 
   border-radius: 8px;
-  padding: 0px 16px;
+  padding: 0 16px;
   height: 48px;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.input-wrapper:focus-within {
-  border-color: #E03232;
+.login-container--web .input-wrapper {
+  background-color: #0d1422;
+  border: 1px solid #314158;
+}
+
+.login-container--web .input-wrapper:focus-within {
+  border-color: #e03232;
 }
 
 .icon {
   font-size: 16px;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+.login-container--web .icon {
   color: #8b949e;
-  margin-right: 12px;
 }
 
 .input-wrapper input {
   background: transparent;
   border: none;
-  color: #FFFFFF;
   font-size: 14px;
   width: 100%;
   outline: none;
 }
 
-.input-wrapper input::placeholder {
-  color: #3b4252;
+.login-container--web .input-wrapper input {
+  color: #e6edf3;
+  /* Match wrapper so password/email fields never show browser white fill */
+  background-color: #0d1422;
+}
+
+.login-container--web .input-wrapper input::placeholder {
+  color: #6b778c;
+}
+
+/* Kill Chrome/Safari autofill yellow/white over dark theme */
+.login-container--web .input-wrapper input:-webkit-autofill,
+.login-container--web .input-wrapper input:-webkit-autofill:hover,
+.login-container--web .input-wrapper input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #e6edf3;
+  caret-color: #e6edf3;
+  box-shadow: 0 0 0 1000px #0d1422 inset !important;
+  transition: background-color 99999s ease-out 0s;
+}
+
+.login-container--app .input-wrapper input:-webkit-autofill,
+.login-container--app .input-wrapper input:-webkit-autofill:hover,
+.login-container--app .input-wrapper input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--app-text-primary, #172b4d);
+  caret-color: var(--app-text-primary, #172b4d);
+  box-shadow: 0 0 0 1000px #e8eaed inset !important;
+  transition: background-color 99999s ease-out 0s;
 }
 
 .login-button {
-  background-color: #E03232; 
-  color: #FFFFFF;
+  color: #ffffff;
   border: none;
   border-radius: 8px;
   height: 48px;
@@ -101,11 +220,15 @@
   font-weight: bold;
   cursor: pointer;
   margin-top: 8px;
-  box-shadow: 0px 4px 16px rgba(224, 50, 50, 0.3);
   transition: background-color 0.3s, transform 0.1s;
 }
 
-.login-button:hover {
+.login-container--web .login-button {
+  background-color: #e03232;
+  box-shadow: 0 4px 16px rgba(224, 50, 50, 0.3);
+}
+
+.login-container--web .login-button:hover {
   background-color: #ff3b3b;
 }
 
@@ -115,8 +238,6 @@
 
 .switch-dashboard-btn {
   background: transparent;
-  border: 1px solid #314158;
-  color: #8b949e;
   border-radius: 8px;
   height: 48px;
   font-size: 14px;
@@ -126,7 +247,12 @@
   transition: all 0.3s;
 }
 
-.switch-dashboard-btn:hover {
+.login-container--web .switch-dashboard-btn {
+  border: 1px solid #314158;
+  color: #8b949e;
+}
+
+.login-container--web .switch-dashboard-btn:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: #6b7280;
   color: #fff;
@@ -135,10 +261,13 @@
 .login-footer {
   text-align: center;
   font-size: 10px;
-  color: #4b5563;
   margin-top: 40px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+}
+
+.login-container--web .login-footer {
+  color: #4b5563;
 }
 
 /* Loading Overlay */

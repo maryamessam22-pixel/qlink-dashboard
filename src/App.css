@@ -59,6 +59,8 @@
   --app-blood-neg-text: #b4235d;
   --app-age-young: #16a34a;
   --app-age-senior: #15803d;
+  /* Toolbar strip behind search + filters */
+  --app-toolbar-section-bg: #e8f4fc;
 
   /* Scrollbars — web (dark) shell */
   --scrollbar-track: #0d1422;

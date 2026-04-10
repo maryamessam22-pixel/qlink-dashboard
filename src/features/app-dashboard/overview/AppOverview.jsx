@@ -3,6 +3,7 @@ import { Link2, Phone, User, Watch } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import { supabase } from '../../../lib/supabase';
+import AppPageLoading from '../../../components/app/AppPageLoading';
 import './AppOverview.css';
 
 const REFRESH_MS = 60_000;
@@ -223,6 +224,15 @@ const AppOverview = () => {
   };
 
   const onChartLeave = () => setHoverIdx(null);
+
+  if (kpiLoading) {
+    return (
+      <div className="app-overview-page">
+        <PageMeta title="App · Overview" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading overview…" />
+      </div>
+    );
+  }
 
   return (
     <div className="app-overview-page">

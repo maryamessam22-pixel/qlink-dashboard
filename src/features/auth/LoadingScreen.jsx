@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { setAuthenticated, clearIntendedDashboard, getIntendedDashboard, isAuthenticated } from '../../lib/authStorage';
+import {
+  setAuthenticated,
+  clearIntendedDashboard,
+  getIntendedDashboard,
+  isAuthenticated,
+} from '../../lib/authStorage';
 import logoImg from '../../assets/logos/QLINK.png';
 import './LoadingScreen.css';
 
@@ -34,8 +39,10 @@ const LoadingScreen = () => {
     return () => window.clearTimeout(timer);
   }, [navigate, location.state]);
 
+  const isApp = getIntendedDashboard() === 'app';
+
   return (
-    <div className="auth-loading-page">
+    <div className={`auth-loading-page${isApp ? ' auth-loading-page--app' : ' auth-loading-page--web'}`}>
       <div className="auth-loading-content">
         <img src={logoImg} alt="Qlink" className="auth-loading-logo" />
         <div className="auth-loading-spinner" />

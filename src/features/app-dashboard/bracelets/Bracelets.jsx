@@ -3,6 +3,7 @@ import { Clock3, Link2, Search } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import { supabase } from "../../../lib/supabase";
+import AppPageLoading from "../../../components/app/AppPageLoading";
 import "./Bracelets.css";
 
 const REFRESH_MS = 60_000;
@@ -117,6 +118,16 @@ const Bracelets = () => {
     }
   };
 
+  const initialLoad = loading && bracelets.length === 0 && !fetchError;
+  if (initialLoad) {
+    return (
+      <div className="app-bracelets-page">
+        <PageMeta title="App · Bracelets" description={seo.metaDescription} keywords={seo.keywords} />
+        <AppPageLoading message="Loading bracelets…" />
+      </div>
+    );
+  }
+
   return (
     <div className="app-bracelets-page">
       <PageMeta title="App · Bracelets" description={seo.metaDescription} keywords={seo.keywords} />
@@ -131,7 +142,7 @@ const Bracelets = () => {
         <p className="app-bracelets-sub">Manage Qlink hardware devices and assignments</p>
       </div>
 
-      <div className="app-bracelets-toolbar">
+      <div className="app-bracelets-toolbar app-toolbar-bar">
         <div className="app-bracelets-search">
           <Search size={18} aria-hidden />
           <input
@@ -153,7 +164,6 @@ const Bracelets = () => {
       </div>
 
       {fetchError ? <p className="app-bracelets-meta" style={{ color: "var(--app-danger)" }}>{fetchError}</p> : null}
-      {loading ? <p className="app-bracelets-meta" style={{ color: "var(--app-primary)", fontWeight: 600 }}>Loading bracelets...</p> : null}
 
       <div className="app-bracelets-table-wrap">
         <div className="app-bracelets-table-scroll">
