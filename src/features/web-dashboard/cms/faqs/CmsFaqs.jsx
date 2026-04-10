@@ -1,72 +1,141 @@
-import React, { useEffect, useState } from 'react';
-import { HelpCircle, Plus, Trash2, Search } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { HelpCircle, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
+import { supabase } from '../../../../lib/supabase';
 import '../../../../styles/web-dashboard-pages.css';
 
-const defaultFaqs = () => [
-  {
-    qEn: 'Is the bracelet waterproof?',
-    qAr: 'هل السوار مقاوم للماء؟',
-    aEn: '<p>Yes, the Qlink bracelet is IP68 waterproof and can be worn while swimming or showering.</p>',
-    aAr: '<p>نعم، سوار كيو لينك مقاوم للماء بمعيار IP68 ويمكن ارتداؤه أثناء السباحة أو الاستحمام.</p>',
-  },
-  {
-    qEn: 'Does it require a subscription?',
-    qAr: 'هل يتطلب اشتراكاً؟',
-    aEn: '<p>No, the basic emergency profile is free for life. We offer optional premium features for advanced tracking.</p>',
-    aAr: '<p>لا، ملف الطوارئ الأساسي مجاني مدى الحياة. نقدم ميزات ممتازة اختيارية للتتبع المتقدم.</p>',
-  },
-  {
-    qEn: 'Is my data secure?',
-    qAr: 'هل بياناتي آمنة؟',
-    aEn: '<p>Our mission is to take your privacy seriously. All medical data is encrypted and stored securely. You control what is public.</p>',
-    aAr: '<p>نحن نأخذ خصوصيتك على محمل الجد. جميع البيانات الطبية مشفرة ومخزنة بشكل آمن. أنت تتحكم في ما هو عام.</p>',
-  },
-  {
-    qEn: 'How does the QR code work?',
-    qAr: 'كيف يعمل رمز QR؟',
-    aEn: '<p>Simply scan the QR code with any standard smartphone camera. No special app is required for first responders.</p>',
-    aAr: '<p>ما عليك سوى مسح رمز QR ضوئيًا باستخدام أي كاميرا هاتف ذكي قياسية. لا يلزم وجود تطبيق خاص للمستجيبين الأوائل.</p>',
-  },
-  {
-    qEn: 'Can I update my info later?',
-    qAr: 'هل يمكنني تحديث معلوماتي لاحقاً؟',
-    aEn: '<p>Yes, you can update your medical information and emergency contacts at any time through the Qlink app.</p>',
-    aAr: '<p>نعم، يمكنك تحديث معلوماتك الطبية وجهات اتصال الطوارئ في أي وقت من خلال تطبيق كيو لينك.</p>',
-  },
-];
+const SEO_SLUG = 'support/faqs';
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/** Normalize plain-text DB answers for RichTextEditor */
+function answerToHtml(raw) {
+  if (raw == null || String(raw).trim() === '') return '<p></p>';
+  const t = String(raw).trim();
+  if (t.startsWith('<')) return t;
+  return `<p>${escapeHtml(t).replace(/\n/g, '<br/>')}</p>`;
+}
+
+function mapFaqRow(row) {
+  return {
+    id: row.id,
+    qEn: row.question_en ?? '',
+    qAr: row.question_ar ?? '',
+    aEn: answerToHtml(row.answer_en),
+    aAr: answerToHtml(row.answer_ar),
+    display_order: row.display_order ?? 0,
+  };
+}
+
+function newEmptyFaq() {
+  return {
+    _key: globalThis.crypto?.randomUUID?.() ?? `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    qEn: '',
+    qAr: '',
+    aEn: '<p></p>',
+    aAr: '<p></p>',
+  };
+}
+
+function rowKey(item) {
+  return item.id ?? item._key;
+}
 
 const CmsFaqs = () => {
-  const [items, setItems] = useState(defaultFaqs);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState('');
+  const [items, setItems] = useState([]);
+
   const [seo, setSeo] = useState({
-    slug: 'faq',
-    metaTitle: 'FAQ — Qlink',
-    metaDescription: 'Frequently asked questions about Qlink.',
-    keywords: 'faq, qlink, help',
+    slug: SEO_SLUG,
+    metaTitle: 'Frequently Asked Questions - Qlink',
+    metaTitleAr: 'الأسئلة الشائعة - Qlink',
+    metaDescription: 'Find answers to frequently asked questions about Qlink.',
+    metaDescriptionAr: 'اعثر على إجابات للأسئلة المتكررة حول كيو لينك.',
+    keywords: 'faq, qlink, help, support',
     featuredImageAlt: 'FAQ',
   });
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredItems = items.filter(it => 
-    it.qEn.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    it.qAr.includes(searchQuery) ||
-    it.aEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    it.aAr.includes(searchQuery)
-  );
+  const loadData = useCallback(async () => {
+    setFetchError('');
+    setLoading(true);
+    try {
+      const { data: faqRows, error: faqError } = await supabase
+        .from('faqs')
+        .select('*')
+        .order('display_order', { ascending: true });
+
+      if (faqError) {
+        console.error('faqs fetch:', faqError);
+        setFetchError(faqError.message || 'Failed to load FAQs.');
+        setItems([]);
+      } else if (faqRows?.length) {
+        setItems(faqRows.map(mapFaqRow));
+      } else {
+        setItems([]);
+      }
+
+      const { data: seoData, error: seoError } = await supabase
+        .from('seo')
+        .select('*')
+        .eq('slug', SEO_SLUG.trim())
+        .maybeSingle();
+
+      if (seoError) {
+        console.error('seo fetch:', seoError);
+        setFetchError((prev) => prev || seoError.message || 'Failed to load SEO.');
+      }
+
+      if (seoData) {
+        const slug = (seoData.slug || SEO_SLUG).trim() || SEO_SLUG;
+        setSeo({
+          slug,
+          metaTitle: seoData.title_en || '',
+          metaTitleAr: seoData.title_ar || '',
+          metaDescription: seoData.description_en || '',
+          metaDescriptionAr: seoData.description_ar || '',
+          keywords: seoData.keywords || 'faq, qlink, help',
+          featuredImageAlt: seoData.featured_image_alt || 'FAQ',
+        });
+      }
+    } catch (e) {
+      console.error(e);
+      setFetchError(e?.message || 'Failed to load FAQ page data.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   useEffect(() => {
     const onAdd = () => {
-      setItems((list) => [...list, { qEn: '', qAr: '', aEn: '<p></p>', aAr: '<p></p>' }]);
+      setItems((list) => [...list, newEmptyFaq()]);
     };
     window.addEventListener('cms:add-section', onAdd);
     return () => window.removeEventListener('cms:add-section', onAdd);
   }, []);
 
-  const patch = (i, key, val) => {
+  const findIndex = (item) =>
+    items.findIndex((it) => (item.id && it.id === item.id) || (!item.id && it._key === item._key));
+
+  const patch = (item, key, val) => {
+    const i = findIndex(item);
+    if (i < 0) return;
     setItems((prev) => {
       const n = [...prev];
       n[i] = { ...n[i], [key]: val };
@@ -74,9 +143,113 @@ const CmsFaqs = () => {
     });
   };
 
+  const removeItem = async (item) => {
+    const i = findIndex(item);
+    if (i < 0) return;
+    if (item.id) {
+      if (!window.confirm('Delete this FAQ from the database?')) return;
+      const { error } = await supabase.from('faqs').delete().eq('id', item.id);
+      if (error) {
+        window.alert(error.message || 'Delete failed.');
+        return;
+      }
+    }
+    setItems((prev) => prev.filter((_, j) => j !== i));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setFetchError('');
+    try {
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const payload = {
+          question_en: it.qEn || '',
+          question_ar: it.qAr || '',
+          answer_en: it.aEn || '',
+          answer_ar: it.aAr || '',
+          display_order: i + 1,
+        };
+        if (it.id) {
+          const { error } = await supabase.from('faqs').update(payload).eq('id', it.id);
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('faqs').insert([payload]);
+          if (error) throw error;
+        }
+      }
+
+      const seoSlug = (seo.slug || SEO_SLUG).trim() || SEO_SLUG;
+      const seoPayload = {
+        slug: seoSlug,
+        title_en: seo.metaTitle,
+        title_ar: seo.metaTitleAr,
+        description_en: seo.metaDescription,
+        description_ar: seo.metaDescriptionAr,
+        keywords: seo.keywords,
+        featured_image_alt: seo.featuredImageAlt,
+      };
+      const { data: existingSeo, error: seoLookupErr } = await supabase
+        .from('seo')
+        .select('id')
+        .eq('slug', seoSlug)
+        .maybeSingle();
+      if (seoLookupErr) throw seoLookupErr;
+
+      if (existingSeo?.id) {
+        const { error: seoUpd } = await supabase.from('seo').update(seoPayload).eq('id', existingSeo.id);
+        if (seoUpd) throw seoUpd;
+      } else {
+        const { error: seoIns } = await supabase.from('seo').insert([seoPayload]);
+        if (seoIns) throw seoIns;
+      }
+
+      await loadData();
+      window.alert('Saved.');
+    } catch (e) {
+      console.error(e);
+      window.alert(e?.message || 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const filteredItems = items.filter(
+    (it) =>
+      it.qEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      it.qAr.includes(searchQuery) ||
+      it.aEn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      it.aAr.includes(searchQuery)
+  );
+
+  if (loading) {
+    return (
+      <div className="web-card" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 24 }}>
+        <Loader2 className="animate-spin" size={22} />
+        <span>Loading FAQs…</span>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageMeta title="CMS · FAQ" description={seo.metaDescription} keywords={seo.keywords} />
+
+      {fetchError ? (
+        <div
+          className="web-card"
+          style={{ marginBottom: 16, borderColor: 'rgba(248, 113, 113, 0.45)', color: '#fecaca' }}
+        >
+          <strong>Load issue:</strong> {fetchError}
+        </div>
+      ) : null}
+
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+        <button type="button" className="btn-primary" disabled={saving} onClick={handleSave}>
+          {saving ? <Loader2 size={18} className="animate-spin" style={{ marginRight: 8 }} /> : <Save size={18} style={{ marginRight: 8 }} />}
+          Save FAQs &amp; SEO
+        </button>
+      </div>
 
       <section className="web-card">
         <div className="web-card-head">
@@ -84,56 +257,107 @@ const CmsFaqs = () => {
             <HelpCircle size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#38bdf8' }} />
             Support questions
           </h2>
-          <button type="button" className="btn-primary" onClick={() => setItems((list) => [...list, { qEn: '', qAr: '', aEn: '<p></p>', aAr: '<p></p>' }])}>
+          <button type="button" className="btn-primary" onClick={() => setItems((list) => [...list, newEmptyFaq()])}>
             <Plus size={18} />
             Add question
           </button>
         </div>
 
         <div className="search-wide-wrap" style={{ marginBottom: '24px' }}>
-            <Search className="search-wide-icon" size={18} />
-            <input 
-                type="search" 
-                className="field-input" 
-                placeholder="Search FAQs..." 
-                style={{ width: '100%', paddingLeft: '44px' }}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <Search className="search-wide-icon" size={18} />
+          <input
+            type="search"
+            className="field-input"
+            placeholder="Search FAQs..."
+            style={{ width: '100%', paddingLeft: '44px' }}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        {filteredItems.map((item, i) => {
-          const originalIndex = items.indexOf(item);
-          return (
-            <div key={originalIndex} className="faq-editor-card">
-              <div className="faq-editor-head">
-                <span style={{ fontWeight: 600, color: '#fff' }}>Q{originalIndex + 1}</span>
-                <button type="button" className="about-team-remove" style={{ position: 'static' }} aria-label="Delete question" onClick={() => setItems((p) => p.filter((_, j) => j !== originalIndex))}>
-                  <Trash2 size={16} />
-                </button>
-              </div>
-              <BilingualTextInput
-                labelEn="Question (EN)"
-                labelAr="السؤال (AR)"
-                valueEn={item.qEn}
-                valueAr={item.qAr}
-                onChangeEn={(v) => patch(originalIndex, 'qEn', v)}
-                onChangeAr={(v) => patch(originalIndex, 'qAr', v)}
-              />
-              <div style={{ marginTop: 16 }}>
-                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Answer (EN)</label>
-                <RichTextEditor value={item.aEn} onChange={(v) => patch(originalIndex, 'aEn', v)} />
-              </div>
-              <div style={{ marginTop: 16 }}>
-                <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>الإجابة (AR)</label>
-                <RichTextEditor value={item.aAr} onChange={(v) => patch(originalIndex, 'aAr', v)} rtl />
-              </div>
+        {items.length === 0 && !fetchError ? (
+          <p style={{ color: '#94a3b8', marginBottom: 16 }}>No FAQs in the database yet. Add questions or pull data from Supabase.</p>
+        ) : null}
+
+        {filteredItems.map((item) => (
+          <div key={rowKey(item)} className="faq-editor-card">
+            <div className="faq-editor-head">
+              <span style={{ fontWeight: 600, color: '#fff' }}>
+                Q{findIndex(item) + 1}
+                {item.id ? <span style={{ opacity: 0.5, fontWeight: 400, marginLeft: 8 }}>(saved)</span> : null}
+              </span>
+              <button
+                type="button"
+                className="about-team-remove"
+                style={{ position: 'static' }}
+                aria-label="Delete question"
+                onClick={() => removeItem(item)}
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
-          );
-        })}
+            <BilingualTextInput
+              labelEn="Question (EN)"
+              labelAr="السؤال (AR)"
+              valueEn={item.qEn}
+              valueAr={item.qAr}
+              onChangeEn={(v) => patch(item, 'qEn', v)}
+              onChangeAr={(v) => patch(item, 'qAr', v)}
+            />
+            <div style={{ marginTop: 16 }}>
+              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                Answer (EN)
+              </label>
+              <RichTextEditor value={item.aEn} onChange={(v) => patch(item, 'aEn', v)} />
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                الإجابة (AR)
+              </label>
+              <RichTextEditor value={item.aAr} onChange={(v) => patch(item, 'aAr', v)} rtl />
+            </div>
+          </div>
+        ))}
       </section>
 
-      <SeoSection title="FAQ SEO" slugPrefix="qlink.com/faq/" value={seo} onChange={setSeo} />
+      <SeoSection
+        title="FAQ page SEO"
+        slugPrefix="qlink.com/"
+        slugSuffixHint="support/faqs"
+        value={seo}
+        onChange={setSeo}
+        badge="Live"
+      />
+      <section className="web-card" style={{ marginTop: 20 }}>
+        <h3 className="web-card-title" style={{ marginBottom: 16, fontSize: 15 }}>
+          Arabic SEO (<code style={{ fontSize: 12, color: '#94a3b8' }}>title_ar</code>,{' '}
+          <code style={{ fontSize: 12, color: '#94a3b8' }}>description_ar</code>)
+        </h3>
+        <div style={{ marginBottom: 14 }}>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+            Meta title (AR)
+          </label>
+          <input
+            className="field-input"
+            type="text"
+            style={{ width: '100%' }}
+            value={seo.metaTitleAr}
+            onChange={(e) => setSeo((s) => ({ ...s, metaTitleAr: e.target.value }))}
+          />
+        </div>
+        <div>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+            Meta description (AR)
+          </label>
+          <textarea
+            className="field-input"
+            rows={3}
+            style={{ width: '100%', resize: 'vertical' }}
+            value={seo.metaDescriptionAr}
+            onChange={(e) => setSeo((s) => ({ ...s, metaDescriptionAr: e.target.value }))}
+          />
+        </div>
+      </section>
     </div>
   );
 };
