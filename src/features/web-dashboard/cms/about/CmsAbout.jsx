@@ -7,9 +7,14 @@ import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import '../../../../styles/web-dashboard-pages.css';
 
+const SECTION_FOUNDER = 'about_founder';
+const SECTION_VISION = 'about_vision';
+const SEO_SLUG = 'about/our-story';
+
 const CmsAbout = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState('');
 
   const [founderNameEn, setFounderNameEn] = useState('');
   const [founderNameAr, setFounderNameAr] = useState('');
@@ -30,10 +35,12 @@ const CmsAbout = () => {
   const [members, setMembers] = useState([]);
 
   const [seo, setSeo] = useState({
-    slug: 'about/our-story',
-    metaTitle: 'About Qlink',
-    metaDescription: 'Meet the team behind Qlink medical safety wearables.',
-    keywords: 'about, qlink, team',
+    slug: SEO_SLUG,
+    metaTitle: 'Our Story',
+    metaTitleAr: 'قصتنا',
+    metaDescription: 'Discover the story behind Qlink.',
+    metaDescriptionAr: 'تعرف على قصة كيو لينك.',
+    keywords: 'about, qlink, our story, team',
     featuredImageAlt: 'Qlink team',
   });
 
@@ -41,22 +48,26 @@ const CmsAbout = () => {
     const fetchAllData = async () => {
       try {
         setLoading(true);
+        setFetchError('');
 
-        const { data: cmsData } = await supabase
+        const { data: cmsData, error: cmsError } = await supabase
           .from('cms_content')
           .select('*')
-          .in('section_key', ['about_founder', 'about_vision']);
+          .in('section_key', [SECTION_FOUNDER, SECTION_VISION]);
 
-        if (cmsData) {
-          cmsData.forEach(row => {
-            if (row.section_key === 'about_founder') {
+        if (cmsError) {
+          console.error('cms_content fetch:', cmsError);
+          setFetchError(cmsError.message || 'Failed to load About content from cms_content.');
+        } else if (cmsData?.length) {
+          cmsData.forEach((row) => {
+            if (row.section_key === SECTION_FOUNDER) {
               setFounderNameEn(row.title_en || '');
               setFounderNameAr(row.title_ar || '');
               setFounderTitleEn(row.subtitle_en || '');
               setFounderTitleAr(row.subtitle_ar || '');
               setMissionRteEn(row.content_en || '');
               setMissionRteAr(row.content_ar || '');
-            } else if (row.section_key === 'about_vision') {
+            } else if (row.section_key === SECTION_VISION) {
               setVisionHeadEn(row.title_en || '');
               setVisionHeadAr(row.title_ar || '');
               setVisionRteEn(row.content_en || '');
@@ -65,33 +76,42 @@ const CmsAbout = () => {
           });
         }
 
-        const { data: teamData } = await supabase
+        const { data: teamData, error: teamError } = await supabase
           .from('team_members')
           .select('*')
           .order('display_order', { ascending: true });
 
-        if (teamData) {
+        if (teamError) {
+          console.error('team_members fetch:', teamError);
+          setFetchError((prev) => prev || teamError.message || 'Failed to load team.');
+        } else if (teamData) {
           setMembers(teamData);
         }
 
-        const { data: seoData } = await supabase
+        const { data: seoData, error: seoError } = await supabase
           .from('seo')
           .select('*')
-          .eq('slug', 'about/our-story')
-          .single();
+          .eq('slug', SEO_SLUG)
+          .maybeSingle();
 
+        if (seoError) {
+          console.error('seo fetch:', seoError);
+          setFetchError((prev) => prev || seoError.message || 'Failed to load SEO.');
+        }
         if (seoData) {
           setSeo({
-            slug: seoData.slug,
+            slug: seoData.slug || SEO_SLUG,
             metaTitle: seoData.title_en || '',
+            metaTitleAr: seoData.title_ar || '',
             metaDescription: seoData.description_en || '',
+            metaDescriptionAr: seoData.description_ar || '',
             keywords: seoData.keywords || 'about, qlink, team',
             featuredImageAlt: seoData.featured_image_alt || 'Qlink team',
           });
         }
-
       } catch (error) {
         console.error('Error fetching data:', error);
+        setFetchError(error?.message || 'Failed to load About page data.');
       } finally {
         setLoading(false);
       }
@@ -135,28 +155,56 @@ const CmsAbout = () => {
       setSaving(true);
       const now = new Date().toISOString();
 
-      await supabase.from('cms_content').update({
-        title_en: founderNameEn,
-        title_ar: founderNameAr,
-        subtitle_en: founderTitleEn,
-        subtitle_ar: founderTitleAr,
-        content_en: missionRteEn,
-        content_ar: missionRteAr,
-        updated_at: now
-      }).eq('section_key', 'about_founder');
+      const { error: errFounder } = await supabase
+        .from('cms_content')
+        .update({
+          title_en: founderNameEn,
+          title_ar: founderNameAr,
+          subtitle_en: founderTitleEn,
+          subtitle_ar: founderTitleAr,
+          content_en: missionRteEn,
+          content_ar: missionRteAr,
+          updated_at: now,
+        })
+        .eq('section_key', SECTION_FOUNDER);
+      if (errFounder) throw errFounder;
 
-      await supabase.from('cms_content').update({
-        title_en: visionHeadEn,
-        title_ar: visionHeadAr,
-        content_en: visionRteEn,
-        content_ar: visionRteAr,
-        updated_at: now
-      }).eq('section_key', 'about_vision');
+      const { error: errVision } = await supabase
+        .from('cms_content')
+        .update({
+          title_en: visionHeadEn,
+          title_ar: visionHeadAr,
+          content_en: visionRteEn,
+          content_ar: visionRteAr,
+          updated_at: now,
+        })
+        .eq('section_key', SECTION_VISION);
+      if (errVision) throw errVision;
 
-      await supabase.from('seo').update({
+      const seoSlug = (seo.slug || SEO_SLUG).trim() || SEO_SLUG;
+      const seoPayload = {
+        slug: seoSlug,
         title_en: seo.metaTitle,
+        title_ar: seo.metaTitleAr,
         description_en: seo.metaDescription,
-      }).eq('slug', 'about/our-story');
+        description_ar: seo.metaDescriptionAr,
+        keywords: seo.keywords,
+        featured_image_alt: seo.featuredImageAlt,
+      };
+      const { data: existingSeo, error: seoLookupErr } = await supabase
+        .from('seo')
+        .select('id')
+        .eq('slug', seoSlug)
+        .maybeSingle();
+      if (seoLookupErr) throw seoLookupErr;
+
+      if (existingSeo?.id) {
+        const { error: seoUpd } = await supabase.from('seo').update(seoPayload).eq('id', existingSeo.id);
+        if (seoUpd) throw seoUpd;
+      } else {
+        const { error: seoIns } = await supabase.from('seo').insert([seoPayload]);
+        if (seoIns) throw seoIns;
+      }
 
       // التعديل السحري هنا:
       if (members.length > 0) {
@@ -222,18 +270,62 @@ const CmsAbout = () => {
         </button>
       </div>
 
+      {fetchError ? (
+        <p className="field-label" style={{ color: '#f87171', marginBottom: 16 }}>
+          {fetchError}
+        </p>
+      ) : null}
+
+      <p style={{ margin: '0 0 20px', fontSize: 13, color: '#8b949e', lineHeight: 1.5 }}>
+        Content maps to <code style={{ color: '#cbd5e1' }}>cms_content</code> rows{' '}
+        <code style={{ color: '#cbd5e1' }}>{SECTION_VISION}</code> (mission glass: title + body) and{' '}
+        <code style={{ color: '#cbd5e1' }}>{SECTION_FOUNDER}</code> (founder name, role, secondary story). Matches{' '}
+        <code style={{ color: '#cbd5e1' }}>OurStory.jsx</code> (slug <code style={{ color: '#cbd5e1' }}>{SEO_SLUG}</code>
+        ).
+      </p>
+
       <section className="web-card">
-        <h2 className="web-card-title" style={{ marginBottom: 16 }}>Founder mission</h2>
-        <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Sub-headline description (EN)</label>
+        <h2 className="web-card-title" style={{ marginBottom: 16 }}>
+          Mission &amp; vision — <code style={{ fontSize: 13, color: '#94a3b8' }}>{SECTION_VISION}</code>
+        </h2>
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#8b949e' }}>
+          Storefront: main mission title + quote (glass box).
+        </p>
+        <BilingualTextInput
+          labelEn="Mission headline (EN)"
+          labelAr="عنوان المهمة (AR)"
+          valueEn={visionHeadEn}
+          valueAr={visionHeadAr}
+          onChangeEn={setVisionHeadEn}
+          onChangeAr={setVisionHeadAr}
+        />
+        <div style={{ marginTop: 16 }}>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Mission body (EN)</label>
+          <RichTextEditor value={visionRteEn} onChange={setVisionRteEn} />
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>نص المهمة (AR)</label>
+          <RichTextEditor value={visionRteAr} onChange={setVisionRteAr} rtl />
+        </div>
+      </section>
+
+      <section className="web-card">
+        <h2 className="web-card-title" style={{ marginBottom: 16 }}>
+          Founder — <code style={{ fontSize: 13, color: '#94a3b8' }}>{SECTION_FOUNDER}</code>
+        </h2>
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#8b949e' }}>
+          Storefront: secondary paragraph under the mission, then name and role in the footer.
+        </p>
+        <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Founder story (EN)</label>
         <RichTextEditor value={missionRteEn} onChange={setMissionRteEn} />
         <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>الوصف (AR)</label>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>قصة المؤسس (AR)</label>
           <RichTextEditor value={missionRteAr} onChange={setMissionRteAr} rtl />
         </div>
         <div style={{ marginTop: 16 }}>
           <BilingualTextInput
-            labelEn="Founder name (EN)"
-            labelAr="اسم المؤسس (AR)"
+            labelEn="Founder name (EN) — title_en"
+            labelAr="اسم المؤسس (AR) — title_ar"
             valueEn={founderNameEn}
             valueAr={founderNameAr}
             onChangeEn={setFounderNameEn}
@@ -242,33 +334,13 @@ const CmsAbout = () => {
         </div>
         <div style={{ marginTop: 16 }}>
           <BilingualTextInput
-            labelEn="Founder title (EN)"
-            labelAr="منصب المؤسس (AR)"
+            labelEn="Founder role (EN) — subtitle_en"
+            labelAr="منصب المؤسس (AR) — subtitle_ar"
             valueEn={founderTitleEn}
             valueAr={founderTitleAr}
             onChangeEn={setFounderTitleEn}
             onChangeAr={setFounderTitleAr}
           />
-        </div>
-      </section>
-
-      <section className="web-card">
-        <h2 className="web-card-title" style={{ marginBottom: 16 }}>Our vision</h2>
-        <BilingualTextInput
-          labelEn="Vision headline (EN)"
-          labelAr="عنوان الرؤية (AR)"
-          valueEn={visionHeadEn}
-          valueAr={visionHeadAr}
-          onChangeEn={setVisionHeadEn}
-          onChangeAr={setVisionHeadAr}
-        />
-        <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Vision text (EN)</label>
-          <RichTextEditor value={visionRteEn} onChange={setVisionRteEn} />
-        </div>
-        <div style={{ marginTop: 16 }}>
-          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>نص الرؤية (AR)</label>
-          <RichTextEditor value={visionRteAr} onChange={setVisionRteAr} rtl />
         </div>
       </section>
 
@@ -280,8 +352,12 @@ const CmsAbout = () => {
             Add member
           </button>
         </div>
+        <p style={{ margin: '0 0 12px', fontSize: 12, color: '#8b949e' }}>
+          Headlines below are local to the dashboard only; the live site uses i18n for team titles. Member rows sync to{' '}
+          <code style={{ color: '#cbd5e1' }}>team_members</code>.
+        </p>
         <BilingualTextInput
-          labelEn="Section headline (EN)"
+          labelEn="Section headline (EN) — not saved to DB"
           labelAr="عنوان القسم (AR)"
           valueEn={teamHeadEn}
           valueAr={teamHeadAr}
@@ -290,7 +366,7 @@ const CmsAbout = () => {
         />
         <div style={{ marginTop: 16 }}>
           <BilingualTextInput
-            labelEn="Section sub-headline (EN)"
+            labelEn="Section sub-headline (EN) — not saved to DB"
             labelAr="العنوان الفرعي (AR)"
             valueEn={teamSubEn}
             valueAr={teamSubAr}
@@ -330,7 +406,44 @@ const CmsAbout = () => {
         </div>
       </section>
 
-      <SeoSection title="About page SEO" slugPrefix="qlink.com/about/our-story" value={seo} onChange={setSeo} badge="Global" />
+      <SeoSection
+        title="About page SEO"
+        slugPrefix="qlink.com/"
+        slugSuffixHint="about/our-story"
+        value={seo}
+        onChange={setSeo}
+        badge="Live"
+      />
+      <section className="web-card" style={{ marginTop: 20 }}>
+        <h3 className="web-card-title" style={{ marginBottom: 16, fontSize: 15 }}>
+          Arabic SEO (<code style={{ fontSize: 12, color: '#94a3b8' }}>title_ar</code>,{' '}
+          <code style={{ fontSize: 12, color: '#94a3b8' }}>description_ar</code>)
+        </h3>
+        <div style={{ marginBottom: 14 }}>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+            Meta title (AR)
+          </label>
+          <input
+            className="field-input"
+            type="text"
+            style={{ width: '100%' }}
+            value={seo.metaTitleAr}
+            onChange={(e) => setSeo((s) => ({ ...s, metaTitleAr: e.target.value }))}
+          />
+        </div>
+        <div>
+          <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+            Meta description (AR)
+          </label>
+          <textarea
+            className="field-input"
+            rows={3}
+            style={{ width: '100%', resize: 'vertical' }}
+            value={seo.metaDescriptionAr}
+            onChange={(e) => setSeo((s) => ({ ...s, metaDescriptionAr: e.target.value }))}
+          />
+        </div>
+      </section>
     </div>
   );
 };
