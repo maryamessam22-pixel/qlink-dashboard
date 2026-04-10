@@ -165,11 +165,6 @@ const WebAiChat = () => {
             <Sparkles size={26} style={{ color: '#eab308' }} aria-hidden />
             AI chat (website)
           </h1>
-          <p className="web-page-sub">
-            Sessions and messages from <code style={{ color: '#94a3b8' }}>chat_messages</code> and{' '}
-            <code style={{ color: '#94a3b8' }}>chat_sessions</code>. Visitor name/email appear when the widget sends them
-            on messages.
-          </p>
         </div>
         <button type="button" className="btn-secondary" onClick={loadData} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <RefreshCw size={18} />

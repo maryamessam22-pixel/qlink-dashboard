@@ -442,6 +442,8 @@ const CmsHome = () => {
         .update({
           title_en: seo.metaTitle,
           description_en: seo.metaDescription,
+          keywords: seo.keywords,
+          featured_image_alt: seo.featuredImageAlt,
         })
         .eq('slug', '');
 
@@ -471,12 +473,6 @@ const CmsHome = () => {
   return (
     <div>
       <PageMeta title="CMS · Homepage" description={seo.metaDescription} keywords={seo.keywords} />
-
-      <p style={{ margin: '0 0 16px', fontSize: 13, color: '#8b949e', lineHeight: 1.5 }}>
-        Each block has <strong>Show on public website</strong>. Your storefront should read <code style={{ color: '#cbd5e1' }}>extra_data.visible</code>{' '}
-        (and the same for each <code style={{ color: '#cbd5e1' }}>section_key</code>). When <code style={{ color: '#cbd5e1' }}>visible</code> is{' '}
-        <code style={{ color: '#cbd5e1' }}>false</code>, skip rendering that section.
-      </p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>
