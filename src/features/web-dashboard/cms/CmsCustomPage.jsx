@@ -6,6 +6,7 @@ import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../components/bilingual/BilingualField';
 import SeoSection from '../../../components/seo/SeoSection';
 import { supabase } from '../../../lib/supabase';
+import { upsertSeoBySlug } from '../../../lib/seoUpsert';
 import { generateUUID } from '../../../lib/generateId';
 import '../../../styles/web-dashboard-pages.css';
 
@@ -92,21 +93,10 @@ const CmsCustomPage = () => {
         if (data?.id) setRowId(data.id);
       }
 
-      const { data: existingSeo } = await supabase.from('seo').select('id').eq('slug', seoSlug).maybeSingle();
-      const seoPayload = {
-        slug: seoSlug,
+      await upsertSeoBySlug(supabase, seoSlug, {
         title_en: seo.metaTitle,
         description_en: seo.metaDescription,
-        keywords: seo.keywords,
-        featured_image_alt: seo.featuredImageAlt,
-      };
-      if (existingSeo?.id) {
-        const { error: e } = await supabase.from('seo').update(seoPayload).eq('id', existingSeo.id);
-        if (e) throw e;
-      } else {
-        const { error: e } = await supabase.from('seo').insert([seoPayload]);
-        if (e) throw e;
-      }
+      });
 
       alert('Page saved.');
     } catch (e) {
@@ -135,7 +125,7 @@ const CmsCustomPage = () => {
 
   if (loading) {
     return (
-      <div className="web-page-loading" style={{ height: '50vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
+      <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
         <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
         <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading page…</p>
       </div>

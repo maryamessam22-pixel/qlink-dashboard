@@ -442,8 +442,6 @@ const CmsHome = () => {
         .update({
           title_en: seo.metaTitle,
           description_en: seo.metaDescription,
-          keywords: seo.keywords,
-          featured_image_alt: seo.featuredImageAlt,
         })
         .eq('slug', '');
 

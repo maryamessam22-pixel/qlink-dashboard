@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Save } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -94,8 +94,14 @@ const WebSettings = () => {
             <button type="button" className="btn-secondary" onClick={resetProfile}>
               Reset / clear draft
             </button>
-            <button type="button" className="btn-primary" onClick={saveProfile}>
-              Save changes
+            <button
+              type="button"
+              className="btn-publish"
+              onClick={saveProfile}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+            >
+              <Save size={18} />
+              Save Changes
             </button>
           </div>
         </div>

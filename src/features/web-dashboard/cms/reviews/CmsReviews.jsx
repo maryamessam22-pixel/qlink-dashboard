@@ -4,6 +4,7 @@ import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
+import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SEO_SLUG = 'reviews';
@@ -235,21 +236,11 @@ const CmsReviews = () => {
   const saveSeo = async () => {
     setSeoSaving(true);
     try {
-      const { data: existing } = await supabase.from('seo').select('id').eq('slug', seo.slug).maybeSingle();
-      const payload = {
-        slug: seo.slug,
+      const slug = (seo.slug || SEO_SLUG).trim() || SEO_SLUG;
+      await upsertSeoBySlug(supabase, slug, {
         title_en: seo.metaTitle,
         description_en: seo.metaDescription,
-        keywords: seo.keywords,
-        featured_image_alt: seo.featuredImageAlt,
-      };
-      if (existing?.id) {
-        const { error } = await supabase.from('seo').update(payload).eq('id', existing.id);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('seo').insert([payload]);
-        if (error) throw error;
-      }
+      });
       alert('SEO saved.');
     } catch (e) {
       console.error(e);

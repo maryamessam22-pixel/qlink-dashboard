@@ -5,6 +5,7 @@ import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
+import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_CONTACT = 'contact_info';
@@ -158,29 +159,12 @@ const CmsContact = () => {
       }
 
       const seoSlug = (seo.slug || SEO_SLUG).trim() || SEO_SLUG;
-      const seoPayload = {
-        slug: seoSlug,
+      await upsertSeoBySlug(supabase, seoSlug, {
         title_en: seo.metaTitle,
         title_ar: seo.metaTitleAr,
         description_en: seo.metaDescription,
         description_ar: seo.metaDescriptionAr,
-        keywords: seo.keywords,
-        featured_image_alt: seo.featuredImageAlt,
-      };
-      const { data: existingSeo, error: seoLookupErr } = await supabase
-        .from('seo')
-        .select('id')
-        .eq('slug', seoSlug)
-        .maybeSingle();
-      if (seoLookupErr) throw seoLookupErr;
-
-      if (existingSeo?.id) {
-        const { error: seoUpd } = await supabase.from('seo').update(seoPayload).eq('id', existingSeo.id);
-        if (seoUpd) throw seoUpd;
-      } else {
-        const { error: seoIns } = await supabase.from('seo').insert([seoPayload]);
-        if (seoIns) throw seoIns;
-      }
+      });
 
       await loadData();
       window.alert('Contact page and SEO saved.');

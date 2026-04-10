@@ -168,7 +168,7 @@ const WebAiChat = () => {
         </div>
         <button type="button" className="btn-secondary" onClick={loadData} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
           <RefreshCw size={18} />
-          Refresh
+          Reload
         </button>
       </div>
 
