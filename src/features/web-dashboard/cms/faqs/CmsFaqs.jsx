@@ -17,7 +17,6 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** Normalize plain-text DB answers for RichTextEditor */
 function answerToHtml(raw) {
   if (raw == null || String(raw).trim() === '') return '<p></p>';
   const t = String(raw).trim();
@@ -65,7 +64,6 @@ const CmsFaqs = () => {
   const [savingRowKey, setSavingRowKey] = useState(null);
   const [fetchError, setFetchError] = useState('');
   const [items, setItems] = useState([]);
-  /** Saved rows start collapsed; new rows (no id) stay in edit mode until first save. */
   const [editingKeys, setEditingKeys] = useState({});
 
   const [seo, setSeo] = useState({
