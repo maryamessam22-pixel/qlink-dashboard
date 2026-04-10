@@ -53,6 +53,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { path: '/app/user-profiles', name: 'User Profiles', icon: <Users size={20} /> },
     { path: '/app/linked-devices', name: 'Linked Devices', icon: <Smartphone size={20} /> },
     { path: '/app/bracelets', name: 'Bracelets', icon: <Watch size={20} /> },
+    { path: '/app/support', name: 'Messages', icon: <LifeBuoy size={20} /> },
     { path: '/app/settings', name: 'Settings', icon: <Settings2 size={20} /> },
   ];
 

@@ -33,6 +33,7 @@ function mapBraceletRow(row) {
 const Bracelets = () => {
   const [bracelets, setBracelets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [togglingId, setTogglingId] = useState(null);
   const [fetchError, setFetchError] = useState("");
   const [updatedLabel, setUpdatedLabel] = useState("");
   const [query, setQuery] = useState("");
@@ -99,6 +100,22 @@ const Bracelets = () => {
       active: bracelets.filter((b) => b.active).length,
     };
   }, [bracelets]);
+
+  const setBraceletActive = async (id, active) => {
+    const statusStr = active ? "Active" : "Inactive";
+    setTogglingId(id);
+    try {
+      const { error } = await supabase.from("bracelets").update({ status: statusStr }).eq("id", id);
+      if (error) throw error;
+      setBracelets((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, active, status: statusStr } : b))
+      );
+    } catch (e) {
+      window.alert(e?.message || "Could not update bracelet status.");
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   return (
     <div className="app-bracelets-page">
@@ -174,9 +191,21 @@ const Bracelets = () => {
                     </div>
                   </td>
                   <td>
-                    <span className={`app-bracelets-status app-bracelets-status--${b.active ? "active" : "inactive"}`}>
-                      {b.status}
-                    </span>
+                    <div className="app-bracelets-status-cell">
+                      <label className="app-bracelets-toggle">
+                        <input
+                          type="checkbox"
+                          checked={b.active}
+                          disabled={togglingId === b.id}
+                          onChange={(e) => setBraceletActive(b.id, e.target.checked)}
+                          aria-label={`Active status for bracelet ${b.braceletCode}`}
+                        />
+                        <span className="app-bracelets-toggle-slider" />
+                      </label>
+                      <span className={`app-bracelets-status-text ${b.active ? "is-active" : "is-inactive"}`}>
+                        {b.status}
+                      </span>
+                    </div>
                   </td>
                   <td>
                     <span className="app-bracelets-profile">{b.assignedProfile}</span>

@@ -257,3 +257,70 @@
 .app-bracelets-page .seo-input::placeholder {
   color: var(--app-text-secondary);
 }
+
+.app-bracelets-status-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-bracelets-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.app-bracelets-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.app-bracelets-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--app-toggle-off);
+  border-radius: 999px;
+  transition: background 0.2s;
+}
+
+.app-bracelets-toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  bottom: 3px;
+  border-radius: 50%;
+  background: var(--app-toggle-knob);
+  transition: transform 0.2s;
+}
+
+.app-bracelets-toggle input:checked + .app-bracelets-toggle-slider {
+  background: var(--app-toggle-on);
+}
+
+.app-bracelets-toggle input:checked + .app-bracelets-toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.app-bracelets-toggle input:disabled + .app-bracelets-toggle-slider {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.app-bracelets-status-text {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.app-bracelets-status-text.is-active {
+  color: #1e8e3e;
+}
+
+.app-bracelets-status-text.is-inactive {
+  color: var(--app-text-secondary);
+}

@@ -39,6 +39,7 @@ const Users = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [overrides, setOverrides] = useState({});
+  const [togglingId, setTogglingId] = useState(null);
   const [seo, setSeo] = useState({
     slug: 'users',
     metaTitle: 'User management — Qlink App',
@@ -100,8 +101,22 @@ const Users = () => {
     });
   }, [users, query, roleFilter, statusFilter, isActive]);
 
-  const setUserActive = (id, active) => {
-    setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
+  const setUserActive = async (id, active) => {
+    setTogglingId(id);
+    try {
+      const { error } = await supabase.from('profiles').update({ status: active }).eq('id', id);
+      if (error) throw error;
+      setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, active } : u)));
+      setOverrides((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (e) {
+      window.alert(e?.message || 'Could not update user status.');
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const onAddUser = () => {
@@ -223,6 +238,7 @@ const Users = () => {
                         <input
                           type="checkbox"
                           checked={isActive(u)}
+                          disabled={togglingId === u.id}
                           onChange={(e) => setUserActive(u.id, e.target.checked)}
                           aria-label={`Active status for ${u.fullName}`}
                         />

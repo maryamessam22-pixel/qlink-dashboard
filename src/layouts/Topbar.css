@@ -116,6 +116,10 @@
   color: #8b949e;
 }
 
+.topbar-notifications-wrap {
+  position: relative;
+}
+
 .topbar-actions {
   display: flex;
   align-items: center;
@@ -186,7 +190,32 @@
   height: 8px;
   background-color: #E03232;
   border-radius: 50%;
-  border: 2px solid #080a0f; 
+  border: 2px solid #080a0f;
+}
+
+.notification-count {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+  color: #fff;
+  background-color: #E03232;
+  border-radius: 999px;
+  border: 2px solid #080a0f;
+}
+
+.topbar-container--app .notification-dot {
+  border-color: var(--app-bg-page);
+}
+
+.topbar-container--app .notification-count {
+  border-color: var(--app-bg-page);
 }
 
 @media screen and (max-width: 1024px) {

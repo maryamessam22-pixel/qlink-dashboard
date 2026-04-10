@@ -39,6 +39,7 @@ const LinkedDevices = () => {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [overrides, setOverrides] = useState({});
+  const [togglingId, setTogglingId] = useState(null);
   const [seo, setSeo] = useState({
     slug: "linked-devices",
     metaTitle: "Manage linked devices — Qlink App",
@@ -86,8 +87,22 @@ const LinkedDevices = () => {
     [overrides]
   );
 
-  const setDeviceActive = (id, active) => {
-    setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
+  const setDeviceActive = async (id, active) => {
+    setTogglingId(id);
+    try {
+      const { error } = await supabase.from('devices').update({ status: active }).eq('id', id);
+      if (error) throw error;
+      setDevices((prev) => prev.map((d) => (d.id === id ? { ...d, active } : d)));
+      setOverrides((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (e) {
+      window.alert(e?.message || 'Could not update device status.');
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const effectiveBattery = (row) => {
@@ -211,6 +226,7 @@ const LinkedDevices = () => {
                           <input
                             type="checkbox"
                             checked={active}
+                            disabled={togglingId === d.id}
                             onChange={(e) => setDeviceActive(d.id, e.target.checked)}
                             aria-label={`Device status for ${d.deviceName}`}
                           />

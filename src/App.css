@@ -59,6 +59,18 @@
   --app-blood-neg-text: #b4235d;
   --app-age-young: #16a34a;
   --app-age-senior: #15803d;
+
+  /* Scrollbars — web (dark) shell */
+  --scrollbar-track: #0d1422;
+  --scrollbar-thumb: #3d4f66;
+  --scrollbar-thumb-hover: #5a6d85;
+}
+
+.layout-wrapper--app {
+  /* Scrollbars — app (light) shell */
+  --scrollbar-track: #e8eaed;
+  --scrollbar-thumb: #bdc1c8;
+  --scrollbar-thumb-hover: #9aa0a6;
 }
 
 * {
@@ -90,6 +102,28 @@ body {
   flex-direction: column;
   height: 100vh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.main-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 10px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+  border: 2px solid var(--scrollbar-track);
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 .page-container {

@@ -59,6 +59,7 @@ const UserProfiles = () => {
   const [bloodFilter, setBloodFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [overrides, setOverrides] = useState({});
+  const [togglingId, setTogglingId] = useState(null);
   const [seo, setSeo] = useState({
     slug: "user-profiles",
     metaTitle: "Profiles management — Qlink App",
@@ -104,8 +105,22 @@ const UserProfiles = () => {
     [overrides]
   );
 
-  const setProfileActive = (id, active) => {
-    setOverrides((prev) => ({ ...prev, [id]: { ...prev[id], active } }));
+  const setProfileActive = async (id, active) => {
+    setTogglingId(id);
+    try {
+      const { error } = await supabase.from('patient_profiles').update({ status: active }).eq('id', id);
+      if (error) throw error;
+      setProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, active } : p)));
+      setOverrides((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (e) {
+      window.alert(e?.message || 'Could not update profile status.');
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const rows = useMemo(() => {
@@ -227,6 +242,7 @@ const UserProfiles = () => {
                         <input
                           type="checkbox"
                           checked={isActive(p)}
+                          disabled={togglingId === p.id}
                           onChange={(e) => setProfileActive(p.id, e.target.checked)}
                           aria-label={`Active status for ${p.fullName}`}
                         />

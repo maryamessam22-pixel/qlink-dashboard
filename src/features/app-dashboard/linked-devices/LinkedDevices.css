@@ -236,6 +236,11 @@
   transform: translateX(20px);
 }
 
+.app-linked-toggle input:disabled + .app-linked-toggle-slider {
+  opacity: 0.55;
+  cursor: wait;
+}
+
 .app-linked-status-cell {
   display: inline-flex;
   align-items: center;

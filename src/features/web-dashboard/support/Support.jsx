@@ -1,14 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { MessageCircle, Plus, Trash2, Search, Loader2 } from 'lucide-react';
+import { MessageCircle, Trash2, Search, Loader2 } from 'lucide-react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { Link } from 'react-router-dom';
 import { supabase } from '../../../lib/supabase';
+import { useInbox } from '../../../context/InboxContext';
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
 
 const Support = () => {
+  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const isAppView = location.pathname.startsWith('/app');
+  const { refresh: refreshInbox } = useInbox();
+
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
@@ -97,23 +103,30 @@ const Support = () => {
     fetchSupportData();
   }, []);
 
+  const messageIdFromUrl = searchParams.get('message');
+
+  useEffect(() => {
+    if (!messageIdFromUrl || messages.length === 0) return;
+    const match = messages.find((m) => String(m.id) === String(messageIdFromUrl));
+    if (match) setSelectedId(match.id);
+  }, [messageIdFromUrl, messages]);
+
   if (loading) {
     return (
-      <div className="web-page-loading" style={{ height: '80vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-        <Loader2 className="animate-spin" size={48} style={{ color: '#e03232' }} />
-        <p style={{ color: '#8b949e', fontSize: '16px' }}>Loading messages...</p>
+      <div className={`support-loading${isAppView ? ' support-loading--app' : ''}`}>
+        <Loader2 className="animate-spin support-loading-icon" size={48} />
+        <p className="support-loading-text">Loading messages...</p>
       </div>
     );
   }
 
-  const handleSaveSeo = async (updatedSeo) => {
-    setSeo(updatedSeo);
+  const saveSeoToDb = async () => {
     try {
       const { error } = await supabase
         .from('seo')
         .update({
-          title_en: updatedSeo.metaTitle,
-          description_en: updatedSeo.metaDescription,
+          title_en: seo.metaTitle,
+          description_en: seo.metaDescription,
         })
         .eq('slug', 'support/contact');
 
@@ -132,6 +145,7 @@ const Support = () => {
       if (error) throw error;
       setMessages((prev) => prev.filter((m) => m.id !== id));
       setSelectedId(null);
+      refreshInbox();
     } catch (error) {
       console.error('Delete error:', error.message);
       alert('Failed to delete message');
@@ -185,6 +199,7 @@ const Support = () => {
 
       setReplyEn('');
       setReplyAr('');
+      refreshInbox();
 
     } catch (error) {
       console.error('Reply error:', error.message);
@@ -206,7 +221,7 @@ const Support = () => {
   });
 
   return (
-    <div className="web-page support-page">
+    <div className={`web-page support-page${isAppView ? ' support-page--app' : ''}`}>
       <PageMeta title={seo.metaTitle} description={seo.metaDescription} keywords={seo.keywords} />
 
       <div className="web-page-header">
@@ -218,19 +233,18 @@ const Support = () => {
 
       <div className="support-split">
         <div className="support-list">
-          <div className="support-list-controls" style={{ padding: '0 0 16px 0', borderBottom: '1px solid #1f2937', marginBottom: '16px' }}>
-            <div className="search-wide-wrap" style={{ marginBottom: '12px' }}>
+          <div className="support-list-controls">
+            <div className="search-wide-wrap support-list-search">
               <Search className="search-wide-icon" size={16} />
               <input
                 type="search"
-                className="field-input"
+                className="field-input support-list-search-input"
                 placeholder="Search messages..."
-                style={{ width: '100%', paddingLeft: '40px' }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="filter-row" style={{ marginBottom: 0 }}>
+            <div className="filter-row support-list-filters">
               {['All', 'Unread', 'Replied'].map(status => (
                 <button
                   key={status}
@@ -243,29 +257,29 @@ const Support = () => {
             </div>
           </div>
 
-          {loading ? (
-            <div style={{ padding: '20px', color: '#8b949e' }}>Loading messages...</div>
-          ) : filteredMessages.length === 0 ? (
-            <div style={{ padding: '20px', color: '#8b949e' }}>No messages found.</div>
-          ) : (
-            filteredMessages.map((m) => (
-              <button
-                key={m.id}
-                type="button"
-                className={`support-row ${selectedId === m.id ? 'active' : ''}`}
-                onClick={() => setSelectedId(m.id)}
-              >
-                <div className="support-row-top">
-                  <span className="support-from">{m.from}</span>
-                  <span className="support-date">{m.date}</span>
-                </div>
-                <div className="support-topic">{m.topic}</div>
-                <p className="support-preview">{m.preview}</p>
+          <div className="support-list-scroll">
+            {filteredMessages.length === 0 ? (
+              <div className="support-list-empty">No messages found.</div>
+            ) : (
+              filteredMessages.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  className={`support-row ${selectedId === m.id ? 'active' : ''}`}
+                  onClick={() => setSelectedId(m.id)}
+                >
+                  <div className="support-row-top">
+                    <span className="support-from">{m.from}</span>
+                    <span className="support-date">{m.date}</span>
+                  </div>
+                  <div className="support-topic">{m.topic}</div>
+                  <p className="support-preview">{m.preview}</p>
 
-                {m.status === 'Unread' ? <span className="support-unread-dot" aria-label="Unread" /> : null}
-              </button>
-            ))
-          )}
+                  {m.status === 'Unread' ? <span className="support-unread-dot" aria-label="Unread" /> : null}
+                </button>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="support-detail">
@@ -275,79 +289,81 @@ const Support = () => {
               <p>Select a message to read.</p>
             </div>
           ) : (
-            <div className="support-open">
-              <div className="support-open-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <h2 className="support-open-title" style={{ margin: 0 }}>{active.topic}</h2>
-                <button
-                  type="button"
-                  className="btn-danger"
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 8 }}
-                  onClick={() => handleDeleteMessage(active.id)}
-                >
-                  <Trash2 size={18} />
-                  Delete
-                </button>
-              </div>
-              <p className="support-open-meta">
-                From <strong>{active.from}</strong> · {active.date}
-              </p>
-              <p className="support-open-body" style={{ marginBottom: 32 }}>{active.preview}</p>
+            <div className="support-detail-scroll">
+              <div className="support-open">
+                <div className="support-open-header">
+                  <h2 className="support-open-title">{active.topic}</h2>
+                  <button
+                    type="button"
+                    className="btn-danger support-open-delete"
+                    onClick={() => handleDeleteMessage(active.id)}
+                  >
+                    <Trash2 size={18} />
+                    Delete
+                  </button>
+                </div>
+                <p className="support-open-meta">
+                  From <strong>{active.from}</strong> · {active.date}
+                </p>
+                <p className="support-open-body">{active.preview}</p>
 
+                {active.adminReplyEn && (
+                  <div className="admin-reply-box">
+                    <p className="admin-reply-head">
+                      Qlink Support (You) · {active.repliedAt}
+                    </p>
 
-              {active.adminReplyEn && (
-                <div className="admin-reply-box" style={{ backgroundColor: '#131722', padding: '20px', borderRadius: '8px', marginBottom: '32px', borderLeft: '4px solid #E03232' }}>
-                  <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#E03232', fontWeight: 'bold' }}>
-                    Qlink Support (You) · {active.repliedAt}
-                  </p>
-
-                  <div style={{ marginBottom: '16px' }}>
-                    <span style={{ fontSize: '12px', color: '#8b949e' }}>English Reply:</span>
-                    <div dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} style={{ color: '#fff', fontSize: '14px' }} />
-                  </div>
-
-                  {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
-                    <div dir="rtl">
-                      <span style={{ fontSize: '12px', color: '#8b949e' }}>Arabic Reply:</span>
-                      <div dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} style={{ color: '#fff', fontSize: '14px' }} />
+                    <div className="admin-reply-block">
+                      <span className="admin-reply-label">English Reply:</span>
+                      <div className="admin-reply-html" dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} />
                     </div>
-                  )}
-                </div>
-              )}
 
-
-              {!active.adminReplyEn && (
-                <div className="support-reply">
-                  <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Reply draft (EN)</label>
-                  <RichTextEditor value={replyEn} onChange={setReplyEn} />
-                  <div style={{ marginTop: 20 }}>
-                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>مسودة الرد (AR)</label>
-                    <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
+                    {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
+                      <div className="admin-reply-block" dir="rtl">
+                        <span className="admin-reply-label">Arabic Reply:</span>
+                        <div className="admin-reply-html" dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} />
+                      </div>
+                    )}
                   </div>
-                  <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                    <button
-                      type="button"
-                      className="btn-publish"
-                      style={{ padding: '10px 24px', borderRadius: 8, minWidth: 160 }}
-                      onClick={() => handleSendReply(active.id)}
-                    >
-                      Send Response
-                    </button>
-                  </div>
-                </div>
-              )}
+                )}
 
+                {!active.adminReplyEn && (
+                  <div className="support-reply">
+                    <label className="field-label support-reply-label">Reply draft (EN)</label>
+                    <RichTextEditor value={replyEn} onChange={setReplyEn} />
+                    <div className="support-reply-ar">
+                      <label className="field-label support-reply-label">مسودة الرد (AR)</label>
+                      <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
+                    </div>
+                    <div className="support-reply-actions">
+                      <button
+                        type="button"
+                        className="btn-primary support-reply-send"
+                        onClick={() => handleSendReply(active.id)}
+                      >
+                        Send Response
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
       </div>
 
       <SeoSection
-        title="Support admin SEO"
-        slugPrefix="qlink.com/support/"
+        title={isAppView ? 'Messages page SEO' : 'Support admin SEO'}
+        slugPrefix={isAppView ? 'admin.qlink.com/app/messages/' : 'qlink.com/support/'}
         value={seo}
-        onChange={handleSaveSeo}
-        badge="Live"
+        onChange={setSeo}
+        badge={isAppView ? 'Internal' : 'Live'}
       />
+      <div className="support-seo-actions">
+        <button type="button" className="btn-secondary support-seo-save" onClick={saveSeoToDb}>
+          Save SEO changes
+        </button>
+      </div>
     </div>
   );
 };

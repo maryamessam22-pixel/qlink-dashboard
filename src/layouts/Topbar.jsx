@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Bell, Menu, X } from 'lucide-react';
+import { Bell, Menu, X } from 'lucide-react';
+import { useInbox } from '../context/InboxContext';
+import NotificationsDropdown from './NotificationsDropdown';
 import './Topbar.css';
 
 const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
-  
+  const [panelOpen, setPanelOpen] = useState(false);
+  const wrapRef = useRef(null);
+  const { unreadCount } = useInbox();
+
+  useEffect(() => {
+    if (!panelOpen) return undefined;
+    const onDoc = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setPanelOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, [panelOpen]);
+
+  useEffect(() => {
+    setPanelOpen(false);
+  }, [location.pathname]);
+
   const getCurrentPageName = () => {
     const path = location.pathname;
     if (path.includes('/user-profiles/') && path.includes('/edit')) return 'Edit Profile';
@@ -35,10 +54,6 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
     return 'Dashboard';
   };
 
-  const toggleSearch = () => {
-    setIsSearchOpen(!isSearchOpen);
-  };
-
   const isApp = location.pathname.startsWith('/app');
 
   return (
@@ -61,35 +76,24 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
       </div>
 
       <div className="topbar-actions">
-        
-        {/* Search Bar - Independent State */}
-        {/* <div className={`search-wrapper ${isSearchOpen ? 'visible' : ''}`}>
-          {isSearchOpen ? (
-            <X 
-              size={18} 
-              className="search-icon close-search" 
-              onClick={toggleSearch} 
-            />
-          ) : (
-            <Search 
-              size={18} 
-              className="search-icon" 
-              onClick={toggleSearch} 
-            />
-          )}
-          
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Search" 
-          />
-        </div> */}
-
-        <button className="notification-btn">
-          <Bell size={24} />
-          <span className="notification-dot"></span>
-        </button>
-
+        <div className="topbar-notifications-wrap" ref={wrapRef}>
+          <button
+            type="button"
+            className="notification-btn"
+            aria-expanded={panelOpen}
+            aria-haspopup="dialog"
+            aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+            onClick={() => setPanelOpen((o) => !o)}
+          >
+            <Bell size={24} />
+            {unreadCount > 0 ? (
+              <span className="notification-count" aria-hidden>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            ) : null}
+          </button>
+          {panelOpen ? <NotificationsDropdown isApp={isApp} onClose={() => setPanelOpen(false)} /> : null}
+        </div>
       </div>
     </div>
   );
