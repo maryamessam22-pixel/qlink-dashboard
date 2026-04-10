@@ -6,6 +6,7 @@ import { BilingualTextInput } from '../../../../components/bilingual/BilingualFi
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
+import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_FOUNDER = 'about_founder';
@@ -163,8 +164,8 @@ const CmsAbout = () => {
           title_ar: founderNameAr,
           subtitle_en: founderTitleEn,
           subtitle_ar: founderTitleAr,
-          content_en: missionRteEn,
-          content_ar: missionRteAr,
+          content_en: normalizeRichTextHtml(missionRteEn),
+          content_ar: normalizeRichTextHtml(missionRteAr),
           updated_at: now,
         })
         .eq('section_key', SECTION_FOUNDER);
@@ -175,8 +176,8 @@ const CmsAbout = () => {
         .update({
           title_en: visionHeadEn,
           title_ar: visionHeadAr,
-          content_en: visionRteEn,
-          content_ar: visionRteAr,
+          content_en: normalizeRichTextHtml(visionRteEn),
+          content_ar: normalizeRichTextHtml(visionRteAr),
           updated_at: now,
         })
         .eq('section_key', SECTION_VISION);

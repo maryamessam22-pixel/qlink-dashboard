@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { X, Plus, Trash2, Loader2, Save } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
+import { normalizeRichTextHtml } from '../../../lib/richTextHtml';
 import PageMeta from '../../../components/seo/PageMeta';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../components/bilingual/BilingualField';
@@ -161,8 +162,8 @@ const ProductEditor = () => {
         name_ar: nameAr,
         subtitle_en: subEn,
         subtitle_ar: subAr,
-        description_en: descEn,
-        description_ar: descAr,
+        description_en: normalizeRichTextHtml(descEn),
+        description_ar: normalizeRichTextHtml(descAr),
         price: parseFloat(price) || 0,
         image_url: mainImage,
         'gallery-images': gallery,
@@ -181,8 +182,8 @@ const ProductEditor = () => {
             title_ar: detailTitleAr,
             subtitle_en: detailSubEn,
             subtitle_ar: detailSubAr,
-            description_en: detailDescEn,
-            description_ar: detailDescAr
+            description_en: normalizeRichTextHtml(detailDescEn),
+            description_ar: normalizeRichTextHtml(detailDescAr)
           }
         }
       };

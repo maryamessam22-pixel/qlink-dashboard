@@ -19,7 +19,7 @@ function escapeHtml(s) {
 }
 
 function answerToHtml(raw) {
-  if (raw == null || String(raw).trim() === '') return '<p></p>';
+  if (raw == null || String(raw).trim() === '') return '';
   const t = String(raw).trim();
   if (t.startsWith('<')) return t;
   return `<p>${escapeHtml(t).replace(/\n/g, '<br/>')}</p>`;
@@ -48,8 +48,8 @@ function newEmptyFaq() {
     _key: createLocalFaqKey(),
     qEn: '',
     qAr: '',
-    aEn: '<p></p>',
-    aAr: '<p></p>',
+    aEn: '',
+    aAr: '',
   };
 }
 
@@ -223,8 +223,8 @@ const CmsFaqs = () => {
       const payload = {
         question_en: it.qEn || '',
         question_ar: it.qAr || '',
-        answer_en: it.aEn || '',
-        answer_ar: it.aAr || '',
+        answer_en: normalizeRichTextHtml(it.aEn) || '',
+        answer_ar: normalizeRichTextHtml(it.aAr) || '',
         display_order: i + 1,
       };
       if (it.id) {
@@ -262,8 +262,8 @@ const CmsFaqs = () => {
         const payload = {
           question_en: it.qEn || '',
           question_ar: it.qAr || '',
-          answer_en: it.aEn || '',
-          answer_ar: it.aAr || '',
+          answer_en: normalizeRichTextHtml(it.aEn) || '',
+          answer_ar: normalizeRichTextHtml(it.aAr) || '',
           display_order: i + 1,
         };
         if (it.id) {

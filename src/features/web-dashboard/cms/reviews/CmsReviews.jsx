@@ -5,6 +5,7 @@ import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
+import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SEO_SLUG = 'reviews';
@@ -19,7 +20,7 @@ function escapeHtml(s) {
 
 /** Normalize plain-text DB values for RichTextEditor */
 function reviewTextToHtml(raw) {
-  if (raw == null || String(raw).trim() === '') return '<p></p>';
+  if (raw == null || String(raw).trim() === '') return '';
   const t = String(raw).trim();
   if (t.startsWith('<')) return t;
   return `<p>${escapeHtml(t).replace(/\n/g, '<br/>')}</p>`;
@@ -134,7 +135,7 @@ const CmsReviews = () => {
         customer_name: 'New customer',
         customer_subtitle: '',
         rating: 5,
-        review_text: '<p></p>',
+        review_text: '',
         is_featured: false,
         is_visible: true,
       };
@@ -177,7 +178,7 @@ const CmsReviews = () => {
         customer_name: rev.customer_name,
         customer_subtitle: rev.customer_subtitle,
         rating: rev.rating,
-        review_text: rev.review_text,
+        review_text: normalizeRichTextHtml(rev.review_text) || '',
         is_featured: rev.is_featured,
       };
       const payload = hasIsVisibleColumn ? { ...basePayload, is_visible: rev.is_visible } : basePayload;

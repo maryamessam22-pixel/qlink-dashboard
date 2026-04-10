@@ -5,6 +5,7 @@ import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput, BilingualTextarea } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
+import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_KEYS = {
@@ -341,8 +342,8 @@ const CmsHome = () => {
       const heroPayload = {
         title_en: headlineEn,
         title_ar: headlineAr,
-        subtitle_en: subRteEn,
-        subtitle_ar: subRteAr,
+        subtitle_en: normalizeRichTextHtml(subRteEn),
+        subtitle_ar: normalizeRichTextHtml(subRteAr),
         'first-btn-en': btnPrimaryEn,
         'first-btn-ar': btnPrimaryAr,
         'sec-btn-en': btnSecondaryEn,
@@ -387,8 +388,8 @@ const CmsHome = () => {
       const { error: err3 } = await supabase
         .from('cms_content')
         .update({
-          content_en: simpleRteEn,
-          content_ar: simpleRteAr,
+          content_en: normalizeRichTextHtml(simpleRteEn),
+          content_ar: normalizeRichTextHtml(simpleRteAr),
           extra_data: { ...simpleExtra, visible: simpleExtra.visible !== false },
           updated_at: now,
         })

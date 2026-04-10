@@ -5,6 +5,7 @@ import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { supabase } from '../../../lib/supabase';
+import { isEmptyRichTextHtml, normalizeRichTextHtml } from '../../../lib/richTextHtml';
 import { useInbox } from '../../../context/InboxContext';
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
@@ -158,10 +159,7 @@ const Support = () => {
 
 
   const handleSendReply = async (id) => {
-    const isEditorEmpty = (html) => !html || html.trim() === '' || html === '<p></p>' || html === '<p><br></p>';
-
-
-    if (isEditorEmpty(replyEn) && isEditorEmpty(replyAr)) {
+    if (isEmptyRichTextHtml(replyEn) && isEmptyRichTextHtml(replyAr)) {
       alert("Please write a reply first!");
       return;
     }
@@ -172,8 +170,8 @@ const Support = () => {
       const { error } = await supabase
         .from('support_messages')
         .update({
-          admin_reply_en: replyEn,
-          admin_reply_ar: replyAr,
+          admin_reply_en: normalizeRichTextHtml(replyEn),
+          admin_reply_ar: normalizeRichTextHtml(replyAr),
           status: 'Replied',
           replied_at: now
         })
@@ -189,8 +187,8 @@ const Support = () => {
 
           return {
             ...m,
-            adminReplyEn: replyEn,
-            adminReplyAr: replyAr,
+            adminReplyEn: normalizeRichTextHtml(replyEn),
+            adminReplyAr: normalizeRichTextHtml(replyAr),
             repliedAt: formattedNow,
             unread: false,
             status: 'Replied'
@@ -311,7 +309,7 @@ const Support = () => {
                 </p>
                 <p className="support-open-body">{active.preview}</p>
 
-                {active.adminReplyEn && (
+                {!isEmptyRichTextHtml(active.adminReplyEn) && (
                   <div className="admin-reply-box">
                     <p className="admin-reply-head">
                       Qlink Support (You) · {active.repliedAt}
@@ -322,7 +320,7 @@ const Support = () => {
                       <div className="admin-reply-html" dangerouslySetInnerHTML={{ __html: active.adminReplyEn }} />
                     </div>
 
-                    {active.adminReplyAr && active.adminReplyAr !== '<p></p>' && active.adminReplyAr !== '' && (
+                    {!isEmptyRichTextHtml(active.adminReplyAr) && (
                       <div className="admin-reply-block" dir="rtl">
                         <span className="admin-reply-label">Arabic Reply:</span>
                         <div className="admin-reply-html" dangerouslySetInnerHTML={{ __html: active.adminReplyAr }} />
@@ -331,7 +329,7 @@ const Support = () => {
                   </div>
                 )}
 
-                {!active.adminReplyEn && (
+                {isEmptyRichTextHtml(active.adminReplyEn) && (
                   <div className="support-reply">
                     <label className="field-label support-reply-label">Reply draft (EN)</label>
                     <RichTextEditor value={replyEn} onChange={setReplyEn} />

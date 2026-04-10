@@ -6,6 +6,7 @@ import { BilingualTextInput } from '../../../../components/bilingual/BilingualFi
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
+import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_CONTACT = 'contact_info';
@@ -21,7 +22,7 @@ function escapeHtml(s) {
 
 /** Normalize subtitle fields for RichTextEditor */
 function textToHtml(raw) {
-  if (raw == null || String(raw).trim() === '') return '<p></p>';
+  if (raw == null || String(raw).trim() === '') return '';
   const t = String(raw).trim();
   if (t.startsWith('<')) return t;
   return `<p>${escapeHtml(t).replace(/\n/g, '<br/>')}</p>`;
@@ -137,8 +138,8 @@ const CmsContact = () => {
         section_key: SECTION_CONTACT,
         title_en: titleEn || '',
         title_ar: titleAr || '',
-        subtitle_en: subEn || '',
-        subtitle_ar: subAr || '',
+        subtitle_en: normalizeRichTextHtml(subEn),
+        subtitle_ar: normalizeRichTextHtml(subAr),
         content_en: email || '',
         content_ar: phone || '',
         extra_data,

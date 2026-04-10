@@ -7,6 +7,7 @@ import { BilingualTextInput } from '../../../components/bilingual/BilingualField
 import SeoSection from '../../../components/seo/SeoSection';
 import { supabase } from '../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../lib/seoUpsert';
+import { normalizeRichTextHtml } from '../../../lib/richTextHtml';
 import { generateUUID } from '../../../lib/generateId';
 import '../../../styles/web-dashboard-pages.css';
 
@@ -75,8 +76,8 @@ const CmsCustomPage = () => {
         section_key: sectionKey,
         title_en: titleEn,
         title_ar: titleAr,
-        content_en: contentEn,
-        content_ar: contentAr,
+        content_en: normalizeRichTextHtml(contentEn),
+        content_ar: normalizeRichTextHtml(contentAr),
         updated_at: now,
       };
       if (rowId) {
