@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { HelpCircle, Loader2, Plus, Save, Search, Trash2 } from 'lucide-react';
+import { HelpCircle, Loader2, Pencil, Plus, Save, Search, Trash2, X } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
@@ -50,11 +50,23 @@ function rowKey(item) {
   return item.id ?? item._key;
 }
 
+function stripHtmlPreview(html, maxLen = 160) {
+  const t = String(html || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (t.length <= maxLen) return t || '—';
+  return `${t.slice(0, maxLen)}…`;
+}
+
 const CmsFaqs = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingRowKey, setSavingRowKey] = useState(null);
   const [fetchError, setFetchError] = useState('');
   const [items, setItems] = useState([]);
+  /** Saved rows start collapsed; new rows (no id) stay in edit mode until first save. */
+  const [editingKeys, setEditingKeys] = useState({});
 
   const [seo, setSeo] = useState({
     slug: SEO_SLUG,
@@ -133,6 +145,21 @@ const CmsFaqs = () => {
   const findIndex = (item) =>
     items.findIndex((it) => (item.id && it.id === item.id) || (!item.id && it._key === item._key));
 
+  const isRowEditing = (item) => !item.id || Boolean(editingKeys[rowKey(item)]);
+
+  const startEdit = (item) => {
+    setEditingKeys((k) => ({ ...k, [rowKey(item)]: true }));
+  };
+
+  const stopEdit = (item) => {
+    const key = rowKey(item);
+    setEditingKeys((k) => {
+      const next = { ...k };
+      delete next[key];
+      return next;
+    });
+  };
+
   const patch = (item, key, val) => {
     const i = findIndex(item);
     if (i < 0) return;
@@ -154,7 +181,70 @@ const CmsFaqs = () => {
         return;
       }
     }
+    stopEdit(item);
     setItems((prev) => prev.filter((_, j) => j !== i));
+  };
+
+  const cancelRowEdit = async (item) => {
+    if (!item.id) {
+      removeItem(item);
+      return;
+    }
+    stopEdit(item);
+    const { data, error } = await supabase.from('faqs').select('*').eq('id', item.id).single();
+    if (error) {
+      console.error(error);
+      window.alert(error.message || 'Could not reload this FAQ.');
+      return;
+    }
+    if (data) {
+      setItems((prev) => {
+        const n = [...prev];
+        const idx = n.findIndex((it) => it.id === item.id);
+        if (idx >= 0) n[idx] = mapFaqRow(data);
+        return n;
+      });
+    }
+  };
+
+  const handleSaveOne = async (item) => {
+    const i = findIndex(item);
+    if (i < 0) return;
+    const key = rowKey(item);
+    setSavingRowKey(key);
+    try {
+      const it = items[i];
+      const payload = {
+        question_en: it.qEn || '',
+        question_ar: it.qAr || '',
+        answer_en: it.aEn || '',
+        answer_ar: it.aAr || '',
+        display_order: i + 1,
+      };
+      if (it.id) {
+        const { error } = await supabase.from('faqs').update(payload).eq('id', it.id);
+        if (error) throw error;
+        stopEdit(it);
+        await loadData();
+        window.alert('FAQ saved.');
+      } else {
+        const { data, error } = await supabase.from('faqs').insert([payload]).select('*').single();
+        if (error) throw error;
+        stopEdit(it);
+        setItems((prev) => {
+          const n = [...prev];
+          const j = n.findIndex((row) => row._key === it._key);
+          if (j >= 0 && data) n[j] = mapFaqRow(data);
+          return n;
+        });
+        window.alert('FAQ added.');
+      }
+    } catch (e) {
+      console.error(e);
+      window.alert(e?.message || 'Save failed.');
+    } finally {
+      setSavingRowKey(null);
+    }
   };
 
   const handleSave = async () => {
@@ -244,10 +334,13 @@ const CmsFaqs = () => {
         </div>
       ) : null}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+        <button type="button" className="btn-secondary" disabled={saving} onClick={() => loadData()}>
+          Reload from database
+        </button>
         <button type="button" className="btn-primary" disabled={saving} onClick={handleSave}>
           {saving ? <Loader2 size={18} className="animate-spin" style={{ marginRight: 8 }} /> : <Save size={18} style={{ marginRight: 8 }} />}
-          Save FAQs &amp; SEO
+          Save all FAQs &amp; SEO
         </button>
       </div>
 
@@ -257,8 +350,13 @@ const CmsFaqs = () => {
             <HelpCircle size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#38bdf8' }} />
             Support questions
           </h2>
-          <button type="button" className="btn-primary" onClick={() => setItems((list) => [...list, newEmptyFaq()])}>
-            <Plus size={18} />
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => setItems((list) => [...list, newEmptyFaq()])}
+            title="Add a new FAQ entry"
+          >
+            <Plus size={18} style={{ marginRight: 8 }} />
             Add question
           </button>
         </div>
@@ -279,45 +377,119 @@ const CmsFaqs = () => {
           <p style={{ color: '#94a3b8', marginBottom: 16 }}>No FAQs in the database yet. Add questions or pull data from Supabase.</p>
         ) : null}
 
-        {filteredItems.map((item) => (
-          <div key={rowKey(item)} className="faq-editor-card">
-            <div className="faq-editor-head">
-              <span style={{ fontWeight: 600, color: '#fff' }}>
-                Q{findIndex(item) + 1}
-                {item.id ? <span style={{ opacity: 0.5, fontWeight: 400, marginLeft: 8 }}>(saved)</span> : null}
-              </span>
-              <button
-                type="button"
-                className="about-team-remove"
-                style={{ position: 'static' }}
-                aria-label="Delete question"
-                onClick={() => removeItem(item)}
-              >
-                <Trash2 size={16} />
-              </button>
+        {filteredItems.map((item) => {
+          const rk = rowKey(item);
+          const editing = isRowEditing(item);
+          const rowSaving = savingRowKey === rk;
+          return (
+            <div key={rk} className="faq-editor-card">
+              <div className="faq-editor-head" style={{ flexWrap: 'wrap', gap: 8 }}>
+                <span style={{ fontWeight: 600, color: '#fff' }}>
+                  Q{findIndex(item) + 1}
+                  {item.id ? <span style={{ opacity: 0.5, fontWeight: 400, marginLeft: 8 }}>(saved)</span> : (
+                    <span style={{ opacity: 0.6, fontWeight: 400, marginLeft: 8 }}>(new — save to store)</span>
+                  )}
+                </span>
+                <div style={{ marginLeft: 'auto', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
+                  {editing ? (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        disabled={rowSaving}
+                        onClick={() => handleSaveOne(item)}
+                      >
+                        {rowSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        disabled={rowSaving}
+                        onClick={() => cancelRowEdit(item)}
+                      >
+                        <X size={16} />
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="about-team-remove"
+                        style={{ position: 'static', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        onClick={() => removeItem(item)}
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        onClick={() => startEdit(item)}
+                      >
+                        <Pencil size={16} />
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="about-team-remove"
+                        style={{ position: 'static', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        onClick={() => removeItem(item)}
+                      >
+                        <Trash2 size={16} />
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+              {!editing ? (
+                <div
+                  style={{
+                    padding: '14px 0',
+                    color: '#cbd5e1',
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                    cursor: 'default',
+                  }}
+                  onDoubleClick={() => startEdit(item)}
+                >
+                  <div style={{ fontWeight: 600, color: '#f1f5f9', marginBottom: 8 }}>{item.qEn || '(No EN question)'}</div>
+                  {item.qAr ? <div style={{ marginBottom: 10, opacity: 0.9 }}>{item.qAr}</div> : null}
+                  <div style={{ opacity: 0.85 }}>{stripHtmlPreview(item.aEn)}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>Double-click to edit</div>
+                </div>
+              ) : (
+                <>
+                  <BilingualTextInput
+                    labelEn="Question (EN)"
+                    labelAr="السؤال (AR)"
+                    valueEn={item.qEn}
+                    valueAr={item.qAr}
+                    onChangeEn={(v) => patch(item, 'qEn', v)}
+                    onChangeAr={(v) => patch(item, 'qAr', v)}
+                  />
+                  <div style={{ marginTop: 16 }}>
+                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                      Answer (EN)
+                    </label>
+                    <RichTextEditor value={item.aEn} onChange={(v) => patch(item, 'aEn', v)} />
+                  </div>
+                  <div style={{ marginTop: 16 }}>
+                    <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
+                      الإجابة (AR)
+                    </label>
+                    <RichTextEditor value={item.aAr} onChange={(v) => patch(item, 'aAr', v)} rtl />
+                  </div>
+                </>
+              )}
             </div>
-            <BilingualTextInput
-              labelEn="Question (EN)"
-              labelAr="السؤال (AR)"
-              valueEn={item.qEn}
-              valueAr={item.qAr}
-              onChangeEn={(v) => patch(item, 'qEn', v)}
-              onChangeAr={(v) => patch(item, 'qAr', v)}
-            />
-            <div style={{ marginTop: 16 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
-                Answer (EN)
-              </label>
-              <RichTextEditor value={item.aEn} onChange={(v) => patch(item, 'aEn', v)} />
-            </div>
-            <div style={{ marginTop: 16 }}>
-              <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>
-                الإجابة (AR)
-              </label>
-              <RichTextEditor value={item.aAr} onChange={(v) => patch(item, 'aAr', v)} rtl />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </section>
 
       <SeoSection
