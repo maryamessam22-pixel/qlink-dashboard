@@ -232,11 +232,34 @@
 .product-editor-footer {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid #1f2937;
+  padding: 20px 22px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.product-editor-footer__discard {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.product-editor-footer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  flex: 1 1 260px;
+}
+
+.product-editor-footer__publish {
+  min-width: 188px;
+  justify-content: center;
+  box-shadow: 0 4px 22px rgba(1, 212, 123, 0.22);
 }
 
 .btn-publish {

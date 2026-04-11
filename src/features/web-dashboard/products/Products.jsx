@@ -1,16 +1,19 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Package, Loader2, Edit2, Trash2 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Search, Package, Loader2, Edit2, Trash2, FileEdit } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
-import { hasFormDraft } from '../../../lib/formDraft';
+import { loadFormDraftWithMeta } from '../../../lib/formDraft';
 import '../../../styles/web-dashboard-pages.css';
 import './Products.css';
 
 const NEW_PRODUCT_DRAFT_KEY = 'qlink_draft_product_new';
 
 const Products = () => {
+  const location = useLocation();
+  const [draftRefresh, setDraftRefresh] = useState(0);
+  const [draftImgFailed, setDraftImgFailed] = useState(false);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
@@ -64,6 +67,21 @@ const Products = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const onDraftSaved = (e) => {
+      if (e?.detail?.key === NEW_PRODUCT_DRAFT_KEY) setDraftRefresh((n) => n + 1);
+    };
+    window.addEventListener('qlink-draft-saved', onDraftSaved);
+    return () => window.removeEventListener('qlink-draft-saved', onDraftSaved);
+  }, []);
+
+  const newProductDraftMeta = useMemo(
+    () => loadFormDraftWithMeta(NEW_PRODUCT_DRAFT_KEY),
+    [location.pathname, draftRefresh]
+  );
+  const newProductDraft = newProductDraftMeta?.data;
+  const showNewProductDraftAside = Boolean(newProductDraft && typeof newProductDraft === 'object');
 
   // 2. تحديث الـ SEO في الداتابيز (عند التغيير من الـ Dashboard)
   const handleSeoChange = async (updatedSeo) => {
@@ -119,7 +137,28 @@ const Products = () => {
     });
   }, [q, filterStock, products]);
 
-  const hasNewProductDraft = hasFormDraft(NEW_PRODUCT_DRAFT_KEY);
+  const draftCardTitle =
+    (newProductDraft?.nameEn && String(newProductDraft.nameEn).trim()) ||
+    (newProductDraft?.nameAr && String(newProductDraft.nameAr).trim()) ||
+    'Untitled product';
+  const draftCardSub =
+    (newProductDraft?.subEn && String(newProductDraft.subEn).trim()) ||
+    (newProductDraft?.subAr && String(newProductDraft.subAr).trim()) ||
+    'Add details in the editor, then publish to show on the live site.';
+  const draftPriceRaw = newProductDraft?.price;
+  const draftPriceNum = draftPriceRaw !== '' && draftPriceRaw != null ? parseFloat(draftPriceRaw) : NaN;
+  const draftPriceLabel =
+    Number.isFinite(draftPriceNum) && draftPriceNum >= 0 ? `${draftPriceNum.toLocaleString()} EGP` : '—';
+  const draftImage = (newProductDraft?.mainImage && String(newProductDraft.mainImage).trim()) || '';
+  const draftSku = (newProductDraft?.sku && String(newProductDraft.sku).trim()) || 'No SKU yet';
+  const draftSavedLabel =
+    typeof newProductDraftMeta?.savedAt === 'number'
+      ? `Saved ${new Date(newProductDraftMeta.savedAt).toLocaleString()}`
+      : null;
+
+  useEffect(() => {
+    setDraftImgFailed(false);
+  }, [draftImage, draftRefresh, location.pathname]);
 
   if (loading) {
     return (
@@ -141,28 +180,6 @@ const Products = () => {
         </div>
         <Link to="/web/products/new" className="btn-primary">+ Add new product</Link>
       </div>
-
-      {hasNewProductDraft ? (
-        <div
-          className="web-card"
-          style={{
-            marginBottom: 20,
-            padding: '14px 18px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            gap: 12,
-            borderLeft: '3px solid #e03232',
-          }}
-        >
-          <span style={{ color: '#e6edf3', flex: '1 1 200px' }}>
-            You have a saved draft for a new product in this browser.
-          </span>
-          <Link to="/web/products/new" className="btn-primary" style={{ textDecoration: 'none' }}>
-            Continue editing
-          </Link>
-        </div>
-      ) : null}
 
       <div className="filter-row" style={{ marginBottom: '24px' }}>
         <div className="search-wide-wrap">
@@ -189,7 +206,15 @@ const Products = () => {
         </div>
       </div>
 
-      <div className="product-grid">
+      <div
+        className={
+          showNewProductDraftAside
+            ? 'products-catalog-layout products-catalog-layout--with-draft'
+            : 'products-catalog-layout'
+        }
+      >
+        <div className="products-catalog-main">
+          <div className="product-grid">
         {filtered.map((p) => (
           <article key={p.id} className="product-card">
             <Link to={`/web/products/${encodeURIComponent(p.id)}/edit`} className="product-card-link">
@@ -256,6 +281,61 @@ const Products = () => {
             </Link>
           </article>
         ))}
+          </div>
+        </div>
+
+        {showNewProductDraftAside ? (
+          <aside className="products-draft-aside" aria-label="Unpublished new product draft">
+            <div className="products-draft-aside__header">
+              <h2 className="products-draft-aside__title">Draft</h2>
+              <p className="products-draft-aside__lead">
+                Not on the public website yet. Open the editor and click <strong>Publish product</strong> to go live
+                on your storefront.
+              </p>
+            </div>
+
+            <article className="product-card product-card--draft">
+              <div className="product-card-image-wrap">
+                <span className="stock-badge stock-badge--draft">Draft</span>
+                {draftImage && !draftImgFailed ? (
+                  <img
+                    src={draftImage}
+                    alt=""
+                    className="product-card-img"
+                    onError={() => setDraftImgFailed(true)}
+                  />
+                ) : null}
+                <div
+                  className="product-no-image product-no-image--draft"
+                  style={{ display: draftImage && !draftImgFailed ? 'none' : 'flex' }}
+                >
+                  <FileEdit size={28} strokeWidth={1.5} aria-hidden />
+                  <div className="no-image-text">No image in draft</div>
+                </div>
+              </div>
+              <div className="product-card-body">
+                <div className="product-card-title-row">
+                  <h2 className="product-card-name">{draftCardTitle}</h2>
+                  <span className="product-card-price">{draftPriceLabel}</span>
+                </div>
+                <p className="product-card-desc">{draftCardSub}</p>
+                <div className="product-card-foot">
+                  <span className="product-card-stock">
+                    <Package size={14} />
+                    Unpublished
+                  </span>
+                  <span className="product-card-id">{draftSku}</span>
+                </div>
+              </div>
+            </article>
+
+            {draftSavedLabel ? <p className="products-draft-aside__meta">{draftSavedLabel}</p> : null}
+
+            <Link to="/web/products/new" className="btn-primary products-draft-aside__cta">
+              Continue editing
+            </Link>
+          </aside>
+        ) : null}
       </div>
 
       <SeoSection
