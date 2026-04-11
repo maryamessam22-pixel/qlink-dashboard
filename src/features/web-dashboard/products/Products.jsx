@@ -44,7 +44,7 @@ const Products = () => {
         if (productsError) throw productsError;
 
         // جلب بيانات الـ SEO الخاصة بصفحة المتجر/المنتجات
-        const { data: seoData, error: seoError } = await supabase
+        const { data: seoData } = await supabase
           .from('seo')
           .select('*')
           .eq('slug', 'shop/bracelet') // استخدمت shop/bracelet بناءً على الـ SQL اللي بعتيه
@@ -132,7 +132,10 @@ const Products = () => {
     });
   }, [q, filterStock, products]);
 
-  const hasNewProductDraft = useMemo(() => hasFormDraft(NEW_PRODUCT_DRAFT_KEY), [draftTick]);
+  const hasNewProductDraft = useMemo(() => {
+    void draftTick;
+    return hasFormDraft(NEW_PRODUCT_DRAFT_KEY);
+  }, [draftTick]);
 
   if (loading) {
     return (
