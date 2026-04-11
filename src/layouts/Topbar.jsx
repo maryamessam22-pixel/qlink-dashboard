@@ -40,7 +40,7 @@ const Topbar = ({ toggleSidebar, isSidebarOpen }) => {
       if (path.endsWith('/faq')) return 'CMS · FAQ';
       if (path.endsWith('/contact')) return 'CMS · Contact';
       if (path.endsWith('/terms')) return 'CMS · Terms';
-      if (path.endsWith('/emails')) return 'CMS · Emails';
+      if (path.endsWith('/privacy-security')) return 'CMS · Privacy & Security';
       return 'CMS';
     }
     if (path.includes('overview')) return 'Overview';

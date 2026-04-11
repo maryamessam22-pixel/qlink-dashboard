@@ -12,7 +12,7 @@ const INITIAL_TABS = [
   { to: 'faq', label: 'FAQ' },
   { to: 'contact', label: 'Contact' },
   { to: 'terms', label: 'Terms & Privacy' },
-  { to: 'emails', label: 'Emails' },
+  { to: 'privacy-security', label: 'Privacy & Security' },
   { to: 'app-features', label: 'App features' },
 ];
 
