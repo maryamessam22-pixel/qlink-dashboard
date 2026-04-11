@@ -22,7 +22,6 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** Normalize subtitle fields for RichTextEditor */
 function textToHtml(raw) {
   if (raw == null || String(raw).trim() === '') return '';
   const t = String(raw).trim();

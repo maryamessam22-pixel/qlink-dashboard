@@ -9,9 +9,7 @@ const defaultSeo = {
   featuredImageAlt: '',
 };
 
-/**
- * Reusable SEO block: slug, meta title, description, keywords, optional alt text.
- */
+
 const SeoSection = ({
   title = 'Page SEO',
   slugPrefix = 'qlink.com/',

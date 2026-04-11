@@ -13,7 +13,6 @@ const DashboardChoice = () => {
   const [cardsRef, cardsVisible] = useIntersectionObserver();
 
   const choose = (mode) => {
-    // Always restart auth flow from login after dashboard selection.
     clearAuth();
     setIntendedDashboard(mode);
     navigate('/login');

@@ -1,4 +1,4 @@
-/** UUID v4 for Supabase rows where `id` has no DB default. */
+ 
 export function generateUUID() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();

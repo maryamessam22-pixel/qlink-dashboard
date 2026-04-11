@@ -245,16 +245,13 @@ const CmsAbout = () => {
           };
 
           if (m.id) {
-            // لو عنده ID يبقى ده شخص قديم، نعمله تعديل (Update)
             await supabase.from('team_members').update(payload).eq('id', m.id);
           } else {
-            // لو معندوش ID يبقى ده شخص جديد إنتي لسه ضايفاه، نعمله إضافة (Insert)
             await supabase.from('team_members').insert([payload]);
           }
         }
       }
 
-      // بنجيب الناس تاني من الداتابيز عشان الداشبورد تحدث الـ IDs الجديدة
       const { data: updatedTeam } = await supabase
         .from('team_members')
         .select('*')

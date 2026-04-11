@@ -1,7 +1,4 @@
-/**
- * Insert or update `public.seo` using `slug` as the natural key.
- * Use when the table has no surrogate `id` column (only slug + content columns).
- */
+ 
 export async function upsertSeoBySlug(supabase, slug, payload) {
   const s = slug === undefined || slug === null ? '' : String(slug).trim();
   const { data, error: selErr } = await supabase.from('seo').select('slug').eq('slug', s).maybeSingle();

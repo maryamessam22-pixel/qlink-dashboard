@@ -52,11 +52,9 @@ const ProductEditor = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Drag states
   const [isDraggingMain, setIsDraggingMain] = useState(false);
   const [draggingGalleryIdx, setDraggingGalleryIdx] = useState(null);
 
-  // Core Fields
   const [nameEn, setNameEn] = useState('');
   const [nameAr, setNameAr] = useState('');
   const [subEn, setSubEn] = useState('');
@@ -67,14 +65,12 @@ const ProductEditor = () => {
   const [gallery, setGallery] = useState([]);
   const [status, setStatus] = useState('In Stock');
 
-  // Description & Details
   const [descEn, setDescEn] = useState('');
   const [descAr, setDescAr] = useState('');
 
   const [featuresEn, setFeaturesEn] = useState([]);
   const [featuresAr, setFeaturesAr] = useState([]);
 
-  // Extra Data (In the box & Privacy)
   const [inTheBox, setInTheBox] = useState([]);
   const [privacyNotes, setPrivacyNotes] = useState([]);
   const [detailTitleEn, setDetailTitleEn] = useState('');
@@ -331,24 +327,22 @@ const ProductEditor = () => {
     }));
   };
 
-  // ----- التعديل الأساسي هنا عشان الـ Drag & Drop يشتغل -----
   const uploadFile = async (file, onComplete) => {
     try {
       setUploading(true);
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
       
-      // خليت الـ Path يدخل جوه فولدر products
       const filePath = `products/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('qlink-assets') // اسم الباكت الصح من الصورة بتاعتك
+        .from('qlink-assets') 
         .upload(filePath, file);
 
       if (uploadError) throw uploadError;
 
       const { data } = supabase.storage
-        .from('qlink-assets') // اسم الباكت الصح هنا كمان
+        .from('qlink-assets') 
         .getPublicUrl(filePath);
 
       onComplete(data.publicUrl);

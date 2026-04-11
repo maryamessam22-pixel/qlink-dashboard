@@ -4,11 +4,6 @@ import 'quill/dist/quill.snow.css';
 import { normalizeRichTextHtml } from '../../lib/richTextHtml';
 import './RichTextEditor.css';
 
-/**
- * Dark-themed rich text editor using Quill.js directly.
- * This avoids the 'findDOMNode is not a function' error caused by 
- * react-quill compatibility issues with React 18/19.
- */
 const RichTextEditor = ({ value, onChange, placeholder, rtl = false, className = '', readOnly = false }) => {
   const containerRef = useRef(null);
   const quillRef = useRef(null);

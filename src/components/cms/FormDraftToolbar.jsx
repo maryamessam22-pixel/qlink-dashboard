@@ -3,9 +3,6 @@ import { FileDown, FileUp } from 'lucide-react';
 import { saveFormDraft, loadFormDraft } from '../../lib/formDraft';
 import './FormDraftToolbar.css';
 
-/**
- * Local browser backup only — does not replace Save Changes (Supabase).
- */
 const FormDraftToolbar = ({
   storageKey,
   capture,

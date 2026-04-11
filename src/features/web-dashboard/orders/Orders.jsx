@@ -3,7 +3,7 @@ import { Clock, Download, Search, Loader2, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
-import { supabase } from '../../../lib/supabase'; // مسار السوبابيز
+import { supabase } from '../../../lib/supabase'; 
 import '../../../styles/web-dashboard-pages.css';
 import './Orders.css';
 
@@ -33,31 +33,27 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
 
-  // Fetch Orders from Supabase
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         setLoading(true);
 
-        // سحب الداتا من جدول order
         const { data, error } = await supabase
           .from('order')
           .select('*')
-          .order('created_at', { ascending: false }); // ترتيب من الأحدث للأقدم
+          .order('created_at', { ascending: false }); 
 
         if (error) throw error;
 
         if (data) {
           const formattedOrders = data.map(o => {
-            // تظبيط التاريخ (بناخد من الـ created_at أو من الـ time اللي في الداتابيز)
             let formattedDate = o.time || 'Just now';
             if (o.created_at) {
               const dateObj = new Date(o.created_at);
               formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             }
 
-            // تحديد لون النقطة بناءً على اسم المنتج (Variant)
-            let dotColor = '#6b7280'; // Default gray
+            let dotColor = '#6b7280'; 
             const variantStr = (o.variant_details || '').toLowerCase();
             if (variantStr.includes('black')) dotColor = '#1f2937';
             else if (variantStr.includes('silver') || variantStr.includes('gray')) dotColor = '#e5e7eb';
@@ -69,10 +65,10 @@ const Orders = () => {
               id: o.order_number || (o.id != null ? String(o.id).substring(0, 8) : ''),
               when: formattedDate,
               customer: o.customer_name || 'Unknown',
-              product: o.variant_details || 'Qlink Bracelet', // استخدمنا variant_details
+              product: o.variant_details || 'Qlink Bracelet', 
               dot: dotColor,
               status: o.status || 'Pending',
-              revenue: `$${o.revenue || '0.00'}` // استخدمنا revenue
+              revenue: `$${o.revenue || '0.00'}` 
             };
           });
           setOrders(formattedOrders);
@@ -192,7 +188,6 @@ const Orders = () => {
                 </tr>
               ) : (
                 filteredRows.map((r, index) => (
-                  // حطينا index مع ال id عشان لو ال order_number اتكرر بالغلط في الداتا الوهمية الـ React ميزعلش
                   <tr key={`${r.dbId ?? r.id}-${index}`}>
                     <td>
                       <div className="ord-id">{r.id}</div>

@@ -25,7 +25,7 @@ import CmsAbout from './features/web-dashboard/cms/about/CmsAbout';
 import CmsReviews from './features/web-dashboard/cms/reviews/CmsReviews';
 import CmsFaqs from './features/web-dashboard/cms/faqs/CmsFaqs';
 import CmsContact from './features/web-dashboard/cms/contact/CmsContact';
-// Terms CMS component kept at ./cms/terms/CmsTerms.jsx — not routed (hidden from CMS nav).
+// I kept it hidden for now.
 // import CmsTerms from './features/web-dashboard/cms/terms/CmsTerms';
 import CmsPrivacySecurity from './features/web-dashboard/cms/privacy-security/CmsPrivacySecurity';
 import CmsAppFeatures from './features/web-dashboard/cms/app-features/CmsAppFeatures';

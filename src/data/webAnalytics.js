@@ -1,7 +1,4 @@
-/**
- * Deterministic pseudo-live metrics from the current UTC date (no backend required).
- * Same day → stable numbers; new day → refreshed values within realistic ranges.
- */
+
 function seedFromDate() {
   const d = new Date();
   const key = d.getUTCFullYear() * 10000 + (d.getUTCMonth() + 1) * 100 + d.getUTCDate();

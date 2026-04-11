@@ -259,7 +259,7 @@ const CmsHome = () => {
                   }
                 }
               } catch {
-                /* ignore */
+                
               }
               setCards([...three, ...extras]);
               setFeaturesExtra(normalizeExtra(row));

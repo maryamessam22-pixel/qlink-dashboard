@@ -33,7 +33,7 @@ function persistExtraTabs(allTabs) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(extra));
   } catch {
-    /* ignore */
+   
   }
 }
 

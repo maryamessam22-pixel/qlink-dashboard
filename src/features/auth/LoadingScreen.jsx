@@ -23,7 +23,6 @@ const LoadingScreen = () => {
         : fallbackDest;
 
     if (!isAuthenticated()) {
-      // Login completed and sent us here, so mark as authenticated before redirecting.
       if (location.state?.authReady) setAuthenticated(true);
       else {
         navigate('/login', { replace: true });

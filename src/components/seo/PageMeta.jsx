@@ -1,9 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-
-/**
- * Sets document title and meta tags for admin pages (and mirrors CMS SEO fields in head when provided).
- */
 const PageMeta = ({ title, description, keywords, noIndex = true }) => {
   const fullTitle = title ? `${title} · Qlink Admin` : 'Qlink Admin';
 

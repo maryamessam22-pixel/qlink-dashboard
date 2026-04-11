@@ -2,7 +2,7 @@ function notifyDraftChanged(key) {
   try {
     window.dispatchEvent(new CustomEvent('qlink:form-draft-changed', { detail: { key } }));
   } catch {
-    /* ignore */
+    
   }
 }
 

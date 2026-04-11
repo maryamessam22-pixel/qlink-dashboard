@@ -50,7 +50,7 @@ const WebSettings = () => {
       if (p.bioAr != null) setBioAr(p.bioAr);
       if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
     } catch {
-      /* ignore */
+      
     }
   }, []);
 

@@ -35,7 +35,6 @@ const Products = () => {
       try {
         setLoading(true);
 
-        // جلب المنتجات
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
@@ -43,11 +42,10 @@ const Products = () => {
 
         if (productsError) throw productsError;
 
-        // جلب بيانات الـ SEO الخاصة بصفحة المتجر/المنتجات
         const { data: seoData } = await supabase
           .from('seo')
           .select('*')
-          .eq('slug', 'shop/bracelet') // استخدمت shop/bracelet بناءً على الـ SQL اللي بعتيه
+          .eq('slug', 'shop/bracelet') 
           .single();
 
         if (productsData) setProducts(productsData);
@@ -78,7 +76,6 @@ const Products = () => {
     return () => window.removeEventListener('qlink:form-draft-changed', onDraft);
   }, [bumpDraftUi]);
 
-  // 2. تحديث الـ SEO في الداتابيز (عند التغيير من الـ Dashboard)
   const handleSeoChange = async (updatedSeo) => {
     setSeo(updatedSeo);
     try {
@@ -96,7 +93,6 @@ const Products = () => {
     }
   };
 
-  // 3. حذف المنتج
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
     try {
@@ -109,7 +105,6 @@ const Products = () => {
     }
   };
 
-  // 4. الفلترة والبحث
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase();
 
@@ -240,7 +235,6 @@ const Products = () => {
                   )}
                 </div>
 
-                {/* Overlay buttons appearing on hover */}
                 <div className="product-card-overlay" onClick={(e) => e.preventDefault()}>
                   <Link
                     to={`/web/products/${encodeURIComponent(p.id)}/edit`}

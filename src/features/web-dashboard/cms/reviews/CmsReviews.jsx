@@ -20,7 +20,6 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;');
 }
 
-/** Normalize plain-text DB values for RichTextEditor */
 function reviewTextToHtml(raw) {
   if (raw == null || String(raw).trim() === '') return '';
   const t = String(raw).trim();
@@ -37,7 +36,6 @@ function mapRow(row) {
     rating: Math.min(5, Math.max(1, Number(row.rating) || 5)),
     review_text: reviewTextToHtml(row.review_text),
     is_featured: Boolean(row.is_featured),
-    /* DB column is_visible boolean NOT NULL DEFAULT true */
     is_visible: vis === false ? false : true,
     created_at: row.created_at,
   };
@@ -53,7 +51,6 @@ const CmsReviews = () => {
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState('');
   const [schemaHint, setSchemaHint] = useState('');
-  /** When false, DB has no is_visible column — hide toggle and omit field from writes. */
   const [hasIsVisibleColumn, setHasIsVisibleColumn] = useState(true);
   const [reviews, setReviews] = useState([]);
   const [savingId, setSavingId] = useState(null);
