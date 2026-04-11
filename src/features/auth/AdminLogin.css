@@ -102,9 +102,24 @@
 }
 
 .logo-image {
-  height: 42px;
-  margin-bottom: 16px;
+  display: block;
+  margin: 0 auto 16px;
   object-fit: contain;
+}
+
+/* Web dashboard: original white/light mark */
+.login-container--web .logo-image {
+  height: 42px;
+  width: auto;
+  max-width: 220px;
+}
+
+/* App dashboard: blue gradient wordmark */
+.login-container--app .logo-image {
+  height: auto;
+  max-height: 52px;
+  width: auto;
+  max-width: min(100%, 280px);
 }
 
 .title-text {

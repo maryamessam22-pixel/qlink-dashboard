@@ -4,12 +4,14 @@ import {
   getIntendedDashboard,
   isAuthenticated,
 } from '../../lib/authStorage';
-import logoImg from '../../assets/logos/QLINK.png';
+import logoWebWhite from '../../assets/logos/QLINK.png';
+import logoAppWordmark from '../../assets/logos/Qlink-login.png';
 import './AdminLogin.css';
 
 const REQUIRED_FIELD_MSG = 'This field is required.';
 const INVALID_EMAIL_MSG = 'Please enter a valid email address.';
 
+/** Local part @ domain with at least one dot in domain (practical format check). */
 const EMAIL_FORMAT_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
@@ -21,11 +23,15 @@ function isValidEmailFormat(value) {
 
 const MIN_PASSWORD_LENGTH = 8;
 
+/** True if password contains a symbol (not a letter, digit, or whitespace). */
 function hasPasswordSpecialCharacter(p) {
   return /[^a-zA-Z0-9\s]/.test(String(p));
 }
 
-
+/**
+ * Strong password: min length, upper, lower, digit, special char.
+ * Returns a single sentence listing anything still missing.
+ */
 function getStrongPasswordMessage(passwordValue) {
   const p = String(passwordValue);
   const missing = [];
@@ -93,7 +99,7 @@ const AdminLogin = () => {
 
     setIsLoggingIn(true);
 
-  
+    // Simulate auth delay before entering loading screen.
     setTimeout(() => {
       const from = location.state?.from;
       const dest =
@@ -107,12 +113,13 @@ const AdminLogin = () => {
   };
 
   const isAppLogin = intended === 'app';
+  const logoSrc = isAppLogin ? logoAppWordmark : logoWebWhite;
 
   return (
     <div className={`login-container${isAppLogin ? ' login-container--app' : ' login-container--web'}`}>
       <div className="login-card">
         <div className="login-header">
-          <img src={logoImg} alt="Qlink Logo" className="logo-image" />
+          <img src={logoSrc} alt="Qlink" className="logo-image" />
           <h2 className="title-text">Qlink Command Center</h2>
           <p className="subtitle-text">
             Signing in to the <strong>{intended === 'app' ? 'App' : 'Web'}</strong> dashboard. You can switch later from the sidebar.
