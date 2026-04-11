@@ -238,11 +238,6 @@ const CmsAppFeatures = () => {
         </p>
       ) : null}
 
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: '#8b949e', lineHeight: 1.55 }}>
-        Maps to <code style={{ color: '#cbd5e1' }}>cms_content.section_key = &quot;{SECTION_KEY}&quot;</code>. Saving
-        updates Supabase so your public site can render the same row (hero + six feature cards).
-      </p>
-
       <section className="web-card">
         <h2 className="web-card-title" style={{ marginBottom: 16 }}>
           Page header

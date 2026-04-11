@@ -342,12 +342,6 @@ const CmsPrivacySecurity = () => {
         </p>
       ) : null}
 
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: '#8b949e', lineHeight: 1.55 }}>
-        Data from <code style={{ color: '#cbd5e1' }}>privacy_security_cards</code>,{' '}
-        <code style={{ color: '#cbd5e1' }}>cms_content</code> (sections above), and{' '}
-        <code style={{ color: '#cbd5e1' }}>seo</code> slug <code style={{ color: '#cbd5e1' }}>{SEO_SLUG}</code>.
-      </p>
-
       {['not_shared', 'shared'].map((type) => {
         const c = cards[type];
         const label = type === 'not_shared' ? 'What is NOT shared' : 'What is shared';
@@ -472,11 +466,7 @@ const CmsPrivacySecurity = () => {
       })}
 
       <section className="web-card" style={{ marginBottom: 20 }}>
-        <h2 className="web-card-title" style={{ marginBottom: 12 }}>Page SEO — seo table</h2>
-        <p style={{ margin: '0 0 16px', fontSize: 12, color: '#8b949e' }}>
-          Slug <code style={{ color: '#cbd5e1' }}>{SEO_SLUG}</code> (about/privacy). Arabic fields map to{' '}
-          <code style={{ color: '#cbd5e1' }}>title_ar</code> and <code style={{ color: '#cbd5e1' }}>description_ar</code>.
-        </p>
+        <h2 className="web-card-title" style={{ marginBottom: 12 }}>Page SEO</h2>
         <SeoSection
           title=""
           slugPrefix="qlink.com/"

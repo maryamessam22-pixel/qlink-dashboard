@@ -25,7 +25,8 @@ import CmsAbout from './features/web-dashboard/cms/about/CmsAbout';
 import CmsReviews from './features/web-dashboard/cms/reviews/CmsReviews';
 import CmsFaqs from './features/web-dashboard/cms/faqs/CmsFaqs';
 import CmsContact from './features/web-dashboard/cms/contact/CmsContact';
-import CmsTerms from './features/web-dashboard/cms/terms/CmsTerms';
+// Terms CMS component kept at ./cms/terms/CmsTerms.jsx — not routed (hidden from CMS nav).
+// import CmsTerms from './features/web-dashboard/cms/terms/CmsTerms';
 import CmsPrivacySecurity from './features/web-dashboard/cms/privacy-security/CmsPrivacySecurity';
 import CmsAppFeatures from './features/web-dashboard/cms/app-features/CmsAppFeatures';
 import CmsCustomPage from './features/web-dashboard/cms/CmsCustomPage';
@@ -82,7 +83,7 @@ const App = () => {
             <Route path="reviews" element={<CmsReviews />} />
             <Route path="faq" element={<CmsFaqs />} />
             <Route path="contact" element={<CmsContact />} />
-            <Route path="terms" element={<CmsTerms />} />
+            <Route path="terms" element={<Navigate to="/web/cms/home" replace />} />
             <Route path="privacy-security" element={<CmsPrivacySecurity />} />
             <Route path="app-features" element={<CmsAppFeatures />} />
             <Route path="p/:pageSlug" element={<CmsCustomPage />} />

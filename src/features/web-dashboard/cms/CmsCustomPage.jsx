@@ -182,10 +182,6 @@ const CmsCustomPage = () => {
         </div>
       </div>
 
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: '#8b949e' }}>
-        Public URL slug: <code style={{ color: '#cbd5e1' }}>{pageSlug}</code> · Stored as <code style={{ color: '#cbd5e1' }}>{sectionKey}</code>
-      </p>
-
       <section className="web-card">
         <h2 className="web-card-title" style={{ marginBottom: 16 }}>Page content</h2>
         <BilingualTextInput

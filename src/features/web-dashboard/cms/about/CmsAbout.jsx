@@ -305,14 +305,6 @@ const CmsAbout = () => {
         </p>
       ) : null}
 
-      <p style={{ margin: '0 0 20px', fontSize: 13, color: '#8b949e', lineHeight: 1.5 }}>
-        Content maps to <code style={{ color: '#cbd5e1' }}>cms_content</code> rows{' '}
-        <code style={{ color: '#cbd5e1' }}>{SECTION_VISION}</code> (mission glass: title + body) and{' '}
-        <code style={{ color: '#cbd5e1' }}>{SECTION_FOUNDER}</code> (founder name, role, secondary story). Matches{' '}
-        <code style={{ color: '#cbd5e1' }}>OurStory.jsx</code> (slug <code style={{ color: '#cbd5e1' }}>{SEO_SLUG}</code>
-        ).
-      </p>
-
       <section className="web-card">
         <h2 className="web-card-title" style={{ marginBottom: 16 }}>
           Mission &amp; vision — <code style={{ fontSize: 13, color: '#94a3b8' }}>{SECTION_VISION}</code>

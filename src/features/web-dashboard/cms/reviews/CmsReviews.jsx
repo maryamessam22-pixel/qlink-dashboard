@@ -354,27 +354,9 @@ const CmsReviews = () => {
         <div className="web-card-head">
           <h2 className="web-card-title">
             <Star size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#eab308' }} />
-            Customer reviews (Supabase)
+            Customer reviews
           </h2>
         </div>
-        <p style={{ margin: '0 0 8px', fontSize: 13, color: '#8b949e' }}>
-          Loaded <strong style={{ color: '#e6edf3' }}>{reviews.length}</strong> review{reviews.length === 1 ? '' : 's'}{' '}
-          from Supabase.
-          {hasIsVisibleColumn ? (
-            <>
-              {' '}
-              <strong style={{ color: '#e6edf3' }}>Show on site</strong> updates <code style={{ color: '#cbd5e1' }}>is_visible</code>
-              — the public site should only list rows where it is <code style={{ color: '#cbd5e1' }}>true</code>.
-              <strong style={{ color: '#e6edf3' }}> Featured</strong> is independent (marketing highlight).
-            </>
-          ) : (
-            <>
-              {' '}
-              Add column <code style={{ color: '#cbd5e1' }}>is_visible</code> (see <code style={{ color: '#cbd5e1' }}>supabase/reviews_add_is_visible.sql</code>)
-              to enable show/hide.
-            </>
-          )}
-        </p>
         {(searchQuery.trim() || filterRating !== 'All') && filteredReviews.length < reviews.length ? (
           <p style={{ margin: '0 0 16px', fontSize: 13, color: '#fbbf24' }}>
             Filters hide {reviews.length - filteredReviews.length} review(s). Use &quot;All ratings&quot; and clear

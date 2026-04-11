@@ -11,7 +11,6 @@ const INITIAL_TABS = [
   { to: 'reviews', label: 'Reviews' },
   { to: 'faq', label: 'FAQ' },
   { to: 'contact', label: 'Contact' },
-  { to: 'terms', label: 'Terms & Privacy' },
   { to: 'privacy-security', label: 'Privacy & Security' },
   { to: 'app-features', label: 'App features' },
 ];
