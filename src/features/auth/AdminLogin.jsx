@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getIntendedDashboard,
@@ -7,12 +7,17 @@ import {
 import logoImg from '../../assets/logos/QLINK.png';
 import './AdminLogin.css';
 
+const REQUIRED_FIELD_MSG = 'This field is required.';
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' });
+  const emailInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
   const intended = getIntendedDashboard();
 
   useEffect(() => {
@@ -31,6 +36,19 @@ const AdminLogin = () => {
   const handleLogin = (e) => {
     e.preventDefault();
     if (isLoggingIn) return;
+
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+    const errors = { email: '', password: '' };
+    if (!trimmedEmail) errors.email = REQUIRED_FIELD_MSG;
+    if (!trimmedPassword) errors.password = REQUIRED_FIELD_MSG;
+    setFieldErrors(errors);
+    if (errors.email || errors.password) {
+      if (errors.email) emailInputRef.current?.focus();
+      else passwordInputRef.current?.focus();
+      return;
+    }
+
     setIsLoggingIn(true);
 
     // Simulate auth delay before entering loading screen.
@@ -61,31 +79,55 @@ const AdminLogin = () => {
 
         <form className="login-form" onSubmit={handleLogin}>
           <div className="input-group">
-            <label>Email address</label>
-            <div className="input-wrapper">
+            <label htmlFor="login-email">Email address</label>
+            <div className={`input-wrapper${fieldErrors.email ? ' input-wrapper--invalid' : ''}`}>
               <span className="icon">✉</span>
               <input
+                id="login-email"
+                ref={emailInputRef}
                 type="email"
                 placeholder="admin@qlink.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors((f) => ({ ...f, email: '' }));
+                }}
+                autoComplete="email"
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? 'login-email-error' : undefined}
               />
             </div>
+            {fieldErrors.email ? (
+              <p id="login-email-error" className="login-field-error" role="alert">
+                {fieldErrors.email}
+              </p>
+            ) : null}
           </div>
 
           <div className="input-group">
-            <label>Password</label>
-            <div className="input-wrapper">
+            <label htmlFor="login-password">Password</label>
+            <div className={`input-wrapper${fieldErrors.password ? ' input-wrapper--invalid' : ''}`}>
               <span className="icon">🔒</span>
               <input
+                id="login-password"
+                ref={passwordInputRef}
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((f) => ({ ...f, password: '' }));
+                }}
+                autoComplete="current-password"
+                aria-invalid={Boolean(fieldErrors.password)}
+                aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
               />
             </div>
+            {fieldErrors.password ? (
+              <p id="login-password-error" className="login-field-error" role="alert">
+                {fieldErrors.password}
+              </p>
+            ) : null}
           </div>
 
           <button type="submit" className="login-button" disabled={isLoggingIn}>

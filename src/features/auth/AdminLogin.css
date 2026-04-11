@@ -135,7 +135,42 @@
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+}
+
+.login-field-error {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.login-container--web .login-field-error {
+  color: #f87171;
+}
+
+.login-container--app .login-field-error {
+  color: #c5221f;
+}
+
+.login-container--web .input-wrapper--invalid {
+  border-color: #f87171;
+  box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.25);
+}
+
+.login-container--web .input-wrapper--invalid:focus-within {
+  border-color: #f87171;
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+}
+
+.login-container--app .input-wrapper--invalid {
+  border-color: #c5221f;
+  box-shadow: 0 0 0 1px rgba(197, 34, 31, 0.2);
+}
+
+.login-container--app .input-wrapper--invalid:focus-within {
+  border-color: #c5221f;
+  box-shadow: 0 0 0 3px rgba(197, 34, 31, 0.15);
 }
 
 .input-group label {
