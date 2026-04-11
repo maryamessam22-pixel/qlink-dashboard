@@ -5,10 +5,13 @@ import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { supabase } from '../../../lib/supabase';
+import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
+import { loadFormDraft } from '../../../lib/formDraft';
 import '../../../styles/web-dashboard-pages.css';
 import './Inventory.css';
 
 const REFRESH_MS = 60_000;
+const INV_DRAFT_KEY = 'qlink_draft_inventory_v1';
 
 function mapInventoryRow(row) {
   const available = Number(row.available_units) || 0;
@@ -54,6 +57,14 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [deletingId, setDeletingId] = useState(null);
+
+  useEffect(() => {
+    const d = loadFormDraft(INV_DRAFT_KEY);
+    if (!d || typeof d !== 'object') return;
+    if (d.policyEn != null) setPolicyEn(d.policyEn);
+    if (d.policyAr != null) setPolicyAr(d.policyAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -112,6 +123,14 @@ const Inventory = () => {
       return matchesSearch && matchesFilter;
     });
   }, [items, searchQuery, filterStock]);
+
+  const captureInvDraft = () => ({ policyEn, policyAr, seo });
+  const applyInvDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.policyEn !== undefined) setPolicyEn(d.policyEn);
+    if (d.policyAr !== undefined) setPolicyAr(d.policyAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
 
   return (
     <div className="web-page inventory-page">
@@ -216,7 +235,19 @@ const Inventory = () => {
       </div>
 
       <section className="web-card">
-        <h2 className="web-card-title" style={{ marginBottom: 12 }}>Restock policy</h2>
+        <div
+          style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 12,
+            marginBottom: 12,
+          }}
+        >
+          <h2 className="web-card-title" style={{ margin: 0 }}>Restock policy</h2>
+          <FormDraftToolbar storageKey={INV_DRAFT_KEY} capture={captureInvDraft} apply={applyInvDraft} />
+        </div>
         <label className="field-label" style={{ display: 'block', marginBottom: 8 }}>Policy (EN)</label>
         <RichTextEditor value={policyEn} onChange={setPolicyEn} />
         <div style={{ marginTop: 16 }}>

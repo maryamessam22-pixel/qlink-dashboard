@@ -4,6 +4,8 @@ import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import myPic from '../../../assets/imges/my-pic.png';
+import { saveFormDraft, clearFormDraft } from '../../../lib/formDraft';
+import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
 import '../../../styles/web-dashboard-pages.css';
 import './WebSettings.css';
 
@@ -39,7 +41,8 @@ const WebSettings = () => {
     try {
       const raw = localStorage.getItem(PROFILE_KEY);
       if (!raw) return;
-      const p = JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      const p = parsed?.data != null ? parsed.data : parsed;
       if (p.name != null) setName(p.name);
       if (p.title != null) setTitle(p.title);
       if (p.email != null) setEmail(p.email);
@@ -51,17 +54,26 @@ const WebSettings = () => {
     }
   }, []);
 
+  const captureDraft = () => ({ name, title, email, bioEn, bioAr, seo });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.name !== undefined) setName(d.name);
+    if (d.title !== undefined) setTitle(d.title);
+    if (d.email !== undefined) setEmail(d.email);
+    if (d.bioEn !== undefined) setBioEn(d.bioEn);
+    if (d.bioAr !== undefined) setBioAr(d.bioAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const saveProfile = () => {
-    localStorage.setItem(
-      PROFILE_KEY,
-      JSON.stringify({ name, title, email, bioEn, bioAr, seo })
-    );
+    saveFormDraft(PROFILE_KEY, { name, title, email, bioEn, bioAr, seo });
     alert('Profile saved in this browser (password fields are never stored).');
   };
 
   const resetProfile = () => {
     if (!window.confirm('Reset profile and SEO to defaults and clear the saved browser draft?')) return;
-    localStorage.removeItem(PROFILE_KEY);
+    clearFormDraft(PROFILE_KEY);
     setName(DEFAULT_PROFILE.name);
     setTitle(DEFAULT_PROFILE.title);
     setEmail(DEFAULT_PROFILE.email);
@@ -90,7 +102,8 @@ const WebSettings = () => {
               <p className="settings-inline-role">{title}</p>
             </div>
           </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+            <FormDraftToolbar storageKey={PROFILE_KEY} capture={captureDraft} apply={applyDraft} />
             <button type="button" className="btn-secondary" onClick={resetProfile}>
               Reset / clear draft
             </button>

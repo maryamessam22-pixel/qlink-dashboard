@@ -7,9 +7,11 @@ import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
 import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_FOUNDER = 'about_founder';
+const DRAFT_KEY = 'qlink_draft_cms_about_v1';
 const SECTION_VISION = 'about_vision';
 const SEO_SLUG = 'about/our-story';
 
@@ -131,6 +133,45 @@ const CmsAbout = () => {
     return () => window.removeEventListener('cms:add-section', onAdd);
   }, []);
 
+  const captureDraft = () => ({
+    founderNameEn,
+    founderNameAr,
+    founderTitleEn,
+    founderTitleAr,
+    missionRteEn,
+    missionRteAr,
+    visionHeadEn,
+    visionHeadAr,
+    visionRteEn,
+    visionRteAr,
+    teamHeadEn,
+    teamHeadAr,
+    teamSubEn,
+    teamSubAr,
+    members,
+    seo,
+  });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.founderNameEn !== undefined) setFounderNameEn(d.founderNameEn);
+    if (d.founderNameAr !== undefined) setFounderNameAr(d.founderNameAr);
+    if (d.founderTitleEn !== undefined) setFounderTitleEn(d.founderTitleEn);
+    if (d.founderTitleAr !== undefined) setFounderTitleAr(d.founderTitleAr);
+    if (d.missionRteEn !== undefined) setMissionRteEn(d.missionRteEn);
+    if (d.missionRteAr !== undefined) setMissionRteAr(d.missionRteAr);
+    if (d.visionHeadEn !== undefined) setVisionHeadEn(d.visionHeadEn);
+    if (d.visionHeadAr !== undefined) setVisionHeadAr(d.visionHeadAr);
+    if (d.visionRteEn !== undefined) setVisionRteEn(d.visionRteEn);
+    if (d.visionRteAr !== undefined) setVisionRteAr(d.visionRteAr);
+    if (d.teamHeadEn !== undefined) setTeamHeadEn(d.teamHeadEn);
+    if (d.teamHeadAr !== undefined) setTeamHeadAr(d.teamHeadAr);
+    if (d.teamSubEn !== undefined) setTeamSubEn(d.teamSubEn);
+    if (d.teamSubAr !== undefined) setTeamSubAr(d.teamSubAr);
+    if (Array.isArray(d.members)) setMembers(d.members);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const updateMember = (i, key, val) => {
     setMembers((prev) => {
       const n = [...prev];
@@ -242,17 +283,20 @@ const CmsAbout = () => {
     <div>
       <PageMeta title="CMS · About" description={seo.metaDescription} keywords={seo.keywords} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: '24px' }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>About CMS</h1>
-        <button 
-          onClick={handleSave} 
-          disabled={saving}
-          className="btn-publish" 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
-        >
-          {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar storageKey={DRAFT_KEY} capture={captureDraft} apply={applyDraft} disabled={saving} />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-publish"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+          >
+            {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
       {fetchError ? (

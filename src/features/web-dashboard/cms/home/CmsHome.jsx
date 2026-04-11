@@ -6,7 +6,10 @@ import { BilingualTextInput, BilingualTextarea } from '../../../../components/bi
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
 import '../../../../styles/web-dashboard-pages.css';
+
+const DRAFT_KEY_HOME = 'qlink_draft_cms_home_v1';
 
 const SECTION_KEYS = {
   hero: 'home_hero',
@@ -334,6 +337,86 @@ const CmsHome = () => {
     setCards((prev) => prev.filter((_, j) => j !== i));
   };
 
+  const captureHomeDraft = () => ({
+    headlineEn,
+    headlineAr,
+    subRteEn,
+    subRteAr,
+    btnPrimaryEn,
+    btnPrimaryAr,
+    btnSecondaryEn,
+    btnSecondaryAr,
+    heroExtra,
+    whatSubtitleEn,
+    whatSubtitleAr,
+    cards,
+    featuresExtra,
+    simpleRteEn,
+    simpleRteAr,
+    simpleExtra,
+    whyTitleEn,
+    whyTitleAr,
+    whySubEn,
+    whySubAr,
+    whyCards,
+    whyExtra,
+    journeyTitleEn,
+    journeyTitleAr,
+    journeySubEn,
+    journeySubAr,
+    journeyCards,
+    journeyExtra,
+    whoTitleEn,
+    whoTitleAr,
+    whoSubEn,
+    whoSubAr,
+    whoCards,
+    whoExtra,
+    seo,
+  });
+
+  const applyHomeDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    const setIf = (key, fn) => {
+      if (d[key] !== undefined) fn(d[key]);
+    };
+    setIf('headlineEn', setHeadlineEn);
+    setIf('headlineAr', setHeadlineAr);
+    setIf('subRteEn', setSubRteEn);
+    setIf('subRteAr', setSubRteAr);
+    setIf('btnPrimaryEn', setBtnPrimaryEn);
+    setIf('btnPrimaryAr', setBtnPrimaryAr);
+    setIf('btnSecondaryEn', setBtnSecondaryEn);
+    setIf('btnSecondaryAr', setBtnSecondaryAr);
+    if (d.heroExtra && typeof d.heroExtra === 'object') setHeroExtra((e) => ({ ...e, ...d.heroExtra }));
+    setIf('whatSubtitleEn', setWhatSubtitleEn);
+    setIf('whatSubtitleAr', setWhatSubtitleAr);
+    if (Array.isArray(d.cards)) setCards(d.cards);
+    if (d.featuresExtra && typeof d.featuresExtra === 'object') setFeaturesExtra((e) => ({ ...e, ...d.featuresExtra }));
+    setIf('simpleRteEn', setSimpleRteEn);
+    setIf('simpleRteAr', setSimpleRteAr);
+    if (d.simpleExtra && typeof d.simpleExtra === 'object') setSimpleExtra((e) => ({ ...e, ...d.simpleExtra }));
+    setIf('whyTitleEn', setWhyTitleEn);
+    setIf('whyTitleAr', setWhyTitleAr);
+    setIf('whySubEn', setWhySubEn);
+    setIf('whySubAr', setWhySubAr);
+    if (Array.isArray(d.whyCards)) setWhyCards(d.whyCards);
+    if (d.whyExtra && typeof d.whyExtra === 'object') setWhyExtra((e) => ({ ...e, ...d.whyExtra }));
+    setIf('journeyTitleEn', setJourneyTitleEn);
+    setIf('journeyTitleAr', setJourneyTitleAr);
+    setIf('journeySubEn', setJourneySubEn);
+    setIf('journeySubAr', setJourneySubAr);
+    if (Array.isArray(d.journeyCards)) setJourneyCards(d.journeyCards);
+    if (d.journeyExtra && typeof d.journeyExtra === 'object') setJourneyExtra((e) => ({ ...e, ...d.journeyExtra }));
+    setIf('whoTitleEn', setWhoTitleEn);
+    setIf('whoTitleAr', setWhoTitleAr);
+    setIf('whoSubEn', setWhoSubEn);
+    setIf('whoSubAr', setWhoSubAr);
+    if (Array.isArray(d.whoCards)) setWhoCards(d.whoCards);
+    if (d.whoExtra && typeof d.whoExtra === 'object') setWhoExtra((e) => ({ ...e, ...d.whoExtra }));
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -473,19 +556,27 @@ const CmsHome = () => {
     <div>
       <PageMeta title="CMS · Homepage" description={seo.metaDescription} keywords={seo.keywords} />
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: '24px' }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>
           Homepage CMS
         </h1>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-publish"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
-        >
-          {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar
+            storageKey={DRAFT_KEY_HOME}
+            capture={captureHomeDraft}
+            apply={applyHomeDraft}
+            disabled={saving}
+          />
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn-publish"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px' }}
+          >
+            {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+            {saving ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
       </div>
 
       <section className="web-card">

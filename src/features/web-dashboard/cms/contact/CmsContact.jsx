@@ -7,9 +7,11 @@ import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
 import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SECTION_CONTACT = 'contact_info';
+const DRAFT_KEY = 'qlink_draft_cms_contact_v1';
 const SEO_SLUG = 'support/contact';
 
 function escapeHtml(s) {
@@ -122,6 +124,31 @@ const CmsContact = () => {
     loadData();
   }, [loadData]);
 
+  const captureDraft = () => ({
+    titleEn,
+    titleAr,
+    subEn,
+    subAr,
+    email,
+    phone,
+    addressEn,
+    addressAr,
+    seo,
+  });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.titleEn !== undefined) setTitleEn(d.titleEn);
+    if (d.titleAr !== undefined) setTitleAr(d.titleAr);
+    if (d.subEn !== undefined) setSubEn(d.subEn);
+    if (d.subAr !== undefined) setSubAr(d.subAr);
+    if (d.email !== undefined) setEmail(d.email);
+    if (d.phone !== undefined) setPhone(d.phone);
+    if (d.addressEn !== undefined) setAddressEn(d.addressEn);
+    if (d.addressAr !== undefined) setAddressAr(d.addressAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setFetchError('');
@@ -213,7 +240,13 @@ const CmsContact = () => {
         <h1 className="web-page-title" style={{ margin: 0 }}>
           Contact CMS
         </h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar
+            storageKey={DRAFT_KEY}
+            capture={captureDraft}
+            apply={applyDraft}
+            disabled={saving}
+          />
           <button type="button" className="btn-secondary" disabled={saving} onClick={() => loadData()}>
             Reload
           </button>

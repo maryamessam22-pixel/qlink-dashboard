@@ -6,9 +6,11 @@ import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
 import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SEO_SLUG = 'reviews';
+const DRAFT_KEY = 'qlink_draft_cms_reviews_v1';
 
 function escapeHtml(s) {
   return String(s)
@@ -251,6 +253,14 @@ const CmsReviews = () => {
     }
   };
 
+  const captureDraft = () => ({ reviews, seo });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (Array.isArray(d.reviews)) setReviews(d.reviews);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const stripHtml = (html) =>
     String(html || '')
       .replace(/<[^>]+>/g, ' ')
@@ -304,7 +314,8 @@ const CmsReviews = () => {
         <h1 className="web-page-title" style={{ margin: 0 }}>
           Reviews CMS
         </h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar storageKey={DRAFT_KEY} capture={captureDraft} apply={applyDraft} />
           <button type="button" className="btn-secondary" onClick={loadAll}>
             Reload
           </button>

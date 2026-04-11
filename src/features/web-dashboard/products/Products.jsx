@@ -4,8 +4,11 @@ import { Search, Package, Loader2, Edit2, Trash2 } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
+import { hasFormDraft } from '../../../lib/formDraft';
 import '../../../styles/web-dashboard-pages.css';
 import './Products.css';
+
+const NEW_PRODUCT_DRAFT_KEY = 'qlink_draft_product_new';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -116,6 +119,8 @@ const Products = () => {
     });
   }, [q, filterStock, products]);
 
+  const hasNewProductDraft = hasFormDraft(NEW_PRODUCT_DRAFT_KEY);
+
   if (loading) {
     return (
       <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
@@ -136,6 +141,28 @@ const Products = () => {
         </div>
         <Link to="/web/products/new" className="btn-primary">+ Add new product</Link>
       </div>
+
+      {hasNewProductDraft ? (
+        <div
+          className="web-card"
+          style={{
+            marginBottom: 20,
+            padding: '14px 18px',
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 12,
+            borderLeft: '3px solid #e03232',
+          }}
+        >
+          <span style={{ color: '#e6edf3', flex: '1 1 200px' }}>
+            You have a saved draft for a new product in this browser.
+          </span>
+          <Link to="/web/products/new" className="btn-primary" style={{ textDecoration: 'none' }}>
+            Continue editing
+          </Link>
+        </div>
+      ) : null}
 
       <div className="filter-row" style={{ marginBottom: '24px' }}>
         <div className="search-wide-wrap">

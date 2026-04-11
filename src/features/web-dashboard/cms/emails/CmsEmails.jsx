@@ -4,6 +4,8 @@ import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../../components/bilingual/BilingualField';
 import SeoSection from '../../../../components/seo/SeoSection';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
+import { saveFormDraft, clearFormDraft, loadFormDraft } from '../../../../lib/formDraft';
 import '../../../../styles/web-dashboard-pages.css';
 
 const STORAGE_KEY = 'qlink_cms_emails_v1';
@@ -34,33 +36,46 @@ const CmsEmails = () => {
   const [seo, setSeo] = useState(DEFAULTS.seo);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const p = JSON.parse(raw);
-      if (p.templateEn != null) setTemplateEn(p.templateEn);
-      if (p.templateAr != null) setTemplateAr(p.templateAr);
-      if (p.subjectEn != null) setSubjectEn(p.subjectEn);
-      if (p.subjectAr != null) setSubjectAr(p.subjectAr);
-      if (p.bodyEn != null) setBodyEn(p.bodyEn);
-      if (p.bodyAr != null) setBodyAr(p.bodyAr);
-      if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
-    } catch {
-      /* ignore */
-    }
+    const p = loadFormDraft(STORAGE_KEY);
+    if (!p || typeof p !== 'object') return;
+    if (p.templateEn != null) setTemplateEn(p.templateEn);
+    if (p.templateAr != null) setTemplateAr(p.templateAr);
+    if (p.subjectEn != null) setSubjectEn(p.subjectEn);
+    if (p.subjectAr != null) setSubjectAr(p.subjectAr);
+    if (p.bodyEn != null) setBodyEn(p.bodyEn);
+    if (p.bodyAr != null) setBodyAr(p.bodyAr);
+    if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
   }, []);
 
+  const captureDraft = () => ({
+    templateEn,
+    templateAr,
+    subjectEn,
+    subjectAr,
+    bodyEn,
+    bodyAr,
+    seo,
+  });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.templateEn !== undefined) setTemplateEn(d.templateEn);
+    if (d.templateAr !== undefined) setTemplateAr(d.templateAr);
+    if (d.subjectEn !== undefined) setSubjectEn(d.subjectEn);
+    if (d.subjectAr !== undefined) setSubjectAr(d.subjectAr);
+    if (d.bodyEn !== undefined) setBodyEn(d.bodyEn);
+    if (d.bodyAr !== undefined) setBodyAr(d.bodyAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const saveDraft = () => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ templateEn, templateAr, subjectEn, subjectAr, bodyEn, bodyAr, seo })
-    );
+    saveFormDraft(STORAGE_KEY, captureDraft());
     alert('Email template draft saved in this browser.');
   };
 
   const resetDraft = () => {
     if (!window.confirm('Clear saved draft and restore default template text?')) return;
-    localStorage.removeItem(STORAGE_KEY);
+    clearFormDraft(STORAGE_KEY);
     setTemplateEn(DEFAULTS.templateEn);
     setTemplateAr(DEFAULTS.templateAr);
     setSubjectEn(DEFAULTS.subjectEn);
@@ -76,7 +91,8 @@ const CmsEmails = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>Emails CMS</h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar storageKey={STORAGE_KEY} capture={captureDraft} apply={applyDraft} />
           <button type="button" className="btn-secondary" onClick={resetDraft}>
             Reset / clear draft
           </button>

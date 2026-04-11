@@ -1,8 +1,10 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { X, Plus, Trash2, Loader2, Save } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { normalizeRichTextHtml } from '../../../lib/richTextHtml';
+import { clearFormDraft } from '../../../lib/formDraft';
+import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
 import PageMeta from '../../../components/seo/PageMeta';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { BilingualTextInput } from '../../../components/bilingual/BilingualField';
@@ -40,6 +42,11 @@ const ProductEditor = () => {
   const [productId] = useState(useParams().productId);
   const navigate = useNavigate();
   const isNew = productId === 'new' || !productId;
+
+  const productDraftKey = useMemo(
+    () => `qlink_draft_product_${isNew ? 'new' : productId || 'new'}`,
+    [isNew, productId]
+  );
 
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -144,6 +151,86 @@ const ProductEditor = () => {
     fetchProduct();
   }, [productId, isNew]);
 
+  const captureProductDraft = useCallback(
+    () => ({
+      nameEn,
+      nameAr,
+      subEn,
+      subAr,
+      sku,
+      price,
+      mainImage,
+      gallery,
+      status,
+      descEn,
+      descAr,
+      featuresEn,
+      featuresAr,
+      inTheBox,
+      privacyNotes,
+      detailTitleEn,
+      detailTitleAr,
+      detailSubEn,
+      detailSubAr,
+      detailDescEn,
+      detailDescAr,
+      seo,
+    }),
+    [
+      nameEn,
+      nameAr,
+      subEn,
+      subAr,
+      sku,
+      price,
+      mainImage,
+      gallery,
+      status,
+      descEn,
+      descAr,
+      featuresEn,
+      featuresAr,
+      inTheBox,
+      privacyNotes,
+      detailTitleEn,
+      detailTitleAr,
+      detailSubEn,
+      detailSubAr,
+      detailDescEn,
+      detailDescAr,
+      seo,
+    ]
+  );
+
+  const applyProductDraft = useCallback((d) => {
+    if (!d || typeof d !== 'object') return;
+    const s = (k, fn) => {
+      if (d[k] !== undefined) fn(d[k]);
+    };
+    s('nameEn', setNameEn);
+    s('nameAr', setNameAr);
+    s('subEn', setSubEn);
+    s('subAr', setSubAr);
+    s('sku', setSku);
+    s('price', setPrice);
+    s('mainImage', setMainImage);
+    if (Array.isArray(d.gallery)) setGallery(d.gallery);
+    s('status', setStatus);
+    s('descEn', setDescEn);
+    s('descAr', setDescAr);
+    if (Array.isArray(d.featuresEn)) setFeaturesEn(d.featuresEn);
+    if (Array.isArray(d.featuresAr)) setFeaturesAr(d.featuresAr);
+    if (Array.isArray(d.inTheBox)) setInTheBox(d.inTheBox);
+    if (Array.isArray(d.privacyNotes)) setPrivacyNotes(d.privacyNotes);
+    s('detailTitleEn', setDetailTitleEn);
+    s('detailTitleAr', setDetailTitleAr);
+    s('detailSubEn', setDetailSubEn);
+    s('detailSubAr', setDetailSubAr);
+    s('detailDescEn', setDetailDescEn);
+    s('detailDescAr', setDetailDescAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((prev) => ({ ...prev, ...d.seo }));
+  }, []);
+
   if (loading) {
     return (
       <div className="web-page-loading" style={{ height: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
@@ -191,10 +278,12 @@ const ProductEditor = () => {
       if (isNew) {
         const { error } = await supabase.from('products').insert([payload]);
         if (error) throw error;
+        clearFormDraft(productDraftKey);
         alert('Created successfully!');
       } else {
         const { error } = await supabase.from('products').update(payload).eq('id', productId);
         if (error) throw error;
+        clearFormDraft(productDraftKey);
         alert('Updated successfully!');
       }
       navigate('/web/products');
@@ -581,8 +670,16 @@ const ProductEditor = () => {
         <SeoSection title="Products SEO" slugPrefix="qlink.com/product/" value={seo} onChange={setSeo} badge="Must be unique" />
       </div>
 
-      <div className="product-editor-footer">
-        <button type="button" className="btn-ghost" onClick={() => navigate('/web/products')}>Discard</button>
+      <div className="product-editor-footer" style={{ flexWrap: 'wrap', gap: 12 }}>
+        <FormDraftToolbar
+          storageKey={productDraftKey}
+          capture={captureProductDraft}
+          apply={applyProductDraft}
+          disabled={saving || loading}
+        />
+        <button type="button" className="btn-ghost" onClick={() => navigate('/web/products')}>
+          Discard
+        </button>
         <button
           type="button"
           className="btn-publish"

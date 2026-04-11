@@ -7,6 +7,8 @@ import RichTextEditor from '../../../components/rich-text/RichTextEditor';
 import { supabase } from '../../../lib/supabase';
 import { isEmptyRichTextHtml, normalizeRichTextHtml } from '../../../lib/richTextHtml';
 import { useInbox } from '../../../context/InboxContext';
+import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
+import { clearFormDraft } from '../../../lib/formDraft';
 import '../../../styles/web-dashboard-pages.css';
 import './Support.css';
 
@@ -113,6 +115,11 @@ const Support = () => {
     if (match) setSelectedId(match.id);
   }, [messageIdFromUrl, messages]);
 
+  useEffect(() => {
+    setReplyEn('');
+    setReplyAr('');
+  }, [selectedId]);
+
   if (loading) {
     return (
       <div className={`support-loading${isAppView ? ' support-loading--app' : ''}`}>
@@ -199,6 +206,7 @@ const Support = () => {
 
       alert('The reply has been saved and sent successfully!');
 
+      clearFormDraft(`qlink_draft_support_reply_${id}`);
       setReplyEn('');
       setReplyAr('');
       refreshInbox();
@@ -337,7 +345,19 @@ const Support = () => {
                       <label className="field-label support-reply-label">مسودة الرد (AR)</label>
                       <RichTextEditor value={replyAr} onChange={setReplyAr} rtl />
                     </div>
-                    <div className="support-reply-actions">
+                    <div
+                      className="support-reply-actions"
+                      style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}
+                    >
+                      <FormDraftToolbar
+                        storageKey={`qlink_draft_support_reply_${active.id}`}
+                        capture={() => ({ replyEn, replyAr })}
+                        apply={(d) => {
+                          if (!d || typeof d !== 'object') return;
+                          if (d.replyEn !== undefined) setReplyEn(d.replyEn);
+                          if (d.replyAr !== undefined) setReplyAr(d.replyAr);
+                        }}
+                      />
                       <button
                         type="button"
                         className="btn-primary support-reply-send"

@@ -3,6 +3,8 @@ import { Save } from 'lucide-react';
 import PageMeta from '../../../../components/seo/PageMeta';
 import RichTextEditor from '../../../../components/rich-text/RichTextEditor';
 import SeoSection from '../../../../components/seo/SeoSection';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
+import { saveFormDraft, clearFormDraft, loadFormDraft } from '../../../../lib/formDraft';
 import '../../../../styles/web-dashboard-pages.css';
 
 const STORAGE_KEY = 'qlink_cms_terms_v1';
@@ -31,28 +33,34 @@ const CmsTerms = () => {
   const [seo, setSeo] = useState(DEFAULTS.seo);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const p = JSON.parse(raw);
-      if (p.privacyEn != null) setPrivacyEn(p.privacyEn);
-      if (p.privacyAr != null) setPrivacyAr(p.privacyAr);
-      if (p.termsEn != null) setTermsEn(p.termsEn);
-      if (p.termsAr != null) setTermsAr(p.termsAr);
-      if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
-    } catch {
-      /* ignore */
-    }
+    const p = loadFormDraft(STORAGE_KEY);
+    if (!p || typeof p !== 'object') return;
+    if (p.privacyEn != null) setPrivacyEn(p.privacyEn);
+    if (p.privacyAr != null) setPrivacyAr(p.privacyAr);
+    if (p.termsEn != null) setTermsEn(p.termsEn);
+    if (p.termsAr != null) setTermsAr(p.termsAr);
+    if (p.seo && typeof p.seo === 'object') setSeo((s) => ({ ...s, ...p.seo }));
   }, []);
 
+  const captureDraft = () => ({ privacyEn, privacyAr, termsEn, termsAr, seo });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.privacyEn !== undefined) setPrivacyEn(d.privacyEn);
+    if (d.privacyAr !== undefined) setPrivacyAr(d.privacyAr);
+    if (d.termsEn !== undefined) setTermsEn(d.termsEn);
+    if (d.termsAr !== undefined) setTermsAr(d.termsAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
+
   const saveDraft = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ privacyEn, privacyAr, termsEn, termsAr, seo }));
+    saveFormDraft(STORAGE_KEY, captureDraft());
     alert('Terms & privacy draft saved in this browser.');
   };
 
   const resetDraft = () => {
     if (!window.confirm('Clear saved draft and restore default legal copy?')) return;
-    localStorage.removeItem(STORAGE_KEY);
+    clearFormDraft(STORAGE_KEY);
     setPrivacyEn(DEFAULTS.privacyEn);
     setPrivacyAr(DEFAULTS.privacyAr);
     setTermsEn(DEFAULTS.termsEn);
@@ -66,7 +74,8 @@ const CmsTerms = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12, marginBottom: 20 }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>Terms &amp; Privacy CMS</h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar storageKey={STORAGE_KEY} capture={captureDraft} apply={applyDraft} />
           <button type="button" className="btn-secondary" onClick={resetDraft}>
             Reset / clear draft
           </button>

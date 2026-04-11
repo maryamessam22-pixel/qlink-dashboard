@@ -9,6 +9,7 @@ import { supabase } from '../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../lib/seoUpsert';
 import { normalizeRichTextHtml } from '../../../lib/richTextHtml';
 import { generateUUID } from '../../../lib/generateId';
+import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
 import '../../../styles/web-dashboard-pages.css';
 
 const seoSlugFor = (pageSlug) => `pages/${pageSlug}`;
@@ -18,6 +19,7 @@ const CmsCustomPage = () => {
   const navigate = useNavigate();
   const sectionKey = `cms_page_${pageSlug}`;
   const seoSlug = seoSlugFor(pageSlug);
+  const draftKey = `qlink_draft_cms_page_${pageSlug || 'custom'}`;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -67,6 +69,17 @@ const CmsCustomPage = () => {
       mounted = false;
     };
   }, [sectionKey, seoSlug]);
+
+  const captureDraft = () => ({ titleEn, titleAr, contentEn, contentAr, seo });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (d.titleEn !== undefined) setTitleEn(d.titleEn);
+    if (d.titleAr !== undefined) setTitleAr(d.titleAr);
+    if (d.contentEn !== undefined) setContentEn(d.contentEn);
+    if (d.contentAr !== undefined) setContentAr(d.contentAr);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+  };
 
   const handleSave = async () => {
     try {
@@ -140,6 +153,12 @@ const CmsCustomPage = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
         <h1 className="web-page-title" style={{ margin: 0 }}>Custom page</h1>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <FormDraftToolbar
+            storageKey={draftKey}
+            capture={captureDraft}
+            apply={applyDraft}
+            disabled={deleting || saving}
+          />
           <button
             type="button"
             onClick={handleDeletePage}

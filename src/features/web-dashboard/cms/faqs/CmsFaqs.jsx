@@ -6,9 +6,12 @@ import { BilingualTextInput } from '../../../../components/bilingual/BilingualFi
 import SeoSection from '../../../../components/seo/SeoSection';
 import { supabase } from '../../../../lib/supabase';
 import { upsertSeoBySlug } from '../../../../lib/seoUpsert';
+import { normalizeRichTextHtml } from '../../../../lib/richTextHtml';
+import FormDraftToolbar from '../../../../components/cms/FormDraftToolbar';
 import '../../../../styles/web-dashboard-pages.css';
 
 const SEO_SLUG = 'support/faqs';
+const DRAFT_KEY = 'qlink_draft_cms_faq_v1';
 
 function escapeHtml(s) {
   return String(s)
@@ -139,6 +142,15 @@ const CmsFaqs = () => {
   useEffect(() => {
     loadData();
   }, [loadData]);
+
+  const captureDraft = () => ({ items, seo });
+
+  const applyDraft = (d) => {
+    if (!d || typeof d !== 'object') return;
+    if (Array.isArray(d.items)) setItems(d.items);
+    if (d.seo && typeof d.seo === 'object') setSeo((s) => ({ ...s, ...d.seo }));
+    setEditingKeys({});
+  };
 
   useEffect(() => {
     const onAdd = () => {
@@ -337,7 +349,8 @@ const CmsFaqs = () => {
         <h1 className="web-page-title" style={{ margin: 0 }}>
           FAQ CMS
         </h1>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
+          <FormDraftToolbar storageKey={DRAFT_KEY} capture={captureDraft} apply={applyDraft} disabled={saving} />
           <button type="button" className="btn-secondary" disabled={saving} onClick={() => loadData()}>
             Reload
           </button>
