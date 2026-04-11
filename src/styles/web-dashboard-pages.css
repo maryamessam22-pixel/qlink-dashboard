@@ -1,4 +1,3 @@
-/* Shared layout for web dashboard content pages */
 .web-page {
   color: #fff;
   max-width: 1200px;
@@ -221,7 +220,7 @@
   border: none;
   background: rgba(224, 50, 50, 0.15);
   color: #e03232;
-  width: 32px;
+  width: 102px;
   height: 32px;
   border-radius: 8px;
   cursor: pointer;
