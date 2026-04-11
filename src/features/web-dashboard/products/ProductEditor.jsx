@@ -236,11 +236,33 @@ const ProductEditor = () => {
     );
   }
 
+  const formatSaveError = (err) => {
+    if (!err || typeof err !== 'object') return String(err || 'Unknown error');
+    const parts = [err.message, err.details, err.hint].filter(Boolean);
+    return parts.length ? parts.join('\n') : 'Unknown error';
+  };
+
   const handleSave = async () => {
+    const slugTrim = String(seo.slug || '').trim();
+    if (!String(nameEn || '').trim()) {
+      alert('Please enter a product name (English) before saving.');
+      return;
+    }
+    if (!String(sku || '').trim()) {
+      alert('Please enter a SKU before saving. Supabase usually stores this as a required unique code.');
+      return;
+    }
+    if (!slugTrim) {
+      alert(
+        'Please set a unique URL slug under Products SEO (e.g. qlink-nova). An empty slug often breaks database rules or duplicates another product.'
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       const payload = {
-        sku,
+        sku: String(sku).trim(),
         name_en: nameEn,
         name_ar: nameAr,
         subtitle_en: subEn,
@@ -253,9 +275,9 @@ const ProductEditor = () => {
         features_en: featuresEn,
         features_ar: featuresAr,
         status,
-        meta_title: seo.metaTitle,
-        meta_description: seo.metaDescription,
-        slug: seo.slug,
+        meta_title: String(seo.metaTitle || '').trim(),
+        meta_description: String(seo.metaDescription || '').trim(),
+        slug: slugTrim,
         featured_image_alt: seo.featuredImageAlt,
         extra_data: {
           in_the_box: inTheBox,
@@ -284,8 +306,11 @@ const ProductEditor = () => {
       }
       navigate('/web/products');
     } catch (err) {
-      console.error('Save error:', err.message);
-      alert('Failed to save product');
+      console.error('Save error:', err);
+      const detail = formatSaveError(err);
+      alert(
+        `Failed to save product.\n\n${detail}\n\n(Check the browser console for the full error. Common causes: Row Level Security blocking insert/update, duplicate SKU or slug, or a required column your form left empty.)`
+      );
     } finally {
       setSaving(false);
     }

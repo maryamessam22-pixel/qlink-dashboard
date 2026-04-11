@@ -11,7 +11,7 @@ import './AdminLogin.css';
 const REQUIRED_FIELD_MSG = 'This field is required.';
 const INVALID_EMAIL_MSG = 'Please enter a valid email address.';
 
-/** Local part @ domain with at least one dot in domain (practical format check). */
+
 const EMAIL_FORMAT_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
@@ -23,15 +23,12 @@ function isValidEmailFormat(value) {
 
 const MIN_PASSWORD_LENGTH = 8;
 
-/** True if password contains a symbol (not a letter, digit, or whitespace). */
+
 function hasPasswordSpecialCharacter(p) {
   return /[^a-zA-Z0-9\s]/.test(String(p));
 }
 
-/**
- * Strong password: min length, upper, lower, digit, special char.
- * Returns a single sentence listing anything still missing.
- */
+
 function getStrongPasswordMessage(passwordValue) {
   const p = String(passwordValue);
   const missing = [];
@@ -99,7 +96,7 @@ const AdminLogin = () => {
 
     setIsLoggingIn(true);
 
-    // Simulate auth delay before entering loading screen.
+
     setTimeout(() => {
       const from = location.state?.from;
       const dest =
