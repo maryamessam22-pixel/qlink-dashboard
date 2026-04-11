@@ -10,7 +10,6 @@ import './AdminLogin.css';
 const REQUIRED_FIELD_MSG = 'This field is required.';
 const INVALID_EMAIL_MSG = 'Please enter a valid email address.';
 
-/** Local part @ domain with at least one dot in domain (practical format check). */
 const EMAIL_FORMAT_REGEX =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
@@ -18,6 +17,33 @@ function isValidEmailFormat(value) {
   const s = String(value).trim();
   if (!s) return false;
   return EMAIL_FORMAT_REGEX.test(s);
+}
+
+const MIN_PASSWORD_LENGTH = 8;
+
+function hasPasswordSpecialCharacter(p) {
+  return /[^a-zA-Z0-9\s]/.test(String(p));
+}
+
+
+function getStrongPasswordMessage(passwordValue) {
+  const p = String(passwordValue);
+  const missing = [];
+  if (p.length < MIN_PASSWORD_LENGTH) {
+    missing.push(`at least ${MIN_PASSWORD_LENGTH} characters`);
+  }
+  if (!/[a-z]/.test(p)) missing.push('one lowercase letter');
+  if (!/[A-Z]/.test(p)) missing.push('one uppercase letter');
+  if (!/[0-9]/.test(p)) missing.push('one number');
+  if (!hasPasswordSpecialCharacter(p)) {
+    missing.push('one special character (e.g. ! @ # $ % …)');
+  }
+  if (missing.length === 0) return '';
+  if (missing.length === 1) {
+    return `Password must include ${missing[0]}.`;
+  }
+  const last = missing.pop();
+  return `Password must include ${missing.join(', ')}, and ${last}.`;
 }
 
 const AdminLogin = () => {
@@ -54,6 +80,10 @@ const AdminLogin = () => {
     if (!trimmedEmail) errors.email = REQUIRED_FIELD_MSG;
     else if (!isValidEmailFormat(trimmedEmail)) errors.email = INVALID_EMAIL_MSG;
     if (!trimmedPassword) errors.password = REQUIRED_FIELD_MSG;
+    else {
+      const strongMsg = getStrongPasswordMessage(password);
+      if (strongMsg) errors.password = strongMsg;
+    }
     setFieldErrors(errors);
     if (errors.email || errors.password) {
       if (errors.email) emailInputRef.current?.focus();
@@ -63,7 +93,7 @@ const AdminLogin = () => {
 
     setIsLoggingIn(true);
 
-    // Simulate auth delay before entering loading screen.
+  
     setTimeout(() => {
       const from = location.state?.from;
       const dest =
