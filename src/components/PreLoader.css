@@ -1,0 +1,232 @@
+.preloader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-main, #10192f);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    overflow: hidden;
+  }
+  
+  .preloader-wrapper.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+  
+  .preloader-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(6px, 1.75vw, 12px);
+    padding: 20px;
+    max-width: 500px;
+    width: 100%;
+  }
+  
+  /* Brand logo: two halves slide together, then whole mark spins */
+  .qlink-logo-loader {
+    width: clamp(48px, 10vw, 76px);
+    height: clamp(48px, 10vw, 76px);
+    flex-shrink: 0;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.1));
+  }
+  
+  .qlink-logo-merge {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-origin: center center;
+  }
+  
+  .qlink-logo-split {
+    width: 50%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+  }
+  
+  .qlink-logo-img {
+    width: 200%;
+    max-width: none;
+    height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+  
+  .qlink-logo-split--left .qlink-logo-img {
+    object-position: left center;
+    transform: translateX(0);
+  }
+  
+  .qlink-logo-split--right .qlink-logo-img {
+    object-position: right center;
+    transform: translateX(-50%);
+  }
+  
+  .qlink-logo-split--left {
+    animation: qlinkLogoMeetLeft 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  
+  .qlink-logo-split--right {
+    animation: qlinkLogoMeetRight 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  
+  @keyframes qlinkLogoMeetLeft {
+    0% {
+      transform: translateX(-36%);
+      opacity: 0.7;
+    }
+    72% {
+      transform: translateX(3%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  @keyframes qlinkLogoMeetRight {
+    0% {
+      transform: translateX(36%);
+      opacity: 0.7;
+    }
+    72% {
+      transform: translateX(-3%);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .qlink-logo-loader--spinning .qlink-logo-split--left,
+  .qlink-logo-loader--spinning .qlink-logo-split--right {
+    animation: none;
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
+  .qlink-logo-loader--spinning .qlink-logo-merge {
+    animation: qlinkLogoSpin 1.05s linear infinite;
+  }
+  
+  @keyframes qlinkLogoSpin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  .loading-text {
+    display: flex;
+    gap: clamp(4px, 2vw, 12px);
+    font-family: var(--font-family-primary, 'Roboto', sans-serif);
+    font-size: clamp(18px, 6vw, 32px);
+    font-weight: 800;
+    letter-spacing: clamp(2px, 1vw, 6px);
+    color: white;
+    flex-wrap: nowrap;
+  }
+  
+  .letter {
+    opacity: 0;
+    transform: translateY(15px);
+    animation: float-up 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+  
+  .letter-1 {
+    animation-delay: 0.25s;
+  }
+  .letter-2 {
+    animation-delay: 0.35s;
+  }
+  .letter-3 {
+    animation-delay: 0.45s;
+  }
+  .letter-4 {
+    animation-delay: 0.55s;
+    color: var(--color-primary-red, #e03232);
+  }
+  .letter-5 {
+    animation-delay: 0.65s;
+    color: var(--color-primary-red, #e03232);
+  }
+  
+  .loading-bar-container {
+    width: clamp(150px, 60vw, 250px);
+    height: clamp(3px, 1vw, 6px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0;
+  }
+  
+  .loading-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: var(--color-primary-red, #e03232);
+    border-radius: 4px;
+    box-shadow: 0 0 10px var(--color-primary-red, #e03232);
+    animation: fill-bar 2.3s ease-in-out forwards;
+  }
+  
+  @keyframes float-up {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fill-bar {
+    0% {
+      width: 0%;
+    }
+    35% {
+      width: 42%;
+    }
+    65% {
+      width: 78%;
+    }
+    100% {
+      width: 100%;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .qlink-logo-split--left,
+    .qlink-logo-split--right {
+      animation: none;
+      transform: none;
+      opacity: 1;
+    }
+  
+    .qlink-logo-loader--spinning .qlink-logo-merge {
+      animation: qlinkLogoSpin 1.75s linear infinite;
+    }
+  
+    .letter {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+  
