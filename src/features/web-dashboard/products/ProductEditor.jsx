@@ -279,16 +279,12 @@ const ProductEditor = () => {
         const { error } = await supabase.from('products').insert([payload]);
         if (error) throw error;
         clearFormDraft(productDraftKey);
-        alert(
-          'Product published to the database. It will appear on your live storefront for customers (according to your site’s product URL / slug settings).'
-        );
+        alert('Created successfully!');
       } else {
         const { error } = await supabase.from('products').update(payload).eq('id', productId);
         if (error) throw error;
         clearFormDraft(productDraftKey);
-        alert(
-          'Changes saved. The live storefront will show this version for customers once your public site reads from this product record.'
-        );
+        alert('Updated successfully!');
       }
       navigate('/web/products');
     } catch (err) {
@@ -675,20 +671,16 @@ const ProductEditor = () => {
       </div>
 
       <div className="product-editor-footer">
-        <button
-          type="button"
-          className="btn-ghost product-editor-footer__discard"
-          onClick={() => navigate('/web/products')}
-        >
+        <button type="button" className="btn-ghost product-editor-footer__discard" onClick={() => navigate('/web/products')}>
           Back to catalog
         </button>
         <div className="product-editor-footer__actions">
           <FormDraftToolbar
-            variant="compact"
             storageKey={productDraftKey}
             capture={captureProductDraft}
             apply={applyProductDraft}
             disabled={saving || loading}
+            compact
           />
           <button
             type="button"

@@ -1,20 +1,22 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Package, Loader2, Edit2, Trash2, FileEdit } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
-import { loadFormDraftWithMeta } from '../../../lib/formDraft';
+import { hasFormDraft } from '../../../lib/formDraft';
 import '../../../styles/web-dashboard-pages.css';
 import './Products.css';
+
+function productDraftKey(productId) {
+  return `qlink_draft_product_${productId}`;
+}
 
 const NEW_PRODUCT_DRAFT_KEY = 'qlink_draft_product_new';
 
 const Products = () => {
-  const location = useLocation();
-  const [draftRefresh, setDraftRefresh] = useState(0);
-  const [draftImgFailed, setDraftImgFailed] = useState(false);
   const [products, setProducts] = useState([]);
+  const [draftTick, setDraftTick] = useState(0);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [filterStock, setFilterStock] = useState('All');
@@ -68,20 +70,13 @@ const Products = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    const onDraftSaved = (e) => {
-      if (e?.detail?.key === NEW_PRODUCT_DRAFT_KEY) setDraftRefresh((n) => n + 1);
-    };
-    window.addEventListener('qlink-draft-saved', onDraftSaved);
-    return () => window.removeEventListener('qlink-draft-saved', onDraftSaved);
-  }, []);
+  const bumpDraftUi = useCallback(() => setDraftTick((t) => t + 1), []);
 
-  const newProductDraftMeta = useMemo(
-    () => loadFormDraftWithMeta(NEW_PRODUCT_DRAFT_KEY),
-    [location.pathname, draftRefresh]
-  );
-  const newProductDraft = newProductDraftMeta?.data;
-  const showNewProductDraftAside = Boolean(newProductDraft && typeof newProductDraft === 'object');
+  useEffect(() => {
+    const onDraft = () => bumpDraftUi();
+    window.addEventListener('qlink:form-draft-changed', onDraft);
+    return () => window.removeEventListener('qlink:form-draft-changed', onDraft);
+  }, [bumpDraftUi]);
 
   // 2. تحديث الـ SEO في الداتابيز (عند التغيير من الـ Dashboard)
   const handleSeoChange = async (updatedSeo) => {
@@ -137,28 +132,7 @@ const Products = () => {
     });
   }, [q, filterStock, products]);
 
-  const draftCardTitle =
-    (newProductDraft?.nameEn && String(newProductDraft.nameEn).trim()) ||
-    (newProductDraft?.nameAr && String(newProductDraft.nameAr).trim()) ||
-    'Untitled product';
-  const draftCardSub =
-    (newProductDraft?.subEn && String(newProductDraft.subEn).trim()) ||
-    (newProductDraft?.subAr && String(newProductDraft.subAr).trim()) ||
-    'Add details in the editor, then publish to show on the live site.';
-  const draftPriceRaw = newProductDraft?.price;
-  const draftPriceNum = draftPriceRaw !== '' && draftPriceRaw != null ? parseFloat(draftPriceRaw) : NaN;
-  const draftPriceLabel =
-    Number.isFinite(draftPriceNum) && draftPriceNum >= 0 ? `${draftPriceNum.toLocaleString()} EGP` : '—';
-  const draftImage = (newProductDraft?.mainImage && String(newProductDraft.mainImage).trim()) || '';
-  const draftSku = (newProductDraft?.sku && String(newProductDraft.sku).trim()) || 'No SKU yet';
-  const draftSavedLabel =
-    typeof newProductDraftMeta?.savedAt === 'number'
-      ? `Saved ${new Date(newProductDraftMeta.savedAt).toLocaleString()}`
-      : null;
-
-  useEffect(() => {
-    setDraftImgFailed(false);
-  }, [draftImage, draftRefresh, location.pathname]);
+  const hasNewProductDraft = useMemo(() => hasFormDraft(NEW_PRODUCT_DRAFT_KEY), [draftTick]);
 
   if (loading) {
     return (
@@ -206,19 +180,40 @@ const Products = () => {
         </div>
       </div>
 
-      <div
-        className={
-          showNewProductDraftAside
-            ? 'products-catalog-layout products-catalog-layout--with-draft'
-            : 'products-catalog-layout'
-        }
-      >
-        <div className="products-catalog-main">
-          <div className="product-grid">
-        {filtered.map((p) => (
-          <article key={p.id} className="product-card">
+      <div className="product-grid">
+        {hasNewProductDraft ? (
+          <article className="product-card product-draft-card" aria-label="Unpublished product draft">
+            <div className="product-draft-card-inner">
+              <div className="product-draft-card-visual">
+                <FileEdit size={36} strokeWidth={1.5} aria-hidden />
+              </div>
+              <div className="product-draft-card-body">
+                <span className="product-draft-badge">Local draft</span>
+                <h2 className="product-draft-card-title">New product</h2>
+                <p className="product-draft-card-desc">
+                  Not on the live site until you open the editor and publish.
+                </p>
+                <Link to="/web/products/new" className="btn-primary product-draft-card-cta">
+                  Continue draft
+                </Link>
+              </div>
+            </div>
+          </article>
+        ) : null}
+        {filtered.map((p) => {
+          const hasLocalDraft = hasFormDraft(productDraftKey(p.id));
+          return (
+          <article
+            key={p.id}
+            className={`product-card${hasLocalDraft ? ' product-card--has-local-draft' : ''}`}
+          >
             <Link to={`/web/products/${encodeURIComponent(p.id)}/edit`} className="product-card-link">
               <div className="product-card-image-wrap">
+                {hasLocalDraft ? (
+                  <span className="draft-ribbon" title="Unsaved changes saved in this browser">
+                    Draft
+                  </span>
+                ) : null}
                 {p.status === 'In Stock' && <span className="stock-badge">In stock</span>}
                 
                 {p.image_url ? (
@@ -280,62 +275,8 @@ const Products = () => {
               </div>
             </Link>
           </article>
-        ))}
-          </div>
-        </div>
-
-        {showNewProductDraftAside ? (
-          <aside className="products-draft-aside" aria-label="Unpublished new product draft">
-            <div className="products-draft-aside__header">
-              <h2 className="products-draft-aside__title">Draft</h2>
-              <p className="products-draft-aside__lead">
-                Not on the public website yet. Open the editor and click <strong>Publish product</strong> to go live
-                on your storefront.
-              </p>
-            </div>
-
-            <article className="product-card product-card--draft">
-              <div className="product-card-image-wrap">
-                <span className="stock-badge stock-badge--draft">Draft</span>
-                {draftImage && !draftImgFailed ? (
-                  <img
-                    src={draftImage}
-                    alt=""
-                    className="product-card-img"
-                    onError={() => setDraftImgFailed(true)}
-                  />
-                ) : null}
-                <div
-                  className="product-no-image product-no-image--draft"
-                  style={{ display: draftImage && !draftImgFailed ? 'none' : 'flex' }}
-                >
-                  <FileEdit size={28} strokeWidth={1.5} aria-hidden />
-                  <div className="no-image-text">No image in draft</div>
-                </div>
-              </div>
-              <div className="product-card-body">
-                <div className="product-card-title-row">
-                  <h2 className="product-card-name">{draftCardTitle}</h2>
-                  <span className="product-card-price">{draftPriceLabel}</span>
-                </div>
-                <p className="product-card-desc">{draftCardSub}</p>
-                <div className="product-card-foot">
-                  <span className="product-card-stock">
-                    <Package size={14} />
-                    Unpublished
-                  </span>
-                  <span className="product-card-id">{draftSku}</span>
-                </div>
-              </div>
-            </article>
-
-            {draftSavedLabel ? <p className="products-draft-aside__meta">{draftSavedLabel}</p> : null}
-
-            <Link to="/web/products/new" className="btn-primary products-draft-aside__cta">
-              Continue editing
-            </Link>
-          </aside>
-        ) : null}
+        );
+        })}
       </div>
 
       <SeoSection

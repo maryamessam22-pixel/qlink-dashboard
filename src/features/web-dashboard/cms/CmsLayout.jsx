@@ -13,6 +13,7 @@ const INITIAL_TABS = [
   { to: 'contact', label: 'Contact' },
   { to: 'terms', label: 'Terms & Privacy' },
   { to: 'emails', label: 'Emails' },
+  { to: 'app-features', label: 'App features' },
 ];
 
 const initialTabPaths = new Set(INITIAL_TABS.map((t) => t.to));

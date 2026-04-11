@@ -4,8 +4,7 @@ import { saveFormDraft, loadFormDraft } from '../../lib/formDraft';
 import './FormDraftToolbar.css';
 
 /**
- * Local browser backup only — does not replace Save / Publish (Supabase).
- * @param {'default' | 'compact'} variant — compact groups actions for footers (e.g. product editor).
+ * Local browser backup only — does not replace Save Changes (Supabase).
  */
 const FormDraftToolbar = ({
   storageKey,
@@ -13,7 +12,7 @@ const FormDraftToolbar = ({
   apply,
   disabled = false,
   className = '',
-  variant = 'default',
+  compact = false,
 }) => {
   const handleSaveDraft = () => {
     try {
@@ -22,12 +21,7 @@ const FormDraftToolbar = ({
         window.alert('Could not save draft (storage full or blocked).');
         return;
       }
-      window.dispatchEvent(
-        new CustomEvent('qlink-draft-saved', { detail: { key: storageKey } })
-      );
-      window.alert(
-        'Draft saved in this browser. On the product catalog it appears in the Draft column until you publish.'
-      );
+      window.alert('Draft saved in this browser. Use Save Changes to publish to the database.');
     } catch (e) {
       console.error(e);
       window.alert('Could not save draft.');
@@ -42,7 +36,7 @@ const FormDraftToolbar = ({
     }
     if (
       !window.confirm(
-        'Replace the current form with your saved draft? This does not change the live website until you publish.'
+        'Replace the current form with your saved draft? This does not undo database data until you save again.'
       )
     ) {
       return;
@@ -50,7 +44,7 @@ const FormDraftToolbar = ({
     try {
       apply(data);
       window.alert(
-        'Draft restored. Use Publish / Save Changes on this page to push it to the database and the storefront.'
+        'Draft restored into the form. Review the fields, then use Save Changes on this page to publish to the database.'
       );
     } catch (e) {
       console.error(e);
@@ -58,40 +52,45 @@ const FormDraftToolbar = ({
     }
   };
 
-  const rootClass =
-    `form-draft-toolbar form-draft-toolbar--${variant}${className ? ` ${className}` : ''}`.trim();
-
-  const hintDefault =
-    'Drafts stay in this browser until you publish. Open this same page, use Restore if needed, then Save / Publish to push live.';
-
-  const hintCompact =
-    'Saved only in this browser. Publish sends the product to your database and storefront.';
+  const rootClass = [
+    'form-draft-toolbar',
+    compact ? 'form-draft-toolbar--compact' : '',
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <div className={rootClass}>
-      <p className="form-draft-toolbar__hint">
-        {variant === 'compact' ? hintCompact : hintDefault}
-      </p>
-      <div className="form-draft-toolbar__actions" role="group" aria-label="Local draft backup">
+      <div className="form-draft-toolbar__actions">
         <button
           type="button"
-          className="form-draft-toolbar__btn"
+          className="form-draft-toolbar__btn form-draft-toolbar__btn--save"
           disabled={disabled}
           onClick={handleSaveDraft}
+          title="Save a backup of this form in your browser only"
         >
-          <FileDown size={16} aria-hidden />
+          <FileDown size={compact ? 15 : 16} aria-hidden />
           Save draft
         </button>
+        <span className="form-draft-toolbar__divider" aria-hidden />
         <button
           type="button"
-          className="form-draft-toolbar__btn"
+          className="form-draft-toolbar__btn form-draft-toolbar__btn--restore"
           disabled={disabled}
           onClick={handleRestoreDraft}
+          title="Load your saved browser backup into the form"
         >
-          <FileUp size={16} aria-hidden />
+          <FileUp size={compact ? 15 : 16} aria-hidden />
           Restore draft
         </button>
       </div>
+      {!compact ? (
+        <p className="form-draft-toolbar__hint">
+          Drafts stay in this browser only. Open this same screen anytime and use{' '}
+          <strong>Restore draft</strong>, then <strong>Save Changes</strong> to publish live to the site.
+        </p>
+      ) : null}
     </div>
   );
 };
