@@ -8,6 +8,17 @@ import logoImg from '../../assets/logos/QLINK.png';
 import './AdminLogin.css';
 
 const REQUIRED_FIELD_MSG = 'This field is required.';
+const INVALID_EMAIL_MSG = 'Please enter a valid email address.';
+
+/** Local part @ domain with at least one dot in domain (practical format check). */
+const EMAIL_FORMAT_REGEX =
+  /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+
+function isValidEmailFormat(value) {
+  const s = String(value).trim();
+  if (!s) return false;
+  return EMAIL_FORMAT_REGEX.test(s);
+}
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -41,6 +52,7 @@ const AdminLogin = () => {
     const trimmedPassword = password.trim();
     const errors = { email: '', password: '' };
     if (!trimmedEmail) errors.email = REQUIRED_FIELD_MSG;
+    else if (!isValidEmailFormat(trimmedEmail)) errors.email = INVALID_EMAIL_MSG;
     if (!trimmedPassword) errors.password = REQUIRED_FIELD_MSG;
     setFieldErrors(errors);
     if (errors.email || errors.password) {
