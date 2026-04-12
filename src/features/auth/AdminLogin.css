@@ -107,14 +107,14 @@
   object-fit: contain;
 }
 
-/* Web dashboard: original white/light mark */
+/* Web dashboard:white (my qlink logo) */
 .login-container--web .logo-image {
   height: 42px;
   width: auto;
   max-width: 220px;
 }
 
-/* App dashboard: blue gradient wordmark */
+/* App dashboard: blue gradient ( my logo ) */
 .login-container--app .logo-image {
   height: auto;
   max-height: 52px;
