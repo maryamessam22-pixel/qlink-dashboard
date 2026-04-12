@@ -234,7 +234,7 @@
 
 .login-container--web .input-wrapper input {
   color: #e6edf3;
-  /* Match wrapper so password/email fields never show browser white fill */
+
   background-color: #0d1422;
 }
 
@@ -242,7 +242,7 @@
   color: #6b778c;
 }
 
-/* Kill Chrome/Safari autofill yellow/white over dark theme */
+
 .login-container--web .input-wrapper input:-webkit-autofill,
 .login-container--web .input-wrapper input:-webkit-autofill:hover,
 .login-container--web .input-wrapper input:-webkit-autofill:focus {
@@ -320,7 +320,6 @@
   color: #4b5563;
 }
 
-/* Loading Overlay */
 .login-loading-overlay {
   position: fixed;
   inset: 0;
