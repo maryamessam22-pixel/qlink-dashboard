@@ -27,6 +27,14 @@
   animation: authPulse 1.9s infinite ease-in-out;
 }
 
+/* App path: blue gradient wordmark (same asset as app login), wider than compact mark */
+.auth-loading-logo--app-wordmark {
+  height: auto;
+  max-height: 56px;
+  width: auto;
+  max-width: min(90vw, 280px);
+}
+
 .auth-loading-spinner {
   width: 42px;
   height: 42px;

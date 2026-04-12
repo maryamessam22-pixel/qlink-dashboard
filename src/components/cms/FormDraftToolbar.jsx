@@ -3,6 +3,11 @@ import { FileDown, FileUp } from 'lucide-react';
 import { saveFormDraft, loadFormDraft } from '../../lib/formDraft';
 import './FormDraftToolbar.css';
 
+const DEFAULT_SAVE_MSG =
+  'Draft saved in this browser. Use Save Changes to publish to the database.';
+const DEFAULT_RESTORE_MSG =
+  'Draft restored into the form. Review the fields, then use Save Changes on this page to publish to the database.';
+
 const FormDraftToolbar = ({
   storageKey,
   capture,
@@ -10,6 +15,8 @@ const FormDraftToolbar = ({
   disabled = false,
   className = '',
   compact = false,
+  saveSuccessMessage = DEFAULT_SAVE_MSG,
+  restoreSuccessMessage = DEFAULT_RESTORE_MSG,
 }) => {
   const handleSaveDraft = () => {
     try {
@@ -18,7 +25,7 @@ const FormDraftToolbar = ({
         window.alert('Could not save draft (storage full or blocked).');
         return;
       }
-      window.alert('Draft saved in this browser. Use Save Changes to publish to the database.');
+      window.alert(saveSuccessMessage);
     } catch (e) {
       console.error(e);
       window.alert('Could not save draft.');
@@ -40,9 +47,7 @@ const FormDraftToolbar = ({
     }
     try {
       apply(data);
-      window.alert(
-        'Draft restored into the form. Review the fields, then use Save Changes on this page to publish to the database.'
-      );
+      window.alert(restoreSuccessMessage);
     } catch (e) {
       console.error(e);
       window.alert('Could not apply draft.');

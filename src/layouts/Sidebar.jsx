@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
-import { clearAuth } from '../lib/authStorage';
+import { clearAuth, setIntendedDashboard } from '../lib/authStorage';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -27,6 +27,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const handleLogout = () => {
     clearAuth();
+    setIntendedDashboard(isAppDashboard ? 'app' : 'web');
     navigate('/login');
   };
 

@@ -1,9 +1,9 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { X, Plus, Trash2, Loader2, Save } from 'lucide-react';
 import { supabase } from '../../../lib/supabase';
 import { normalizeRichTextHtml } from '../../../lib/richTextHtml';
-import { clearFormDraft } from '../../../lib/formDraft';
+import { clearFormDraft, loadFormDraft } from '../../../lib/formDraft';
 import FormDraftToolbar from '../../../components/cms/FormDraftToolbar';
 import PageMeta from '../../../components/seo/PageMeta';
 import RichTextEditor from '../../../components/rich-text/RichTextEditor';
@@ -87,6 +87,8 @@ const ProductEditor = () => {
     keywords: 'qlink, bracelet, product',
     featuredImageAlt: 'Product',
   });
+
+  const newProductDraftOfferedRef = useRef(false);
 
   useEffect(() => {
     if (isNew) return;
@@ -226,6 +228,21 @@ const ProductEditor = () => {
     s('detailDescAr', setDetailDescAr);
     if (d.seo && typeof d.seo === 'object') setSeo((prev) => ({ ...prev, ...d.seo }));
   }, []);
+
+  useEffect(() => {
+    if (!isNew) return;
+    if (newProductDraftOfferedRef.current) return;
+    const data = loadFormDraft(productDraftKey);
+    if (data == null || typeof data !== 'object') return;
+    newProductDraftOfferedRef.current = true;
+    if (
+      window.confirm(
+        'You have a saved draft for this new product in this browser. Restore it into the form now?'
+      )
+    ) {
+      applyProductDraft(data);
+    }
+  }, [isNew, productDraftKey, applyProductDraft]);
 
   if (loading) {
     return (
@@ -700,6 +717,16 @@ const ProductEditor = () => {
             apply={applyProductDraft}
             disabled={saving || loading}
             compact
+            saveSuccessMessage={
+              isNew
+                ? 'Product draft saved in this browser. Use Publish product when you are ready to write to the database.'
+                : 'Product draft saved in this browser. Use Save changes to update the database.'
+            }
+            restoreSuccessMessage={
+              isNew
+                ? 'Draft restored. Review the form, then use Publish product to save to the database.'
+                : 'Draft restored. Review the form, then use Save changes to update the database.'
+            }
           />
           <button
             type="button"

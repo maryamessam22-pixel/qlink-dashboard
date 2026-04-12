@@ -6,7 +6,8 @@ import {
   getIntendedDashboard,
   isAuthenticated,
 } from '../../lib/authStorage';
-import logoImg from '../../assets/logos/QLINK.png';
+import logoWeb from '../../assets/logos/QLINK.png';
+import logoAppWordmark from '../../assets/logos/Qlink-login.png';
 import './LoadingScreen.css';
 
 const LoadingScreen = () => {
@@ -39,11 +40,16 @@ const LoadingScreen = () => {
   }, [navigate, location.state]);
 
   const isApp = getIntendedDashboard() === 'app';
+  const logoSrc = isApp ? logoAppWordmark : logoWeb;
 
   return (
     <div className={`auth-loading-page${isApp ? ' auth-loading-page--app' : ' auth-loading-page--web'}`}>
       <div className="auth-loading-content">
-        <img src={logoImg} alt="Qlink" className="auth-loading-logo" />
+        <img
+          src={logoSrc}
+          alt="Qlink"
+          className={`auth-loading-logo${isApp ? ' auth-loading-logo--app-wordmark' : ''}`}
+        />
         <div className="auth-loading-spinner" />
         <p className="auth-loading-text">Initializing dashboard...</p>
       </div>
