@@ -4,6 +4,7 @@ import { Plus, X } from "lucide-react";
 import PageMeta from "../../../components/seo/PageMeta";
 import SeoSection from "../../../components/seo/SeoSection";
 import RichTextEditor from "../../../components/rich-text/RichTextEditor";
+import { supabase } from "../../../lib/supabase";
 import "./EditUserProfile.css";
 
 const BLOOD_TYPES = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
@@ -77,16 +78,32 @@ const EditUserProfile = () => {
   });
 
   const addContact = () => setContacts((c) => [...c, ""]);
+  
   const updateContact = (idx, value) => {
     setContacts((c) => c.map((item, i) => (i === idx ? value : item)));
   };
+  
   const removeContact = (idx) => {
     setContacts((c) => c.filter((_, i) => i !== idx));
   };
 
-  const handleSave = () => {
-    window.alert("Profile changes saved (demo). Connect to API to persist.");
-    navigate("/app/user-profiles");
+  const handleSave = async () => {
+    try {
+      const { error } = await supabase
+        .from('patient_profiles')
+        .update({
+          profile_name: fullName,
+          relationship_to_guardian: relationship,
+          birth_year: parseInt(birthYear) || null,
+          blood_type: bloodType
+        })
+        .eq('id', selectedProfile.id);
+
+      if (error) throw error;
+      navigate("/app/user-profiles");
+    } catch (error) {
+      window.alert("Error: " + error.message);
+    }
   };
 
   return (
