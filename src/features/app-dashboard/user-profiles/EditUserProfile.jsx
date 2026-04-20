@@ -50,24 +50,26 @@ const EditUserProfile = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { profileId } = useParams();
+  const isNew = !profileId || profileId === "new";
 
   const fallbackProfiles = useMemo(() => getFallbackProfiles(15), []);
   const selectedProfile = useMemo(() => {
+    if (isNew) return null;
     const fromState = location.state?.profile;
     if (fromState && fromState.id) return fromState;
-    return fallbackProfiles.find((p) => p.id === profileId) || fallbackProfiles[0];
-  }, [location.state, fallbackProfiles, profileId]);
+    return fallbackProfiles.find((p) => p.id === profileId) || null;
+  }, [location.state, fallbackProfiles, profileId, isNew]);
 
   const [fullName, setFullName] = useState(selectedProfile?.fullName || "");
-  const [relationship, setRelationship] = useState("Guardian");
-  const [birthYear, setBirthYear] = useState(String(new Date().getFullYear() - (selectedProfile?.age || 22)));
-  const [primaryPhone, setPrimaryPhone] = useState("01000000000");
-  const [contacts, setContacts] = useState(["01000000000"]);
-  const [allergies, setAllergies] = useState("e.g. Penicilin, Peanut, Shrimp");
-  const [safetyNotes, setSafetyNotes] = useState("e.g. ADD/ADHD safety instructions");
-  const [bloodType, setBloodType] = useState(selectedProfile?.bloodType || "AB+");
-  const [medicalNotesEn, setMedicalNotesEn] = useState("<p>e.g. diabetic</p>");
-  const [medicalNotesAr, setMedicalNotesAr] = useState("<p>مثال: مريض سكري</p>");
+  const [relationship, setRelationship] = useState(selectedProfile?.relationship || "Guardian");
+  const [birthYear, setBirthYear] = useState(selectedProfile?.age ? String(new Date().getFullYear() - selectedProfile.age) : "2000");
+  const [primaryPhone, setPrimaryPhone] = useState("");
+  const [contacts, setContacts] = useState([""]);
+  const [allergies, setAllergies] = useState("");
+  const [safetyNotes, setSafetyNotes] = useState("");
+  const [bloodType, setBloodType] = useState(selectedProfile?.bloodType || "O+");
+  const [medicalNotesEn, setMedicalNotesEn] = useState("");
+  const [medicalNotesAr, setMedicalNotesAr] = useState("");
 
   const [seo, setSeo] = useState({
     slug: `profile-${(selectedProfile?.fullName || "user").toLowerCase().replace(/\s+/g, "-")}`,
@@ -88,18 +90,27 @@ const EditUserProfile = () => {
   };
 
   const handleSave = async () => {
+    if (!fullName) {
+      window.alert("Please enter a full name.");
+      return;
+    }
     try {
-      const { error } = await supabase
-        .from('patient_profiles')
-        .update({
-          profile_name: fullName,
-          relationship_to_guardian: relationship,
-          birth_year: parseInt(birthYear) || null,
-          blood_type: bloodType
-        })
-        .eq('id', selectedProfile.id);
+      const payload = {
+        profile_name: fullName,
+        relationship_to_guardian: relationship,
+        birth_year: parseInt(birthYear) || null,
+        blood_type: bloodType,
+        status: true
+      };
 
-      if (error) throw error;
+      if (isNew) {
+        const { error } = await supabase.from('patient_profiles').insert([payload]);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('patient_profiles').update(payload).eq('id', selectedProfile.id);
+        if (error) throw error;
+      }
+
       navigate("/app/user-profiles");
     } catch (error) {
       window.alert("Error: " + error.message);
@@ -112,8 +123,8 @@ const EditUserProfile = () => {
 
       <div className="app-edit-profile-head">
         <div>
-          <h1 className="app-edit-profile-title">Edit Profile</h1>
-          <p className="app-edit-profile-sub">Update patient information and medical details</p>
+          <h1 className="app-edit-profile-title">{isNew ? "Add New Profile" : "Edit Profile"}</h1>
+          <p className="app-edit-profile-sub">{isNew ? "Create a new patient profile and medical record" : "Update patient information and medical details"}</p>
         </div>
         <button type="button" className="app-edit-profile-close" onClick={() => navigate("/app/user-profiles")} aria-label="Close">
           <X size={18} />
@@ -203,7 +214,7 @@ const EditUserProfile = () => {
 
         <div className="app-edit-actions">
           <button type="button" className="app-edit-save-btn" onClick={handleSave}>
-            Save Changes
+            {isNew ? "Create Profile" : "Save Changes"}
           </button>
           <Link to="/app/user-profiles" className="app-edit-cancel-btn">
             Cancel

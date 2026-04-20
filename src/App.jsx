@@ -103,6 +103,7 @@ const App = () => {
           <Route path="overview" element={<AppOverview />} />
           <Route path="users" element={<Users />} />
           <Route path="user-profiles" element={<UserProfiles />} />
+          <Route path="user-profiles/new" element={<EditUserProfile />} />
           <Route path="user-profiles/:profileId/edit" element={<EditUserProfile />} />
           <Route path="linked-devices" element={<LinkedDevices />} />
           <Route path="bracelets" element={<Bracelets />} />

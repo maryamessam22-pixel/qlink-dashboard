@@ -124,6 +124,18 @@ const UserProfiles = () => {
     }
   };
 
+  const onDelete = async (p) => {
+    if (window.confirm(`Are you sure you want to permanently delete profile "${p.fullName}"?`)) {
+      try {
+        const { error } = await supabase.from('patient_profiles').delete().eq('id', p.id);
+        if (error) throw error;
+        setProfiles((prev) => prev.filter((item) => item.id !== p.id));
+      } catch (e) {
+        window.alert(e?.message || 'Could not delete profile.');
+      }
+    }
+  };
+
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
     return profiles.filter((p) => {
@@ -171,7 +183,7 @@ const UserProfiles = () => {
           <h1 className="app-profiles-title">Profiles management</h1>
           <p className="app-profiles-sub">Manage patient profiles and medical information</p>
         </div>
-        <button type="button" className="app-profiles-add-btn" onClick={() => window.alert("Create profile flow (connect API).")}>
+        <button type="button" className="app-profiles-add-btn" onClick={() => navigate("/app/user-profiles/new")}>
           <Plus size={18} strokeWidth={2.5} />
           Add New User Manually
         </button>
@@ -276,7 +288,7 @@ const UserProfiles = () => {
                       <button
                         type="button"
                         className="app-profiles-icon-btn app-profiles-icon-btn--danger"
-                        onClick={() => window.alert(`Delete profile: ${p.fullName}`)}
+                        onClick={() => onDelete(p)}
                         aria-label={`Delete ${p.fullName}`}
                       >
                         <Trash2 size={16} />
