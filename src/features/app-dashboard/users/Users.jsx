@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Eye, Plus, Search, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Plus, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
 import { supabase } from '../../../lib/supabase';
@@ -125,12 +125,19 @@ const Users = () => {
   };
 
   const onView = (u) => {
-    window.alert(`View profile: ${u.fullName} (${u.id})`);
+    // Toggles active status (Show/Hide/Block)
+    setUserActive(u.id, !isActive(u));
   };
 
-  const onDelete = (u) => {
-    if (window.confirm(`Remove ${u.fullName} from the list? (demo only)`)) {
-      window.alert('Delete queued — wire to API.');
+  const onDelete = async (u) => {
+    if (window.confirm(`Are you sure you want to permanently delete user "${u.fullName}"?`)) {
+      try {
+        const { error } = await supabase.from('profiles').delete().eq('id', u.id);
+        if (error) throw error;
+        setUsers((prev) => prev.filter((item) => item.id !== u.id));
+      } catch (e) {
+        window.alert(e?.message || 'Could not delete user profile.');
+      }
     }
   };
 
@@ -266,8 +273,13 @@ const Users = () => {
                   </td>
                   <td>
                     <div className="app-users-actions">
-                      <button type="button" className="app-users-icon-btn" aria-label="View user" onClick={() => onView(u)}>
-                        <Eye size={18} />
+                      <button
+                        type="button"
+                        className={`app-users-icon-btn ${!isActive(u) ? 'is-hidden' : ''}`}
+                        aria-label={isActive(u) ? 'Hide/Block user' : 'Show/Unblock user'}
+                        onClick={() => onView(u)}
+                      >
+                        {isActive(u) ? <Eye size={18} /> : <EyeOff size={18} />}
                       </button>
                       <button
                         type="button"

@@ -341,6 +341,10 @@
   color: var(--app-danger);
 }
 
+.app-users-icon-btn.is-hidden {
+  color: var(--app-text-secondary);
+}
+
 .app-users-icon-btn--danger:hover {
   background: rgba(217, 48, 37, 0.08);
 }

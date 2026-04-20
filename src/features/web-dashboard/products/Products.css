@@ -216,6 +216,7 @@
   bottom: 0;
   background: rgba(13, 20, 34, 0.7);
   backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
