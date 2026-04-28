@@ -1,11 +1,12 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { isAuthenticated, getIntendedDashboard } from '../../lib/authStorage';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { isAuthenticated } from '../../lib/authStorage';
 import './NotFound.css';
 
 const NotFound = () => {
   const navigate = useNavigate();
-  const isApp = getIntendedDashboard() === 'app';
+  const location = useLocation();
+  const isApp = location.pathname.startsWith('/app');
 
   const handleBack = () => {
     if (isAuthenticated()) {
