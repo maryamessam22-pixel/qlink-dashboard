@@ -38,6 +38,7 @@ import EditUserProfile from './features/app-dashboard/user-profiles/EditUserProf
 import LinkedDevices from './features/app-dashboard/linked-devices/LinkedDevices';
 import Bracelets from './features/app-dashboard/bracelets/Bracelets';
 import AppSettings from './features/app-dashboard/settings/AppSettings';
+import EditUserAccount from './features/app-dashboard/users/EditUserAccount';
 
 import { isAuthenticated } from './lib/authStorage';
 
@@ -102,6 +103,7 @@ const App = () => {
           <Route index element={<Navigate to="overview" replace />} />
           <Route path="overview" element={<AppOverview />} />
           <Route path="users" element={<Users />} />
+          <Route path="users/new" element={<EditUserAccount />} />
           <Route path="user-profiles" element={<UserProfiles />} />
           <Route path="user-profiles/new" element={<EditUserProfile />} />
           <Route path="user-profiles/:profileId/edit" element={<EditUserProfile />} />

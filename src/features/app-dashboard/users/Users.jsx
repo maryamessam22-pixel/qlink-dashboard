@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Plus, Search, Trash2 } from 'lucide-react';
 import PageMeta from '../../../components/seo/PageMeta';
 import SeoSection from '../../../components/seo/SeoSection';
@@ -36,6 +37,7 @@ const Users = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState('');
   const [updatedLabel, setUpdatedLabel] = useState('');
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -121,7 +123,7 @@ const Users = () => {
   };
 
   const onAddUser = () => {
-    window.alert('Add user flow — connect to your API to create guardians or wearers.');
+    navigate('/app/users/new');
   };
 
   const onView = (u) => {
