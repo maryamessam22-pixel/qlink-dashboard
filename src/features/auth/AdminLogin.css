@@ -286,6 +286,12 @@
   color: var(--app-text-secondary, #6b778c);
 }
 
+/* Hide browser native password reveal button */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 .login-button {
   color: #ffffff;
   border: none;
