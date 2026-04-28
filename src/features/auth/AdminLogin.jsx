@@ -187,11 +187,11 @@ const AdminLogin = () => {
           <div className="input-group">
             <label htmlFor="login-password">Password</label>
             <div className={`input-wrapper${fieldErrors.password ? ' input-wrapper--invalid' : ''}`}>
-              <span className="icon">🔒</span>
+              <span className="icon"><LockIcon /></span>
               <input
                 id="login-password"
                 ref={passwordInputRef}
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => {
@@ -202,6 +202,14 @@ const AdminLogin = () => {
                 aria-invalid={Boolean(fieldErrors.password)}
                 aria-describedby={fieldErrors.password ? 'login-password-error' : undefined}
               />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
             </div>
             {fieldErrors.password ? (
               <p id="login-password-error" className="login-field-error" role="alert">

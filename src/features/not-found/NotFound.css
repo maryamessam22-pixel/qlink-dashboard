@@ -1,0 +1,140 @@
+.nf-container {
+  min-height: 100vh;
+  background: var(--c-bg-dark, rgb(4 10 24));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-en), Arial, sans-serif;
+  color: #ffffff;
+  padding: 32px;
+  position: relative;
+}
+
+/* App dashboard variant — light bg, blue accents */
+.nf-container--app {
+  background: linear-gradient(165deg, #e8f0fe 0%, #f8f9fa 45%, #eef1f5 100%);
+  color: #172b4d;
+}
+
+.nf-container--app .nf-four {
+  color: #1447E6;
+}
+
+.nf-container--app .nf-zero {
+  color: #1447E6;
+}
+
+.nf-container--app .nf-lock-svg {
+  filter: drop-shadow(0 0 18px rgba(20, 71, 230, 0.3));
+}
+
+.nf-container--app .nf-title {
+  color: #172b4d;
+}
+
+.nf-container--app .nf-subtitle {
+  color: #6b778c;
+}
+
+.nf-container--app .nf-btn {
+  background-color: #1447E6;
+  box-shadow: 0 4px 16px rgba(20, 71, 230, 0.35);
+}
+
+.nf-container--app .nf-btn:hover {
+  background-color: #1034c4;
+}
+
+.nf-container--app .nf-footer {
+  color: #9aa0a6;
+}
+
+.nf-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+}
+
+/* 404 number row */
+.nf-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1;
+}
+
+.nf-four {
+  font-size: 130px;
+  font-weight: 800;
+  color: var(--c-primary-red, #e03232);
+  letter-spacing: -4px;
+  user-select: none;
+}
+
+.nf-zero {
+  width: 110px;
+  height: 130px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+}
+
+.nf-lock-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 18px rgba(224, 50, 50, 0.35));
+}
+
+/* Text */
+.nf-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  color: #ffffff;
+}
+
+.nf-subtitle {
+  font-size: 15px;
+  color: #8b949e;
+  margin: 0;
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+/* Button */
+.nf-btn {
+  margin-top: 8px;
+  height: 48px;
+  padding: 0 32px;
+  background-color: var(--c-primary-red, #e03232);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(224, 50, 50, 0.35);
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.nf-btn:hover {
+  background-color: #ff3b3b;
+}
+
+.nf-btn:active {
+  transform: scale(0.98);
+}
+
+/* Footer */
+.nf-footer {
+  position: absolute;
+  bottom: 24px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #4b5563;
+}

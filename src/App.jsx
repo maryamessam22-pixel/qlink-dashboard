@@ -41,6 +41,7 @@ import AppSettings from './features/app-dashboard/settings/AppSettings';
 import EditUserAccount from './features/app-dashboard/users/EditUserAccount';
 
 import { isAuthenticated } from './lib/authStorage';
+import NotFound from './features/not-found/NotFound';
 
 const App = () => {
   useEffect(() => {
@@ -113,7 +114,7 @@ const App = () => {
           <Route path="settings" element={<AppSettings />} />
         </Route>
 
-        <Route path="*" element={<Navigate to={isAuthenticated() ? '/web/overview' : '/'} replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );

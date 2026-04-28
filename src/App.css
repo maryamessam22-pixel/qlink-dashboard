@@ -133,7 +133,6 @@ body {
   flex: 1;
 }
 
-/* Light shell when browsing /app/* */
 .layout-wrapper--app .main-content {
   background: var(--app-bg-page);
 }

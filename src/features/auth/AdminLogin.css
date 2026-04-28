@@ -261,6 +261,31 @@
   transition: background-color 99999s ease-out 0s;
 }
 
+.password-toggle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.password-toggle-btn:hover {
+  opacity: 1;
+}
+
+.login-container--web .password-toggle-btn {
+  color: #8b949e;
+}
+
+.login-container--app .password-toggle-btn {
+  color: var(--app-text-secondary, #6b778c);
+}
+
 .login-button {
   color: #ffffff;
   border: none;
