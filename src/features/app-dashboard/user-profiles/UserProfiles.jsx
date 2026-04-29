@@ -15,14 +15,15 @@ function avatarHueFromId(id = "") {
   return Math.abs(hash) % 360;
 }
 
-function mapProfileRow(row) {
+function mapProfileRow(row, guardianNameById = {}) {
   const primaryName = row.emergency_contacts?.primary?.name;
+  const linkedGuardianFromProfile = row.guardian_id ? guardianNameById[row.guardian_id] : "";
   return {
     id: row.id,
     fullName: row.profile_name || "Unknown",
     age: Number.isFinite(row.age) ? row.age : new Date().getFullYear() - Number(row.birth_year || new Date().getFullYear()),
     bloodType: row.blood_type || "O+",
-    linkedGuardian: primaryName || row.relationship_to_guardian || "Unknown guardian",
+    linkedGuardian: linkedGuardianFromProfile || primaryName || row.relationship_to_guardian || "Unknown guardian",
     active: Boolean(row.status),
     avatarHue: avatarHueFromId(row.id),
   };
@@ -74,20 +75,36 @@ const UserProfiles = () => {
     const fetchProfiles = async () => {
       setLoading(true);
       setFetchError("");
-      const { data, error } = await supabase
-        .from("patient_profiles")
-        .select("id, profile_name, relationship_to_guardian, birth_year, age, emergency_contacts, blood_type, status, avatar_url, created_at")
-        .order("created_at", { ascending: false });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      console.log("[UserProfiles] session user:", session?.user?.id, session?.user?.email);
+      const [{ data: patientProfilesData, error: patientProfilesError }, { data: guardiansData, error: guardiansError }] = await Promise.all([
+        supabase
+          .from("patient_profiles")
+          .select("id, profile_name, relationship_to_guardian, birth_year, age, emergency_contacts, blood_type, status, avatar_url, created_at, guardian_id")
+          .order("created_at", { ascending: false }),
+        supabase.from("profiles").select("id, full_name"),
+      ]);
+      if (patientProfilesError || guardiansError) {
+        console.log("[UserProfiles] fetch debug:", {
+          patientProfilesError,
+          guardiansError,
+          patientProfilesRows: patientProfilesData?.length ?? 0,
+          guardiansRows: guardiansData?.length ?? 0,
+        });
+      }
 
       if (!mounted) return;
-      if (error) {
-        setFetchError(error.message || "Failed to load profiles.");
+      if (patientProfilesError || guardiansError) {
+        setFetchError(patientProfilesError?.message || guardiansError?.message || "Failed to load profiles.");
         setProfiles([]);
         setLoading(false);
         return;
       }
 
-      setProfiles((data || []).map(mapProfileRow));
+      const guardianNameById = Object.fromEntries((guardiansData || []).map((g) => [g.id, g.full_name || "Unknown guardian"]));
+      setProfiles((patientProfilesData || []).map((row) => mapProfileRow(row, guardianNameById)));
       setLoading(false);
     };
 

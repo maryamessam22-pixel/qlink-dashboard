@@ -4,6 +4,7 @@ import {
   getIntendedDashboard,
   isAuthenticated,
 } from '../../lib/authStorage';
+import { supabase } from '../../lib/supabase';
 import logoWebWhite from '../../assets/logos/QLINK.png';
 import logoAppWordmark from '../../assets/logos/Qlink-login.png';
 import './AdminLogin.css';
@@ -11,9 +12,6 @@ import './AdminLogin.css';
 const REQUIRED_FIELD_MSG = 'This field is required.';
 const INVALID_EMAIL_MSG = 'Please enter a valid email address.';
 const INVALID_CREDENTIALS_MSG = 'Invalid email or password.';
-
-const VALID_EMAIL = 'maryamessam22@gmail.com';
-const VALID_PASSWORD = 'mariamE123@';
 
 
 const EMAIL_FORMAT_REGEX =
@@ -100,7 +98,7 @@ const AdminLogin = () => {
     }
   }, [navigate, location.state, intended]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (isLoggingIn) return;
 
@@ -114,13 +112,6 @@ const AdminLogin = () => {
       const strongMsg = getStrongPasswordMessage(password);
       if (strongMsg) errors.password = strongMsg;
     }
-    if (!errors.email && !errors.password) {
-      if (trimmedEmail !== VALID_EMAIL || trimmedPassword !== VALID_PASSWORD) {
-        errors.email = INVALID_CREDENTIALS_MSG;
-        errors.password = INVALID_CREDENTIALS_MSG;
-      }
-    }
-
     setFieldErrors(errors);
     if (errors.email || errors.password) {
       if (errors.email) emailInputRef.current?.focus();
@@ -129,9 +120,21 @@ const AdminLogin = () => {
     }
 
     setIsLoggingIn(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: trimmedEmail,
+        password: trimmedPassword,
+      });
+      if (error) {
+        setFieldErrors({ email: INVALID_CREDENTIALS_MSG, password: INVALID_CREDENTIALS_MSG });
+        emailInputRef.current?.focus();
+        return;
+      }
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      console.log('session user:', session?.user?.id, session?.user?.email);
 
-
-    setTimeout(() => {
       const from = location.state?.from;
       const dest =
         typeof from === 'string' && (from.startsWith('/web') || from.startsWith('/app'))
@@ -140,7 +143,9 @@ const AdminLogin = () => {
             ? '/app/overview'
             : '/web/overview';
       navigate('/loading', { replace: true, state: { dest, authReady: true } });
-    }, 900);
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   const isAppLogin = intended === 'app';

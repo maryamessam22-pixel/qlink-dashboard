@@ -18,6 +18,7 @@ import {
 import './Sidebar.css';
 import myPic from '../assets/imges/my-pic.png';
 import { clearAuth, setIntendedDashboard } from '../lib/authStorage';
+import { supabase } from '../lib/supabase';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -25,7 +26,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const isAppDashboard = location.pathname.startsWith('/app');
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     clearAuth();
     setIntendedDashboard(isAppDashboard ? 'app' : 'web');
     navigate('/login');

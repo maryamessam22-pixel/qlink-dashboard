@@ -14,8 +14,8 @@ function avatarHueFromId(id = "") {
   return Math.abs(hash) % 360;
 }
 
-function mapDeviceRow(row) {
-  const linkedProfile = row.linekd_profile || "Unassigned";
+function mapDeviceRow(row, profileNameById = {}) {
+  const linkedProfile = (row.profile_id && profileNameById[row.profile_id]) || row.linekd_profile || "Unassigned";
   const type = row.type || "Qlink Bracelet";
   return {
     id: row.id,
@@ -52,18 +52,34 @@ const LinkedDevices = () => {
   const fetchDevices = useCallback(async () => {
     setFetchError("");
     setLoading(true);
-    const { data, error } = await supabase
-      .from("devices")
-      .select("id, device_name, device_code, type, profile_id, status, battery_level, action, created_at, linekd_profile, image")
-      .order("created_at", { ascending: false });
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    console.log("[LinkedDevices] session user:", session?.user?.id, session?.user?.email);
+    const [{ data: devicesData, error: devicesError }, { data: patientProfilesData, error: patientProfilesError }] = await Promise.all([
+      supabase
+        .from("devices")
+        .select("id, device_name, device_code, type, profile_id, status, battery_level, action, created_at, linekd_profile, image")
+        .order("created_at", { ascending: false }),
+      supabase.from("patient_profiles").select("id, profile_name"),
+    ]);
+    if (devicesError || patientProfilesError) {
+      console.log("[LinkedDevices] fetch debug:", {
+        devicesError,
+        patientProfilesError,
+        devicesRows: devicesData?.length ?? 0,
+        patientProfilesRows: patientProfilesData?.length ?? 0,
+      });
+    }
 
-    if (error) {
-      setFetchError(error.message || "Failed to load devices.");
+    if (devicesError || patientProfilesError) {
+      setFetchError(devicesError?.message || patientProfilesError?.message || "Failed to load devices.");
       setDevices([]);
       setLoading(false);
       return;
     }
-    setDevices((data || []).map(mapDeviceRow));
+    const profileNameById = Object.fromEntries((patientProfilesData || []).map((profile) => [profile.id, profile.profile_name || "Unknown profile"]));
+    setDevices((devicesData || []).map((row) => mapDeviceRow(row, profileNameById)));
     setUpdatedLabel(
       new Date().toLocaleString(undefined, {
         dateStyle: "medium",

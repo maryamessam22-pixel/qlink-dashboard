@@ -15,9 +15,9 @@ function avatarHueFromId(id = '') {
   return Math.abs(hash) % 360;
 }
 
-function mapProfileRow(row) {
+function mapProfileRow(row, profilesManaged = 0) {
   const roleNorm = String(row.role || 'patient').toLowerCase();
-  const role = roleNorm === 'guardian' ? 'guardian' : 'patient';
+  const role = roleNorm === 'guardian' ? 'guardian' : 'wearer';
   return {
     id: row.id,
     fullName: row.full_name || 'Unknown',
@@ -25,7 +25,7 @@ function mapProfileRow(row) {
     role,
     registrationDate: row.registration_date || '',
     active: Boolean(row.status),
-    profilesManaged: role === 'guardian' ? 1 : 0,
+    profilesManaged: role === 'guardian' ? profilesManaged : 0,
     avatarHue: avatarHueFromId(row.id),
     avatarUrl: row.avatar_url || '',
     jobTitle: row.job_title || '',
@@ -56,18 +56,41 @@ const Users = () => {
     const fetchUsers = async () => {
       setFetchError('');
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, full_name, job_title, email, role, status, registration_date, avatar_url, created_at')
-        .order('created_at', { ascending: false });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      console.log('[Users] session user:', session?.user?.id, session?.user?.email);
+      const [{ data: profilesData, error: profilesError }, { data: patientProfilesData, error: patientProfilesError }] = await Promise.all([
+        supabase
+          .from('profiles')
+          .select('id, full_name, job_title, email, role, status, registration_date, avatar_url, created_at')
+          .order('created_at', { ascending: false }),
+        supabase.from('patient_profiles').select('id, guardian_id'),
+      ]);
+      if (profilesError || patientProfilesError) {
+        console.log('[Users] fetch debug:', {
+          profilesError,
+          patientProfilesError,
+          profilesRows: profilesData?.length ?? 0,
+          patientProfilesRows: patientProfilesData?.length ?? 0,
+        });
+      }
       if (!mounted) return;
-      if (error) {
-        setFetchError(error.message || 'Failed to load profiles.');
+      if (profilesError || patientProfilesError) {
+        setFetchError(profilesError?.message || patientProfilesError?.message || 'Failed to load profiles.');
         setUsers([]);
         setLoading(false);
         return;
       }
-      setUsers((data || []).map(mapProfileRow));
+
+      const managedByGuardian = (patientProfilesData || []).reduce((acc, row) => {
+        const guardianId = row.guardian_id;
+        if (!guardianId) return acc;
+        acc[guardianId] = (acc[guardianId] || 0) + 1;
+        return acc;
+      }, {});
+
+      setUsers((profilesData || []).map((row) => mapProfileRow(row, managedByGuardian[row.id] || 0)));
       setUpdatedLabel(new Date().toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }));
       setLoading(false);
     };
@@ -159,7 +182,7 @@ const Users = () => {
 
       <p className="app-users-meta">
         Supabase profiles · {loading ? 'Loading...' : `Updated ${updatedLabel}`} · refreshes every minute ·{' '}
-        <strong>{users.filter((r) => r.role === 'guardian').length}</strong> guardians, <strong>{users.filter((r) => r.role === 'patient').length}</strong> patients
+        <strong>{users.filter((r) => r.role === 'guardian').length}</strong> guardians, <strong>{users.filter((r) => r.role === 'wearer').length}</strong> wearers
       </p>
 
       <div className="app-users-head">
@@ -187,7 +210,7 @@ const Users = () => {
         <select className="app-users-filter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} aria-label="Filter users by role">
           <option value="all">All roles</option>
           <option value="guardian">Guardian</option>
-          <option value="patient">Patient</option>
+          <option value="wearer">Wearer</option>
         </select>
         <select className="app-users-filter" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label="Filter users by status">
           <option value="all">All status</option>
@@ -245,7 +268,7 @@ const Users = () => {
                     <span
                       className={`app-users-role-pill app-users-role-pill--${u.role === 'guardian' ? 'guardian' : 'patient'}`}
                     >
-                      {u.role === 'guardian' ? 'Guardian' : 'Patient'}
+                      {u.role === 'guardian' ? 'Guardian' : 'Wearer'}
                     </span>
                   </td>
                   <td>
