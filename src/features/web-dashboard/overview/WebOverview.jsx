@@ -15,15 +15,49 @@ const WebOverview = () => {
     featuredImageAlt: 'Overview',
   });
 
+  const [activeIndex, setActiveIndex] = useState(null);
+
   const w = 400;
-  const h = 150;
+  const h = 180;
+  const padding = 22;
   const pts = data.chartPoints;
   const minY = Math.min(...pts);
   const maxY = Math.max(...pts);
-  const norm = (v) => h - ((v - minY) / (maxY - minY || 1)) * (h - 24) - 12;
-  const step = w / (pts.length - 1);
-  const lineD = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${i * step},${norm(p)}`).join(' ');
-  const areaD = `${lineD} L${w},${h} L0,${h} Z`;
+  const innerW = w - padding * 2;
+  const innerH = h - padding * 2;
+  const xAt = (index) => padding + (innerW * index) / (pts.length - 1);
+  const yAt = (value) => padding + innerH - ((value - minY) / (maxY - minY || 1)) * innerH;
+
+  const dateLabels = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' });
+    return Array.from({ length: pts.length }, (_, index) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (pts.length - index - 1));
+      return formatter.format(date);
+    });
+  }, [pts.length]);
+
+  const points = pts.map((p, i) => ({
+    x: xAt(i),
+    y: yAt(p),
+    value: Math.round(p),
+    label: dateLabels[i],
+  }));
+  const lineD = points.map((point, i) => `${i === 0 ? 'M' : 'L'}${point.x},${point.y}`).join(' ');
+  const areaD = `${lineD} L${w - padding},${h - padding} L${padding},${h - padding} Z`;
+  const yTicks = [maxY, (maxY + minY) / 2, minY];
+  const activePoint = activeIndex !== null ? points[activeIndex] : null;
+
+  const handleChartMove = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = event.clientX - rect.left - padding;
+    const nearest = Math.round((x / innerW) * (pts.length - 1));
+    if (nearest >= 0 && nearest < pts.length) {
+      setActiveIndex(nearest);
+    }
+  };
+
+  const handleChartLeave = () => setActiveIndex(null);
 
   return (
     <div className="overview-container web-page">
@@ -93,10 +127,75 @@ const WebOverview = () => {
         <div className="chart-card">
           <h3 className="card-title">Scan frequency trend</h3>
           <div className="chart-wrapper">
-            <svg className="wave-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
-              <path d={areaD} fill="rgba(224, 50, 50, 0.08)" />
-              <path d={lineD} fill="none" stroke="#E03232" strokeWidth="2" />
+            <svg
+              className="wave-chart"
+              viewBox={`0 0 ${w} ${h}`}
+              preserveAspectRatio="none"
+              onMouseMove={handleChartMove}
+              onMouseLeave={handleChartLeave}
+            >
+              <defs>
+                <linearGradient id="scanTrendGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#E03232" stopOpacity="0.18" />
+                  <stop offset="100%" stopColor="#E03232" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+
+              {yTicks.map((tick, idx) => {
+                const y = padding + innerH - ((tick - minY) / (maxY - minY || 1)) * innerH;
+                return (
+                  <g key={tick}>
+                    <line x1={padding} x2={w - padding} y1={y} y2={y} stroke="rgba(148, 163, 184, 0.16)" strokeWidth="1" />
+                    <text x={padding - 10} y={y + 5} fontSize="11" fill="#8B949E" textAnchor="end">
+                      {Math.round(tick)}
+                    </text>
+                  </g>
+                );
+              })}
+
+              <path d={areaD} fill="url(#scanTrendGradient)" />
+              <path d={lineD} fill="none" stroke="#E03232" strokeWidth="2.5" strokeLinecap="round" />
+
+              {points.map((point, index) => (
+                <g key={point.label}>
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={activeIndex === index ? 6 : 4}
+                    className={`data-point${activeIndex === index ? ' active-point' : ''}`}
+                  />
+                  {(index % 2 === 0 || index === points.length - 1) && (
+                    <text x={point.x} y={h - 6} fontSize="10" fill="#8B949E" textAnchor="middle">
+                      {point.label}
+                    </text>
+                  )}
+                </g>
+              ))}
+
+              {activePoint && (
+                <line
+                  x1={activePoint.x}
+                  x2={activePoint.x}
+                  y1={padding}
+                  y2={h - padding}
+                  stroke="rgba(224, 50, 50, 0.18)"
+                  strokeWidth="1"
+                />
+              )}
             </svg>
+
+            {activePoint && (
+              <div
+                className="chart-tooltip"
+                style={{
+                  left: `clamp(12px, ${activePoint.x}px, calc(100% - 140px))`,
+                  top: `${activePoint.y - 10}px`,
+                }}
+              >
+                <span className="tooltip-label">{activePoint.label}</span>
+                <strong>{activePoint.value} scans</strong>
+              </div>
+            )}
           </div>
         </div>
 
