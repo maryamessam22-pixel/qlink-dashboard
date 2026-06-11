@@ -16,7 +16,6 @@ const NotFound = () => {
     }
   };
 
-  
   return (
     <div className={`nf-container${isApp ? ' nf-container--app' : ''}`}>
       <div className="nf-content">
